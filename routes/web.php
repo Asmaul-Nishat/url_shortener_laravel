@@ -1,54 +1,58 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QrCodeController;
+use App\Http\Controllers\RedirectController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ShortUrlController;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes
+| Home
 |--------------------------------------------------------------------------
 */
 
-// Home page
 Route::get('/', function () {
     return redirect()->route('links.create');
 })->name('home');
 
-// Guest can create a short URL
-Route::get('/links/create', function () {
-    return view('pages.links.create');
-})->name('links.create');
-
 
 /*
 |--------------------------------------------------------------------------
-| Public Short URL Redirect
+| Public Create Short URL Page
 |--------------------------------------------------------------------------
-|
-| Anyone can open a generated short URL.
-| We will connect this to the ShortUrl controller later.
-|
 */
 
-// Example for later:
-// Route::get('/{shortCode}', [RedirectController::class, 'redirect']);
+Route::get('/links/create', [
+    ShortUrlController::class,
+    'create'
+])->name('links.create');
 
 
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes
 |--------------------------------------------------------------------------
-|
-| Everything inside this group requires login.
-|
 */
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Dashboard
-    Route::get('/dashboard', function () {
-        return view('pages.dashboard.index');
-    })->name('dashboard');
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/dashboard', [
+        DashboardController::class,
+        'index'
+    ])->name('dashboard');
 
 
     /*
@@ -57,17 +61,64 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/links', function () {
-        return view('pages.links.index');
-    })->name('links.index');
+    Route::get('/links', [
+        ShortUrlController::class,
+        'index'
+    ])->name('links.index');
 
-    Route::get('/links/favorites', function () {
-        return view('pages.links.favorites');
-    })->name('links.favorites');
+    Route::post('/links', [
+        ShortUrlController::class,
+        'store'
+    ])->name('links.store');
 
-    Route::get('/links/trash', function () {
-        return view('pages.links.trash');
-    })->name('links.trash');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Favorites
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/links/favorites', [
+        ShortUrlController::class,
+        'favorites'
+    ])->name('links.favorites');
+
+    Route::post('/links/{shortUrl}/favorite', [
+        ShortUrlController::class,
+        'toggleFavorite'
+    ])->name('links.favorite');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Trash
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/links/trash', [
+        ShortUrlController::class,
+        'trash'
+    ])->name('links.trash');
+
+    Route::delete('/links/{shortUrl}', [
+        ShortUrlController::class,
+        'destroy'
+    ])->name('links.destroy');
+
+    Route::patch('/links/trash/{shortUrl}/restore', [
+        ShortUrlController::class,
+        'restore'
+    ])->name('links.restore');
+
+    Route::delete('/links/trash/{shortUrl}/force-delete', [
+        ShortUrlController::class,
+        'forceDelete'
+    ])->name('links.force-delete');
+
+    Route::delete('/links/trash/empty', [
+        ShortUrlController::class,
+        'emptyTrash'
+    ])->name('links.empty-trash');
 
 
     /*
@@ -76,9 +127,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/analytics', function () {
-        return view('pages.analytics.index');
-    })->name('analytics');
+    Route::get('/analytics', [
+        AnalyticsController::class,
+        'index'
+    ])->name('analytics');
 
 
     /*
@@ -87,9 +139,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/qr-codes', function () {
-        return view('pages.qr-codes.index');
-    })->name('qr-codes');
+    Route::get('/qr-codes', [
+        QrCodeController::class,
+        'index'
+    ])->name('qr-codes');
+
+    Route::post('/qr-codes/generate', [
+        QrCodeController::class,
+        'generate'
+    ])->name('qr-codes.generate');
+
+    Route::get('/qr-codes/{qrCode}/download/png', [
+        QrCodeController::class,
+        'downloadPng'
+    ])->name('qr-codes.download.png');
+
+    Route::get('/qr-codes/{qrCode}/download/svg', [
+        QrCodeController::class,
+        'downloadSvg'
+    ])->name('qr-codes.download.svg');
+
+    Route::delete('/qr-codes/{qrCode}', [
+        QrCodeController::class,
+        'destroy'
+    ])->name('qr-codes.destroy');
 
 
     /*
@@ -98,9 +171,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/reports', function () {
-        return view('pages.reports.index');
-    })->name('reports');
+    Route::get('/reports', [
+        ReportController::class,
+        'index'
+    ])->name('reports');
+
+    Route::post('/reports/generate', [
+        ReportController::class,
+        'generate'
+    ])->name('reports.generate');
+
+    Route::get('/reports/{report}/download', [
+        ReportController::class,
+        'download'
+    ])->name('reports.download');
+
+    Route::delete('/reports/{report}', [
+        ReportController::class,
+        'destroy'
+    ])->name('reports.destroy');
 
 
     /*
@@ -109,9 +198,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/activity-logs', function () {
-        return view('pages.activity-logs.index');
-    })->name('activity-logs');
+    Route::get('/activity-logs', [
+        ActivityLogController::class,
+        'index'
+    ])->name('activity-logs');
+
+    Route::get('/activity-logs/export', [
+        ActivityLogController::class,
+        'export'
+    ])->name('activity-logs.export');
 
 
     /*
@@ -120,9 +215,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/settings', function () {
-        return view('pages.settings.index');
-    })->name('settings');
+    Route::get('/settings', [
+        SettingsController::class,
+        'index'
+    ])->name('settings');
+
+    Route::patch('/settings', [
+        SettingsController::class,
+        'update'
+    ])->name('settings.update');
 
 
     /*
@@ -131,21 +232,56 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
+    Route::get('/profile', [
+        ProfileController::class,
+        'edit'
+    ])->name('profile.edit');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
+    Route::patch('/profile', [
+        ProfileController::class,
+        'update'
+    ])->name('profile.update');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+    Route::delete('/profile', [
+        ProfileController::class,
+        'destroy'
+    ])->name('profile.destroy');
+
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| Authentication Routes
+| Authentication
 |--------------------------------------------------------------------------
 */
 
 require __DIR__.'/auth.php';
+
+
+/*
+|--------------------------------------------------------------------------
+| Password Verification For Short URLs
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/password/{shortCode}', [
+    RedirectController::class,
+    'verifyPassword'
+])->name('short.password.verify');
+
+
+/*
+|--------------------------------------------------------------------------
+| Short URL Redirect
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| This must be the LAST route in this file.
+|
+*/
+
+Route::get('/{shortCode}', [
+    RedirectController::class,
+    'redirect'
+])->name('short.redirect');

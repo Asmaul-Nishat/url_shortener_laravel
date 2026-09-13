@@ -78,8 +78,10 @@
             class="mr-3 overflow-hidden rounded-full h-11 w-11 rtl:mr-0 rtl:ml-3"
         >
             <img
-                src="/images/user/owner.png"
-                alt="User"
+                src="{{ auth()->user()->profile_photo_path
+                    ? asset('storage/' . auth()->user()->profile_photo_path)
+                    : asset('images/user/owner.png') }}"
+                alt="{{ auth()->user()->name }}"
                 class="object-cover w-full h-full"
             />
         </span>
@@ -88,7 +90,7 @@
         <span
             class="block mr-1 font-medium text-theme-sm rtl:mr-0 rtl:ml-1"
         >
-            Asmaul Nishat
+            {{ auth()->user()->name }}
         </span>
 
         <!-- Chevron -->
@@ -138,13 +140,13 @@
             <span
                 class="block font-medium text-gray-800 text-theme-sm dark:text-white"
             >
-                Asmaul Nishat
+                {{ auth()->user()->name }}
             </span>
 
             <span
                 class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400"
             >
-            nishatsoyati@gmail.com
+                {{ auth()->user()->email }}
             </span>
 
         </div>
@@ -161,7 +163,7 @@
             <li>
 
                 <a
-                    href="/profile"
+                    href="{{ route('profile.edit') }}"
                     @click="closeDropdown()"
                     class="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
                 >
@@ -204,7 +206,7 @@
             <li>
 
                 <a
-                    href="/settings"
+                    href="{{ route('settings') }}"
                     @click="closeDropdown()"
                     class="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
                 >
@@ -380,38 +382,44 @@
         <!-- =========================
              Sign Out
         ========================== -->
-        <a
-            href="/signin"
-            @click="closeDropdown()"
-            class="flex items-center w-full gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+        <form
+            method="POST"
+            action="{{ route('logout') }}"
         >
+            @csrf
 
-            <!-- Sign Out Icon -->
-            <span
-                class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
+            <button
+                type="submit"
+                @click="closeDropdown()"
+                class="flex items-center w-full gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
             >
 
-                <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                <!-- Sign Out Icon -->
+                <span
+                    class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M15 3H6C4.89543 3 4 3.89543 4 5V19C4 20.1046 4.89543 21 6 21H15M10 12H21M21 12L17 8M21 12L17 16"
-                    />
-                </svg>
 
-            </span>
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M15 3H6C4.89543 3 4 3.89543 4 5V19C4 20.1046 4.89543 21 6 21H15M10 12H21M21 12L17 8M21 12L17 16"
+                        />
+                    </svg>
 
-            Sign Out
+                </span>
 
-        </a>
+                Sign Out
+
+            </button>
+
+        </form>
 
     </div>
 
