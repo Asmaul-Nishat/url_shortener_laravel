@@ -3,22 +3,12 @@
 
     $menuGroups = MenuHelper::getMenuGroups();
 
-    // Get current path
     $currentPath = request()->path();
 @endphp
 
 <aside
     id="sidebar"
-    class="fixed flex flex-col mt-0 top-0 px-5 start-0
-           bg-white dark:bg-gray-900
-           dark:border-gray-800
-           text-gray-900
-           h-screen
-           transition-all duration-300 ease-in-out
-           z-99999
-           ltr:border-r rtl:border-l
-           border-gray-200"
-
+    class="fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-gray-200 bg-white px-4 text-gray-900 transition-all duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900"
     :class="{
         'w-[290px]':
             $store.sidebar.isExpanded ||
@@ -33,7 +23,7 @@
         'translate-x-0':
             $store.sidebar.isMobileOpen,
 
-        'max-xl:-translate-x-full max-xl:rtl:translate-x-full':
+        'max-xl:-translate-x-full':
             !$store.sidebar.isMobileOpen
     }"
 
@@ -77,13 +67,10 @@
 
         toggleSubmenu(groupIndex, itemIndex) {
 
-            const key =
-                groupIndex + '-' + itemIndex;
+            const key = groupIndex + '-' + itemIndex;
 
-            const newState =
-                !this.openSubmenus[key];
+            const newState = !this.openSubmenus[key];
 
-            // Close all other submenus
             if (newState) {
                 this.openSubmenus = {};
             }
@@ -93,8 +80,7 @@
 
         isSubmenuOpen(groupIndex, itemIndex) {
 
-            const key =
-                groupIndex + '-' + itemIndex;
+            const key = groupIndex + '-' + itemIndex;
 
             return this.openSubmenus[key] || false;
         },
@@ -104,8 +90,7 @@
             return (
                 window.location.pathname === path
                 ||
-                '{{ $currentPath }}' ===
-                path.replace(/^\//, '')
+                '{{ $currentPath }}' === path.replace(/^\//, '')
             );
         }
     }"
@@ -121,12 +106,12 @@
     "
 >
 
-    {{-- ===================================================== --}}
-    {{-- LOGO SECTION --}}
-    {{-- ===================================================== --}}
+    {{-- ========================================================= --}}
+    {{-- LOGO --}}
+    {{-- ========================================================= --}}
 
     <div
-        class="pt-8 pb-7 flex items-center gap-2"
+        class="flex h-[88px] shrink-0 items-center border-b border-gray-100 dark:border-gray-800"
         :class="
             (
                 !$store.sidebar.isExpanded &&
@@ -140,10 +125,11 @@
 
         <a
             href="{{ url('/dashboard') }}"
-            class="flex items-center gap-2"
+            class="flex items-center"
         >
 
             {{-- Expanded Logo --}}
+
             <span
                 x-show="
                     $store.sidebar.isExpanded ||
@@ -151,12 +137,17 @@
                     $store.sidebar.isMobileOpen
                 "
                 x-cloak
-                class="text-xl font-bold text-gray-800 dark:text-white"
+                class="whitespace-nowrap text-xl font-bold tracking-tight text-gray-900 dark:text-white"
             >
-                URL Shortener
+                <span class="text-brand-600 dark:text-brand-400">
+                    URL
+                </span>
+                Shortener
             </span>
 
+
             {{-- Collapsed Logo --}}
+
             <span
                 x-show="
                     !$store.sidebar.isExpanded &&
@@ -164,7 +155,7 @@
                     !$store.sidebar.isMobileOpen
                 "
                 x-cloak
-                class="text-xl font-bold text-gray-800 dark:text-white"
+                class="text-xl font-bold tracking-tight text-brand-600 dark:text-brand-400"
             >
                 US
             </span>
@@ -174,41 +165,39 @@
     </div>
 
 
-    {{-- ===================================================== --}}
+    {{-- ========================================================= --}}
     {{-- NAVIGATION --}}
-    {{-- ===================================================== --}}
+    {{-- ========================================================= --}}
 
-    <div
-        class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar"
-    >
+    <div class="flex flex-1 flex-col overflow-y-auto py-6">
 
-        <nav class="mb-6">
+        <nav>
 
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-6">
 
                 @foreach ($menuGroups as $groupIndex => $menuGroup)
 
                     <div>
 
                         {{-- ================================================= --}}
-                        {{-- MENU GROUP TITLE --}}
+                        {{-- GROUP TITLE --}}
                         {{-- ================================================= --}}
 
                         <h2
-                            class="mb-4 text-xs uppercase flex leading-[20px] text-gray-400"
-
+                            class="mb-3 flex h-5 items-center px-3 text-xs font-semibold uppercase tracking-wider text-gray-400"
                             :class="
                                 (
                                     !$store.sidebar.isExpanded &&
                                     !$store.sidebar.isHovered &&
                                     !$store.sidebar.isMobileOpen
                                 )
-                                ? 'lg:justify-center'
+                                ? 'justify-center'
                                 : 'justify-start'
                             "
                         >
 
                             {{-- Expanded Group Title --}}
+
                             <template
                                 x-if="
                                     $store.sidebar.isExpanded ||
@@ -222,7 +211,8 @@
                             </template>
 
 
-                            {{-- Collapsed Group Icon --}}
+                            {{-- Collapsed Group Title --}}
+
                             <template
                                 x-if="
                                     !$store.sidebar.isExpanded &&
@@ -230,24 +220,9 @@
                                     !$store.sidebar.isMobileOpen
                                 "
                             >
-
-                                <svg
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-
-                                    <path
-                                        fill-rule="evenodd"
-                                        clip-rule="evenodd"
-                                        d="M4.25 12C4.25 11.5858 4.58579 11.25 5 11.25H19C19.4142 11.25 19.75 11.5858 19.75 12C19.75 12.4142 19.4142 12.75 19 12.75H5C4.58579 12.75 4.25 12.4142 4.25 12Z"
-                                        fill="currentColor"
-                                    />
-
-                                </svg>
-
+                                <span class="text-gray-300 dark:text-gray-600">
+                                    •••
+                                </span>
                             </template>
 
                         </h2>
@@ -271,16 +246,13 @@
 
                                         <button
                                             type="button"
-
                                             @click="
                                                 toggleSubmenu(
                                                     {{ $groupIndex }},
                                                     {{ $itemIndex }}
                                                 )
                                             "
-
-                                            class="menu-item group w-full"
-
+                                            class="menu-item group flex w-full items-center gap-3 px-3 py-2.5"
                                             :class="[
                                                 isSubmenuOpen(
                                                     {{ $groupIndex }},
@@ -294,13 +266,17 @@
                                                     !$store.sidebar.isHovered &&
                                                     !$store.sidebar.isMobileOpen
                                                 )
-                                                ? 'xl:justify-center'
-                                                : 'xl:justify-start'
+                                                ? 'justify-center'
+                                                : 'justify-start'
                                             ]"
                                         >
 
-                                            {{-- Menu Icon --}}
+                                            {{-- ================================================= --}}
+                                            {{-- ICON --}}
+                                            {{-- ================================================= --}}
+
                                             <span
+                                                class="flex h-6 w-6 shrink-0 items-center justify-center"
                                                 :class="
                                                     isSubmenuOpen(
                                                         {{ $groupIndex }},
@@ -310,13 +286,14 @@
                                                     : 'menu-item-icon-inactive'
                                                 "
                                             >
-
                                                 {!! MenuHelper::getIconSvg($item['icon']) !!}
-
                                             </span>
 
 
-                                            {{-- Menu Text --}}
+                                            {{-- ================================================= --}}
+                                            {{-- TEXT --}}
+                                            {{-- ================================================= --}}
+
                                             <span
                                                 x-show="
                                                     $store.sidebar.isExpanded ||
@@ -324,25 +301,17 @@
                                                     $store.sidebar.isMobileOpen
                                                 "
                                                 x-cloak
-                                                class="menu-item-text flex items-center gap-2"
+                                                class="menu-item-text flex min-w-0 flex-1 items-center gap-2"
                                             >
 
-                                                {{ __($item['name']) }}
+                                                <span class="truncate">
+                                                    {{ __($item['name']) }}
+                                                </span>
 
-
-                                                {{-- New Badge --}}
                                                 @if (!empty($item['new']))
 
                                                     <span
-                                                        class="absolute ltr:right-10 rtl:left-10"
-
-                                                        :class="
-                                                            isActive(
-                                                                '{{ $item['path'] ?? '' }}'
-                                                            )
-                                                            ? 'menu-dropdown-badge menu-dropdown-badge-active'
-                                                            : 'menu-dropdown-badge menu-dropdown-badge-inactive'
-                                                        "
+                                                        class="shrink-0 rounded-md bg-brand-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-brand-600 dark:bg-brand-500/20 dark:text-brand-400"
                                                     >
                                                         {{ __('new') }}
                                                     </span>
@@ -352,7 +321,10 @@
                                             </span>
 
 
-                                            {{-- Arrow --}}
+                                            {{-- ================================================= --}}
+                                            {{-- ARROW --}}
+                                            {{-- ================================================= --}}
+
                                             <svg
                                                 x-show="
                                                     $store.sidebar.isExpanded ||
@@ -360,9 +332,7 @@
                                                     $store.sidebar.isMobileOpen
                                                 "
                                                 x-cloak
-
-                                                class="ltr:ml-auto rtl:mr-auto w-5 h-5 transition-transform duration-200"
-
+                                                class="ml-auto h-5 w-5 shrink-0 transition-transform duration-200"
                                                 :class="{
                                                     'rotate-180 text-brand-500':
                                                         isSubmenuOpen(
@@ -370,13 +340,12 @@
                                                             {{ $itemIndex }}
                                                         ),
 
-                                                    'text-gray-500 dark:text-gray-400':
+                                                    'text-gray-400':
                                                         !isSubmenuOpen(
                                                             {{ $groupIndex }},
                                                             {{ $itemIndex }}
                                                         )
                                                 }"
-
                                                 viewBox="0 0 20 20"
                                                 fill="currentColor"
                                             >
@@ -413,7 +382,7 @@
                                         >
 
                                             <ul
-                                                class="mt-2 space-y-1 ltr:ml-9 rtl:mr-9"
+                                                class="mt-2 space-y-1 border-l border-gray-200 pl-4 dark:border-gray-800"
                                             >
 
                                                 @foreach ($item['subItems'] as $subItem)
@@ -422,9 +391,7 @@
 
                                                         <a
                                                             href="{{ $subItem['path'] }}"
-
-                                                            class="menu-dropdown-item"
-
+                                                            class="menu-dropdown-item flex items-center"
                                                             :class="
                                                                 isActive(
                                                                     '{{ $subItem['path'] }}'
@@ -434,14 +401,17 @@
                                                             "
                                                         >
 
-                                                            {{ __($subItem['name']) }}
+                                                            {{-- Submenu Text --}}
+
+                                                            <span class="truncate">
+                                                                {{ __($subItem['name']) }}
+                                                            </span>
 
 
-                                                            <span
-                                                                class="flex items-center gap-1 ltr:ml-auto rtl:mr-auto"
-                                                            >
+                                                            {{-- Submenu Badges --}}
 
-                                                                {{-- New --}}
+                                                            <span class="ml-auto flex shrink-0 items-center gap-1">
+
                                                                 @if (!empty($subItem['new']))
 
                                                                     <span
@@ -459,7 +429,6 @@
                                                                 @endif
 
 
-                                                                {{-- Pro --}}
                                                                 @if (!empty($subItem['pro']))
 
                                                                     <span
@@ -497,9 +466,7 @@
 
                                         <a
                                             href="{{ $item['path'] }}"
-
-                                            class="menu-item group"
-
+                                            class="menu-item group flex w-full items-center gap-3 px-3 py-2.5"
                                             :class="[
                                                 isActive(
                                                     '{{ $item['path'] }}'
@@ -512,13 +479,17 @@
                                                     !$store.sidebar.isHovered &&
                                                     !$store.sidebar.isMobileOpen
                                                 )
-                                                ? 'xl:justify-center'
-                                                : 'xl:justify-start'
+                                                ? 'justify-center'
+                                                : 'justify-start'
                                             ]"
                                         >
 
-                                            {{-- Icon --}}
+                                            {{-- ================================================= --}}
+                                            {{-- ICON --}}
+                                            {{-- ================================================= --}}
+
                                             <span
+                                                class="flex h-6 w-6 shrink-0 items-center justify-center"
                                                 :class="
                                                     isActive(
                                                         '{{ $item['path'] }}'
@@ -527,13 +498,14 @@
                                                     : 'menu-item-icon-inactive'
                                                 "
                                             >
-
                                                 {!! MenuHelper::getIconSvg($item['icon']) !!}
-
                                             </span>
 
 
-                                            {{-- Text --}}
+                                            {{-- ================================================= --}}
+                                            {{-- TEXT --}}
+                                            {{-- ================================================= --}}
+
                                             <span
                                                 x-show="
                                                     $store.sidebar.isExpanded ||
@@ -541,17 +513,17 @@
                                                     $store.sidebar.isMobileOpen
                                                 "
                                                 x-cloak
-                                                class="menu-item-text flex items-center gap-2"
+                                                class="menu-item-text flex min-w-0 flex-1 items-center gap-2"
                                             >
 
-                                                {{ __($item['name']) }}
+                                                <span class="truncate">
+                                                    {{ __($item['name']) }}
+                                                </span>
 
-
-                                                {{-- New Badge --}}
                                                 @if (!empty($item['new']))
 
                                                     <span
-                                                        class="ltr:ml-2 rtl:mr-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-brand-500 text-white"
+                                                        class="shrink-0 rounded-md bg-brand-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-brand-600 dark:bg-brand-500/20 dark:text-brand-400"
                                                     >
                                                         {{ __('new') }}
                                                     </span>
@@ -581,18 +553,3 @@
     </div>
 
 </aside>
-
-
-{{-- ========================================================= --}}
-{{-- MOBILE SIDEBAR BACKDROP --}}
-{{-- ========================================================= --}}
-
-<div
-    x-show="$store.sidebar.isMobileOpen"
-
-    x-cloak
-
-    @click="$store.sidebar.setMobileOpen(false)"
-
-    class="fixed z-50 h-screen w-full bg-gray-900/50"
-></div>
