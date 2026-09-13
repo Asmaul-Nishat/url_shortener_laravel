@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -94,13 +95,8 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Validate Schedule and Expiration Relationship
+        | Validate Schedule and Expiration
         |--------------------------------------------------------------------------
-        |
-        | If both are provided:
-        |
-        | scheduled_at must happen before expires_at.
-        |
         */
 
         if (
@@ -131,19 +127,35 @@ class ShortUrlController extends Controller
         | Generate Unique Short Code
         |--------------------------------------------------------------------------
         |
-        | The generated code must not already exist as:
+        | The generated code must not exist in:
         |
-        | - another short_code
-        | - another custom_alias
+        | 1. short_urls.short_code
+        | 2. short_urls.custom_alias
+        |
+        | 3. temporary guest URLs
         |
         */
 
         do {
             $shortCode = Str::random(6);
+
+            $existsInDatabase = ShortUrl::where(
+                'short_code',
+                $shortCode
+            )
+                ->orWhere(
+                    'custom_alias',
+                    $shortCode
+                )
+                ->exists();
+
+            $existsInGuestCache = Cache::has(
+                'guest_short_url:' . $shortCode
+            );
+
         } while (
-            ShortUrl::where('short_code', $shortCode)
-                ->orWhere('custom_alias', $shortCode)
-                ->exists()
+            $existsInDatabase ||
+            $existsInGuestCache
         );
 
 
@@ -151,15 +163,6 @@ class ShortUrlController extends Controller
         |--------------------------------------------------------------------------
         | Password
         |--------------------------------------------------------------------------
-        |
-        | Password is optional.
-        |
-        | If supplied:
-        |     store a secure hash.
-        |
-        | If not supplied:
-        |     store NULL.
-        |
         */
 
         $hashedPassword = null;
@@ -173,12 +176,126 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Create Short URL
+        | Guest User
         |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        |
+        | Guest URLs are NOT saved in the short_urls table.
+        |
+        | They are temporarily stored in Laravel Cache so the
+        | generated short URL can still redirect correctly.
+        |
+        */
+
+        if (!Auth::check()) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Guest Short Code
+            |--------------------------------------------------------------------------
+            */
+
+            $guestCode =
+                $validated['custom_alias']
+                ?? $shortCode;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Guest Expiration
+            |--------------------------------------------------------------------------
+            |
+            | Default guest URL lifetime:
+            | 24 hours.
+            |
+            | If expires_at is provided, use that instead.
+            |
+            */
+
+            if (!empty($validated['expires_at'])) {
+                $expiresAt = Carbon::parse(
+                    $validated['expires_at']
+                );
+
+                $seconds = max(
+                    60,
+                    now()->diffInSeconds($expiresAt, false)
+                );
+            } else {
+                $seconds = 60 * 60 * 24;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Save Guest URL Temporarily
+            |--------------------------------------------------------------------------
+            */
+
+            Cache::put(
+                'guest_short_url:' . $guestCode,
+                [
+                    'original_url' =>
+                        $validated['original_url'],
+
+                    'short_code' =>
+                        $guestCode,
+
+                    'password' =>
+                        $hashedPassword,
+
+                    'scheduled_at' =>
+                        $validated['scheduled_at'] ?? null,
+
+                    'expires_at' =>
+                        $validated['expires_at'] ?? null,
+
+                    'created_at' =>
+                        now()->toDateTimeString(),
+                ],
+                $seconds
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Guest Short URL
+            |--------------------------------------------------------------------------
+            */
+
+            $shortUrl =
+                url('/' . $guestCode);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Return to Create Page
+            |--------------------------------------------------------------------------
+            */
+
+            return redirect()
+                ->route('links.create')
+                ->with('guest_short_url', $shortUrl)
+                ->with(
+                    'success',
+                    'Your short URL has been created successfully.'
+                );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Authenticated User
+        |--------------------------------------------------------------------------
+        |
+        | Only authenticated users are saved in short_urls.
+        |
         */
 
         $shortUrl = ShortUrl::create([
-            'user_id' => Auth::id(),
+            'user_id' =>
+                Auth::id(),
 
             'original_url' =>
                 $validated['original_url'],
@@ -189,7 +306,8 @@ class ShortUrlController extends Controller
             'custom_alias' =>
                 $validated['custom_alias'] ?? null,
 
-            'click_count' => 0,
+            'click_count' =>
+                0,
 
             'expires_at' =>
                 $validated['expires_at'] ?? null,
@@ -200,9 +318,11 @@ class ShortUrlController extends Controller
             'scheduled_at' =>
                 $validated['scheduled_at'] ?? null,
 
-            'status' => 'active',
+            'status' =>
+                'active',
 
-            'is_favorite' => false,
+            'is_favorite' =>
+                false,
         ]);
 
 
@@ -222,12 +342,27 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Redirect
+        | Authenticated User Result
         |--------------------------------------------------------------------------
+        |
+        | We do NOT immediately send the user to /links.
+        |
+        | We return to the create page and show the generated URL.
+        |
         */
 
         return redirect()
-            ->route('links.index')
+            ->route('links.create')
+            ->with(
+                'short_url',
+                url(
+                    '/' .
+                    (
+                        $shortUrl->custom_alias
+                        ?: $shortUrl->short_code
+                    )
+                )
+            )
             ->with(
                 'success',
                 'Short URL created successfully.'
@@ -269,7 +404,10 @@ class ShortUrlController extends Controller
             'user_id',
             Auth::id()
         )
-            ->where('is_favorite', true)
+            ->where(
+                'is_favorite',
+                true
+            )
             ->latest()
             ->paginate(10);
 
@@ -306,9 +444,15 @@ class ShortUrlController extends Controller
             'URL Management',
             $shortUrl->is_favorite
                 ? 'Added short URL to favorites: ' .
-                    ($shortUrl->custom_alias ?: $shortUrl->short_code)
+                    (
+                        $shortUrl->custom_alias
+                        ?: $shortUrl->short_code
+                    )
                 : 'Removed short URL from favorites: ' .
-                    ($shortUrl->custom_alias ?: $shortUrl->short_code)
+                    (
+                        $shortUrl->custom_alias
+                        ?: $shortUrl->short_code
+                    )
         );
 
         return back()->with(
@@ -358,14 +502,16 @@ class ShortUrlController extends Controller
         }
 
         $shortUrlName =
-            $shortUrl->custom_alias ?: $shortUrl->short_code;
+            $shortUrl->custom_alias
+            ?: $shortUrl->short_code;
 
         $shortUrl->delete();
 
         ActivityLogger::log(
             'Short URL Deleted',
             'URL Management',
-            'Moved short URL to trash: ' . $shortUrlName
+            'Moved short URL to trash: ' .
+            $shortUrlName
         );
 
         return redirect()
@@ -388,19 +534,27 @@ class ShortUrlController extends Controller
     ): RedirectResponse {
 
         $link = ShortUrl::onlyTrashed()
-            ->where('id', $shortUrl)
-            ->where('user_id', Auth::id())
+            ->where(
+                'id',
+                $shortUrl
+            )
+            ->where(
+                'user_id',
+                Auth::id()
+            )
             ->firstOrFail();
 
         $shortUrlName =
-            $link->custom_alias ?: $link->short_code;
+            $link->custom_alias
+            ?: $link->short_code;
 
         $link->restore();
 
         ActivityLogger::log(
             'Short URL Restored',
             'URL Management',
-            'Restored short URL: ' . $shortUrlName
+            'Restored short URL: ' .
+            $shortUrlName
         );
 
         return redirect()
@@ -423,19 +577,27 @@ class ShortUrlController extends Controller
     ): RedirectResponse {
 
         $link = ShortUrl::onlyTrashed()
-            ->where('id', $shortUrl)
-            ->where('user_id', Auth::id())
+            ->where(
+                'id',
+                $shortUrl
+            )
+            ->where(
+                'user_id',
+                Auth::id()
+            )
             ->firstOrFail();
 
         $shortUrlName =
-            $link->custom_alias ?: $link->short_code;
+            $link->custom_alias
+            ?: $link->short_code;
 
         $link->forceDelete();
 
         ActivityLogger::log(
             'Short URL Permanently Deleted',
             'URL Management',
-            'Permanently deleted short URL: ' . $shortUrlName
+            'Permanently deleted short URL: ' .
+            $shortUrlName
         );
 
         return redirect()
@@ -462,7 +624,8 @@ class ShortUrlController extends Controller
             )
             ->get();
 
-        $deletedCount = $trashedLinks->count();
+        $deletedCount =
+            $trashedLinks->count();
 
         ShortUrl::onlyTrashed()
             ->where(
@@ -472,6 +635,7 @@ class ShortUrlController extends Controller
             ->forceDelete();
 
         if ($deletedCount > 0) {
+
             ActivityLogger::log(
                 'Trash Emptied',
                 'URL Management',

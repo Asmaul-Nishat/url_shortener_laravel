@@ -25,7 +25,7 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Public Create Short URL Page
+| Public Create Short URL
 |--------------------------------------------------------------------------
 */
 
@@ -33,6 +33,11 @@ Route::get('/links/create', [
     ShortUrlController::class,
     'create'
 ])->name('links.create');
+
+Route::post('/links', [
+    ShortUrlController::class,
+    'store'
+])->name('links.store');
 
 
 /*
@@ -65,11 +70,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ShortUrlController::class,
         'index'
     ])->name('links.index');
-
-    Route::post('/links', [
-        ShortUrlController::class,
-        'store'
-    ])->name('links.store');
 
 
     /*
@@ -246,7 +246,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ProfileController::class,
         'destroy'
     ])->name('profile.destroy');
-
 });
 
 
@@ -261,7 +260,7 @@ require __DIR__.'/auth.php';
 
 /*
 |--------------------------------------------------------------------------
-| Password Verification For Short URLs
+| Password Verification
 |--------------------------------------------------------------------------
 */
 
@@ -276,8 +275,7 @@ Route::post('/password/{shortCode}', [
 | Short URL Redirect
 |--------------------------------------------------------------------------
 |
-| IMPORTANT:
-| This must be the LAST route in this file.
+| MUST BE LAST
 |
 */
 
