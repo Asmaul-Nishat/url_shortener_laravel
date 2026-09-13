@@ -1,3 +1,214 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/* =========================================================
+   SIDEBAR MENU
+   ========================================================= */
+
+@layer components {
+
+    /* ---------------------------------------------------------
+       Main Menu Item
+       --------------------------------------------------------- */
+
+    .menu-item {
+        @apply rounded-lg text-sm font-medium transition-colors duration-200;
+    }
+
+
+    /* ---------------------------------------------------------
+       Inactive Menu Item - LIGHT
+       --------------------------------------------------------- */
+
+    .menu-item-inactive {
+        @apply text-gray-600;
+    }
+
+    .menu-item-inactive:hover {
+        @apply bg-gray-100 text-gray-900;
+    }
+
+
+    /* ---------------------------------------------------------
+       Inactive Menu Item - DARK
+       --------------------------------------------------------- */
+
+    .dark .menu-item-inactive {
+        @apply text-gray-400;
+    }
+
+    .dark .menu-item-inactive:hover {
+        @apply bg-gray-800 text-white;
+    }
+
+
+    /* ---------------------------------------------------------
+       Active Menu Item - LIGHT
+       --------------------------------------------------------- */
+
+    .menu-item-active {
+        @apply bg-brand-50 text-brand-600;
+    }
+
+
+    /* ---------------------------------------------------------
+       Active Menu Item - DARK
+       --------------------------------------------------------- */
+
+    .dark .menu-item-active {
+        @apply bg-brand-500/10 text-brand-400;
+    }
+
+
+    /* ---------------------------------------------------------
+       Main Menu Icon - LIGHT
+       --------------------------------------------------------- */
+
+    .menu-item-icon-inactive {
+        @apply text-gray-400;
+    }
+
+    .menu-item-inactive:hover .menu-item-icon-inactive {
+        @apply text-gray-600;
+    }
+
+
+    /* ---------------------------------------------------------
+       Main Menu Icon - DARK
+       --------------------------------------------------------- */
+
+    .dark .menu-item-icon-inactive {
+        @apply text-gray-500;
+    }
+
+    .dark .menu-item-inactive:hover .menu-item-icon-inactive {
+        @apply text-gray-300;
+    }
+
+
+    /* ---------------------------------------------------------
+       Active Icon
+       --------------------------------------------------------- */
+
+    .menu-item-icon-active {
+        @apply text-brand-600;
+    }
+
+    .dark .menu-item-icon-active {
+        @apply text-brand-400;
+    }
+
+
+    /* ---------------------------------------------------------
+       Menu Text
+       --------------------------------------------------------- */
+
+    .menu-item-text {
+        @apply text-gray-700;
+    }
+
+    .dark .menu-item-text {
+        @apply text-gray-200;
+    }
+
+
+    /* ---------------------------------------------------------
+       Dropdown Items
+       --------------------------------------------------------- */
+
+    .menu-dropdown-item {
+        @apply min-h-9 rounded-md px-3 py-2 text-sm transition-colors duration-200;
+    }
+
+
+    /* ---------------------------------------------------------
+       Dropdown Inactive - LIGHT
+       --------------------------------------------------------- */
+
+    .menu-dropdown-item-inactive {
+        @apply text-gray-500;
+    }
+
+    .menu-dropdown-item-inactive:hover {
+        @apply bg-gray-100 text-gray-900;
+    }
+
+
+    /* ---------------------------------------------------------
+       Dropdown Inactive - DARK
+       --------------------------------------------------------- */
+
+    .dark .menu-dropdown-item-inactive {
+        @apply text-gray-400;
+    }
+
+    .dark .menu-dropdown-item-inactive:hover {
+        @apply bg-gray-800 text-gray-100;
+    }
+
+
+    /* ---------------------------------------------------------
+       Dropdown Active
+       --------------------------------------------------------- */
+
+    .menu-dropdown-item-active {
+        @apply bg-brand-50 font-medium text-brand-600;
+    }
+
+    .dark .menu-dropdown-item-active {
+        @apply bg-brand-500/10 text-brand-400;
+    }
+
+
+    /* ---------------------------------------------------------
+       Dropdown Badges
+       --------------------------------------------------------- */
+
+    .menu-dropdown-badge {
+        @apply rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase;
+    }
+
+    .menu-dropdown-badge-active {
+        @apply bg-brand-100 text-brand-600;
+    }
+
+    .dark .menu-dropdown-badge-active {
+        @apply bg-brand-500/20 text-brand-400;
+    }
+
+    .menu-dropdown-badge-inactive {
+        @apply bg-gray-100 text-gray-500;
+    }
+
+    .dark .menu-dropdown-badge-inactive {
+        @apply bg-gray-800 text-gray-400;
+    }
+
+
+    /* ---------------------------------------------------------
+       PRO Badge
+       --------------------------------------------------------- */
+
+    .menu-dropdown-badge-pro {
+        @apply rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase;
+    }
+
+    .menu-dropdown-badge-pro-active {
+        @apply bg-brand-100 text-brand-600;
+    }
+
+    .dark .menu-dropdown-badge-pro-active {
+        @apply bg-brand-500/20 text-brand-400;
+    }
+
+    .menu-dropdown-badge-pro-inactive {
+        @apply bg-gray-100 text-gray-500;
+    }
+
+    .dark .menu-dropdown-badge-pro-inactive {
+        @apply bg-gray-800 text-gray-500;
+    }
+
+}
