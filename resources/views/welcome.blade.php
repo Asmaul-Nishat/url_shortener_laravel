@@ -1202,7 +1202,7 @@
                     </div>
 
                     <div class="brand-subtitle">
-                        Smart Link Management
+                        Short Link Management
                     </div>
 
                 </div>
@@ -1343,7 +1343,7 @@
             <h1 class="hero-title">
 
                 Turn Long URLs Into
-                <span>Smart Links</span>
+                <span>Short Links</span>
 
             </h1>
 
@@ -1932,7 +1932,7 @@
             </div>
 
             <h2 class="section-title">
-                Create a smart link in three steps
+                Create a short link in three steps
             </h2>
 
         </div>
@@ -2011,7 +2011,7 @@
     <section class="cta-section">
 
         <div class="cta-title">
-            Ready to manage your links smarter?
+            Ready to manage your links shorter?
         </div>
 
         <div class="cta-description">
@@ -2059,7 +2059,7 @@
             </div>
 
             <div>
-                Smart Link Management Platform
+                Short Link Management Platform
             </div>
 
         </div>
