@@ -14,12 +14,12 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Home
+| Home / Landing Page
 |--------------------------------------------------------------------------
 */
 
 Route::get('/', function () {
-    return redirect()->route('links.create');
+    return view('welcome');
 })->name('home');
 
 
@@ -38,6 +38,28 @@ Route::post('/links', [
     ShortUrlController::class,
     'store'
 ])->name('links.store');
+
+
+/*
+|--------------------------------------------------------------------------
+| Public Guest QR Code
+|--------------------------------------------------------------------------
+|
+| These routes are for the public landing page.
+| Guest QR codes are stored in the session and are not saved
+| in the authenticated user's QR code database table.
+|
+*/
+
+Route::post('/qr-codes/guest/generate', [
+    QrCodeController::class,
+    'generateGuest'
+])->name('qr-codes.guest.generate');
+
+Route::get('/qr-codes/guest/download', [
+    QrCodeController::class,
+    'downloadGuest'
+])->name('qr-codes.guest.download');
 
 
 /*
@@ -275,7 +297,8 @@ Route::post('/password/{shortCode}', [
 | Short URL Redirect
 |--------------------------------------------------------------------------
 |
-| MUST BE LAST
+| IMPORTANT:
+| This wildcard route MUST remain at the very bottom.
 |
 */
 

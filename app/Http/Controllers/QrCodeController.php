@@ -45,7 +45,7 @@ class QrCodeController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Generate QR Code
+    | Generate QR Code - Authenticated User
     |--------------------------------------------------------------------------
     */
 
@@ -170,7 +170,170 @@ class QrCodeController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Download PNG
+    | Generate Guest QR Code
+    |--------------------------------------------------------------------------
+    |
+    | Guest QR codes are NOT stored in the database.
+    |
+    | The original long URL is stored temporarily in the
+    | user's session and the QR image is generated when
+    | the user clicks Download QR Code.
+    |
+    */
+
+    public function generateGuest(Request $request)
+    {
+        $validated = $request->validate([
+            'original_url' => [
+                'required',
+                'url',
+                'max:2048',
+            ],
+        ], [
+            'original_url.required' =>
+                'Please enter a URL.',
+
+            'original_url.url' =>
+                'Please enter a valid URL.',
+
+            'original_url.max' =>
+                'The URL cannot be longer than 2048 characters.',
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Store Guest QR Data In Session
+        |--------------------------------------------------------------------------
+        |
+        | The QR code contains the ORIGINAL LONG URL.
+        |
+        */
+
+        $request->session()->put('guest_qr', [
+            'data' => $validated['original_url'],
+
+            'size' => 400,
+
+            'foreground_color' => '#111827',
+
+            'background_color' => '#FFFFFF',
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect To Landing Page
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect()
+            ->route('home')
+            ->with(
+                'success',
+                'QR code generated successfully.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Download Guest QR Code
+    |--------------------------------------------------------------------------
+    */
+
+    public function downloadGuest()
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Get Guest QR Data From Session
+        |--------------------------------------------------------------------------
+        */
+
+        $guestQr = session('guest_qr');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Make Sure QR Data Exists
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !is_array($guestQr) ||
+            empty($guestQr['data'])
+        ) {
+            abort(404, 'Guest QR code not found.');
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build QR Code
+        |--------------------------------------------------------------------------
+        */
+
+        $qrCode = new EndroidQrCode(
+            data: $guestQr['data'],
+
+            encoding: new Encoding('UTF-8'),
+
+            errorCorrectionLevel:
+                ErrorCorrectionLevel::High,
+
+            size:
+                (int) ($guestQr['size'] ?? 400),
+
+            margin: 10,
+
+            roundBlockSizeMode:
+                RoundBlockSizeMode::Margin,
+
+            foregroundColor:
+                $this->hexToColor(
+                    $guestQr['foreground_color'] ?? '#111827'
+                ),
+
+            backgroundColor:
+                $this->hexToColor(
+                    $guestQr['background_color'] ?? '#FFFFFF'
+                )
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate PNG
+        |--------------------------------------------------------------------------
+        */
+
+        $writer = new PngWriter();
+
+        $result = $writer->write($qrCode);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Download PNG
+        |--------------------------------------------------------------------------
+        */
+
+        return response(
+            $result->getString(),
+            200,
+            [
+                'Content-Type' => 'image/png',
+
+                'Content-Disposition' =>
+                    'attachment; filename="guest-qr-code.png"',
+            ]
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Download PNG - Authenticated User
     |--------------------------------------------------------------------------
     */
 
@@ -226,7 +389,7 @@ class QrCodeController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Download SVG
+    | Download SVG - Authenticated User
     |--------------------------------------------------------------------------
     */
 
