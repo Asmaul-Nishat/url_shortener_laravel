@@ -63,7 +63,7 @@ class ShortUrlController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | Generate unique guest short code
+            | Generate Unique Guest Short Code
             |--------------------------------------------------------------------------
             */
 
@@ -86,7 +86,7 @@ class ShortUrlController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | Store guest short URL in cache
+            | Store Guest Short URL In Cache
             |--------------------------------------------------------------------------
             |
             | Guest URLs are not stored in the database.
@@ -112,20 +112,7 @@ class ShortUrlController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | IMPORTANT
-            |--------------------------------------------------------------------------
-            |
-            | Do NOT create guest_qr here.
-            |
-            | Shortening a URL should NOT automatically show
-            | the QR Code result.
-            |
-            */
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Return to landing page
+            | Redirect To Landing Page
             |--------------------------------------------------------------------------
             */
 
@@ -217,7 +204,7 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Validate scheduled activation against expiration
+        | Validate Scheduled Activation Against Expiration
         |--------------------------------------------------------------------------
         */
 
@@ -234,7 +221,11 @@ class ShortUrlController extends Controller
                 $validated['expires_at']
             );
 
-            if ($scheduledAt->greaterThanOrEqualTo($expiresAt)) {
+            if (
+                $scheduledAt->greaterThanOrEqualTo(
+                    $expiresAt
+                )
+            ) {
 
                 return back()
                     ->withInput()
@@ -248,7 +239,7 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Generate unique short code
+        | Generate Unique Short Code
         |--------------------------------------------------------------------------
         */
 
@@ -267,7 +258,7 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Password
+        | Hash Password
         |--------------------------------------------------------------------------
         */
 
@@ -276,6 +267,7 @@ class ShortUrlController extends Controller
         if (
             !empty($validated['password'])
         ) {
+
             $hashedPassword = Hash::make(
                 $validated['password']
             );
@@ -284,7 +276,7 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Create authenticated short URL
+        | Create Authenticated Short URL
         |--------------------------------------------------------------------------
         */
 
@@ -336,7 +328,7 @@ class ShortUrlController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Redirect authenticated user
+        | Redirect Authenticated User
         |--------------------------------------------------------------------------
         */
 
@@ -383,7 +375,7 @@ class ShortUrlController extends Controller
 
     public function favorites(): View
     {
-        $shortUrls = ShortUrl::where(
+        $favoriteLinks = ShortUrl::where(
             'user_id',
             Auth::id()
         )
@@ -396,7 +388,7 @@ class ShortUrlController extends Controller
 
         return view(
             'pages.links.favorites',
-            compact('shortUrls')
+            compact('favoriteLinks')
         );
     }
 
@@ -411,15 +403,38 @@ class ShortUrlController extends Controller
         ShortUrl $shortUrl
     ): RedirectResponse {
 
+        /*
+        |--------------------------------------------------------------------------
+        | Security Check
+        |--------------------------------------------------------------------------
+        |
+        | A user can only favorite/unfavorite their own link.
+        |
+        */
+
         abort_unless(
             $shortUrl->user_id === Auth::id(),
             403
         );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Toggle Favorite Status
+        |--------------------------------------------------------------------------
+        */
+
         $shortUrl->update([
             'is_favorite' =>
                 !$shortUrl->is_favorite,
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Success Message
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
             'success',
@@ -438,7 +453,7 @@ class ShortUrlController extends Controller
 
     public function trash(): View
     {
-        $shortUrls = ShortUrl::onlyTrashed()
+        $trashedLinks = ShortUrl::onlyTrashed()
             ->where(
                 'user_id',
                 Auth::id()
@@ -448,7 +463,7 @@ class ShortUrlController extends Controller
 
         return view(
             'pages.links.trash',
-            compact('shortUrls')
+            compact('trashedLinks')
         );
     }
 
@@ -463,18 +478,45 @@ class ShortUrlController extends Controller
         ShortUrl $shortUrl
     ): RedirectResponse {
 
+        /*
+        |--------------------------------------------------------------------------
+        | Security Check
+        |--------------------------------------------------------------------------
+        */
+
         abort_unless(
             $shortUrl->user_id === Auth::id(),
             403
         );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Move Link To Trash
+        |--------------------------------------------------------------------------
+        */
+
         $shortUrl->delete();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
 
         ActivityLogger::log(
             'deleted',
             'Moved short URL to trash: ' .
             $shortUrl->short_code
         );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
             'success',
@@ -487,11 +529,17 @@ class ShortUrlController extends Controller
     |--------------------------------------------------------------------------
     | Restore
     |--------------------------------------------------------------------------
-    */
+        */
 
     public function restore(
         int $shortUrl
     ): RedirectResponse {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find Only Trashed Link Belonging To Current User
+        |--------------------------------------------------------------------------
+        */
 
         $url = ShortUrl::onlyTrashed()
             ->where(
@@ -504,13 +552,34 @@ class ShortUrlController extends Controller
             )
             ->firstOrFail();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Restore
+        |--------------------------------------------------------------------------
+        */
+
         $url->restore();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
 
         ActivityLogger::log(
             'restored',
             'Restored short URL: ' .
             $url->short_code
         );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
             'success',
@@ -529,6 +598,12 @@ class ShortUrlController extends Controller
         int $shortUrl
     ): RedirectResponse {
 
+        /*
+        |--------------------------------------------------------------------------
+        | Find Only Trashed Link Belonging To Current User
+        |--------------------------------------------------------------------------
+        */
+
         $url = ShortUrl::onlyTrashed()
             ->where(
                 'id',
@@ -540,15 +615,43 @@ class ShortUrlController extends Controller
             )
             ->firstOrFail();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Save Short Code For Activity Log
+        |--------------------------------------------------------------------------
+        */
+
         $shortCode = $url->short_code;
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Permanently Delete
+        |--------------------------------------------------------------------------
+        */
+
         $url->forceDelete();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
 
         ActivityLogger::log(
             'force_deleted',
             'Permanently deleted short URL: ' .
             $shortCode
         );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
             'success',
@@ -565,12 +668,25 @@ class ShortUrlController extends Controller
 
     public function emptyTrash(): RedirectResponse
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Get Current User's Trashed Links
+        |--------------------------------------------------------------------------
+        */
+
         $urls = ShortUrl::onlyTrashed()
             ->where(
                 'user_id',
                 Auth::id()
             )
             ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Permanently Delete Each Link
+        |--------------------------------------------------------------------------
+        */
 
         foreach ($urls as $url) {
 
@@ -582,6 +698,13 @@ class ShortUrlController extends Controller
 
             $url->forceDelete();
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
             'success',
