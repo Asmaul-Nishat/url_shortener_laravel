@@ -10,29 +10,19 @@
         content="width=device-width, initial-scale=1"
     >
 
-    <meta
-        name="csrf-token"
-        content="{{ csrf_token() }}"
-    >
+    <title>
+        URL Shortener
+    </title>
 
-    <title>URL Shortener - Smart Link Management</title>
-
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-
-    {{-- ========================================================= --}}
-    {{-- LANDING PAGE ONLY CSS --}}
-    {{-- This CSS affects ONLY welcome.blade.php --}}
-    {{-- ========================================================= --}}
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
 
     <style>
 
-        [x-cloak] {
-            display: none !important;
-        }
-
-        html {
-            scroll-behavior: smooth;
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -45,253 +35,1134 @@
                 BlinkMacSystemFont,
                 "Segoe UI",
                 sans-serif;
-            background: #ffffff;
             color: #111827;
+            background: #ffffff;
         }
 
         .landing-page {
-            overflow-x: hidden;
+            min-height: 100vh;
+            background: #ffffff;
         }
 
+
+        /* =========================================================
+           NAVBAR
+           ========================================================= */
+
+        .landing-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+
+            background: rgba(255, 255, 255, 0.94);
+
+            backdrop-filter: blur(16px);
+
+            border-bottom:
+                1px solid #e5e7eb;
+        }
+
+        .landing-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+
+            padding:
+                18px 24px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            text-decoration: none;
+            color: #111827;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #7c3aed
+                );
+
+            color: white;
+
+            font-weight: 800;
+            font-size: 20px;
+
+            box-shadow:
+                0 8px 20px rgba(37, 99, 235, 0.22);
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .brand-subtitle {
+            margin-top: 2px;
+
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .nav-link {
+            color: #4b5563;
+            text-decoration: none;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            transition:
+                color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        .nav-login {
+            color: #374151;
+        }
+
+        .nav-register {
+            padding:
+                10px 17px;
+
+            border-radius: 10px;
+
+            background: #111827;
+            color: white;
+        }
+
+        .nav-register:hover {
+            color: white;
+            background: #1f2937;
+        }
+
+        .mobile-menu-button {
+            display: none;
+
+            border: 0;
+            background: transparent;
+
+            font-size: 25px;
+
+            cursor: pointer;
+        }
+
+
+        /* =========================================================
+           HERO
+           ========================================================= */
+
         .hero-gradient {
+            position: relative;
+            overflow: hidden;
+
             background:
                 radial-gradient(
-                    circle at 10% 10%,
-                    rgba(99, 102, 241, 0.12),
+                    circle at 10% 20%,
+                    rgba(37, 99, 235, 0.10),
                     transparent 30%
                 ),
                 radial-gradient(
-                    circle at 90% 20%,
-                    rgba(59, 130, 246, 0.10),
+                    circle at 90% 10%,
+                    rgba(124, 58, 237, 0.12),
                     transparent 30%
                 ),
                 linear-gradient(
                     180deg,
-                    #f8faff 0%,
+                    #f8fbff 0%,
                     #ffffff 100%
                 );
         }
 
+        .hero {
+            max-width: 1200px;
+
+            margin: 0 auto;
+
+            padding:
+                85px 24px 80px;
+
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+
+            align-items: center;
+            gap: 8px;
+
+            padding:
+                7px 13px;
+
+            border-radius: 999px;
+
+            background: #eff6ff;
+
+            color: #2563eb;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            border:
+                1px solid #dbeafe;
+        }
+
+        .hero-title {
+            max-width: 850px;
+
+            margin:
+                22px auto 0;
+
+            font-size:
+                clamp(38px, 6vw, 68px);
+
+            line-height: 1.05;
+
+            letter-spacing:
+                -0.045em;
+
+            font-weight: 850;
+
+            color: #111827;
+        }
+
+        .hero-title span {
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #7c3aed
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+        }
+
+        .hero-description {
+            max-width: 700px;
+
+            margin:
+                24px auto 0;
+
+            font-size: 18px;
+            line-height: 1.7;
+
+            color: #6b7280;
+        }
+
+
+        /* =========================================================
+           GENERATOR CARD
+           ========================================================= */
+
         .generator-card {
-            border: 1px solid #e5e7eb;
-            background: rgba(255, 255, 255, 0.96);
-            border-radius: 24px;
+            max-width: 900px;
+
+            margin:
+                42px auto 0;
+
+            padding: 10px;
+
+            border-radius: 20px;
+
+            background: white;
+
+            border:
+                1px solid #e5e7eb;
+
             box-shadow:
-                0 25px 60px rgba(15, 23, 42, 0.10),
-                0 5px 15px rgba(15, 23, 42, 0.05);
-            backdrop-filter: blur(12px);
+                0 25px 70px rgba(15, 23, 42, 0.10);
+        }
+
+        .generator-inner {
+            padding: 25px;
+
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #ffffff,
+                    #f8fafc
+                );
+        }
+
+        .url-input-wrapper {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding:
+                7px 7px 7px 18px;
+
+            border:
+                1px solid #d1d5db;
+
+            border-radius: 14px;
+
+            background: white;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .url-input-wrapper:focus-within {
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(37, 99, 235, 0.10);
+        }
+
+        .url-icon {
+            color: #6b7280;
+            font-size: 18px;
         }
 
         .url-input {
-            width: 100%;
-            border: 1px solid #e5e7eb;
-            background: #f9fafb;
-            border-radius: 14px;
-            padding: 16px 18px 16px 48px;
-            font-size: 15px;
-            outline: none;
-            transition: all .2s ease;
-            box-sizing: border-box;
+            flex: 1;
+
+            min-width: 0;
+
+            border: 0;
+            outline: 0;
+
+            background: transparent;
+
+            font-size: 16px;
+
+            color: #111827;
         }
 
-        .url-input:focus {
-            border-color: #6366f1;
-            background: #ffffff;
-            box-shadow:
-                0 0 0 4px rgba(99, 102, 241, 0.10);
+        .url-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .generator-buttons {
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 12px;
+
+            margin-top: 14px;
+        }
+
+        .primary-generator-button,
+        .qr-generator-button {
+            min-height: 52px;
+
+            border: 0;
+
+            border-radius: 12px;
+
+            font-size: 15px;
+
+            font-weight: 750;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
         }
 
         .primary-generator-button {
-            min-height: 52px;
-            border: 0;
-            border-radius: 14px;
-            padding: 0 28px;
             background:
                 linear-gradient(
                     135deg,
-                    #4f46e5,
-                    #6366f1
+                    #2563eb,
+                    #4f46e5
                 );
-            color: white;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s ease;
-            box-shadow:
-                0 10px 25px rgba(79, 70, 229, 0.25);
-        }
 
-        .primary-generator-button:hover {
-            transform: translateY(-1px);
+            color: white;
+
             box-shadow:
-                0 14px 30px rgba(79, 70, 229, 0.32);
+                0 10px 24px
+                rgba(37, 99, 235, 0.22);
         }
 
         .qr-generator-button {
-            min-height: 52px;
-            border: 1px solid #e0e7ff;
-            border-radius: 14px;
-            background: #f8faff;
-            color: #4f46e5;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s ease;
+            background: #111827;
+
+            color: white;
+
+            box-shadow:
+                0 10px 24px
+                rgba(17, 24, 39, 0.16);
         }
 
+        .primary-generator-button:hover,
         .qr-generator-button:hover {
-            background: #eef2ff;
-            border-color: #c7d2fe;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+        }
+
+        .generator-note {
+            margin-top: 15px;
+
+            font-size: 12px;
+
+            color: #9ca3af;
+
+            text-align: center;
+        }
+
+
+        /* =========================================================
+           ALERT
+           ========================================================= */
+
+        .landing-alert {
+            max-width: 900px;
+
+            margin:
+                20px auto 0;
+
+            padding:
+                13px 16px;
+
+            border-radius: 12px;
+
+            background: #ecfdf5;
+
+            border:
+                1px solid #a7f3d0;
+
+            color: #047857;
+
+            font-size: 14px;
+
+            text-align: left;
+        }
+
+
+        /* =========================================================
+           RESULT SECTION
+           ========================================================= */
+
+        .result-section {
+            max-width: 900px;
+
+            margin: 35px auto 0;
+
+            text-align: left;
         }
 
         .result-card {
-            border: 1px solid #dbeafe;
+            padding: 24px;
+
+            border:
+                1px solid #dbeafe;
+
+            border-radius: 18px;
+
             background:
                 linear-gradient(
                     135deg,
-                    #ffffff,
-                    #f8faff
+                    #f8fbff,
+                    #ffffff
                 );
-            border-radius: 24px;
+
             box-shadow:
-                0 20px 50px rgba(15, 23, 42, 0.08);
+                0 15px 40px
+                rgba(37, 99, 235, 0.08);
         }
 
-        .short-url-box {
+        .result-header {
             display: flex;
-            align-items: stretch;
-            gap: 10px;
-            padding: 6px;
-            border: 1px solid #e5e7eb;
-            background: #f9fafb;
-            border-radius: 15px;
-        }
 
-        .short-url-input {
-            min-width: 0;
-            flex: 1;
-            border: 0;
-            background: transparent;
-            padding: 12px;
-            color: #4f46e5;
-            font-size: 15px;
-            font-weight: 700;
-            outline: none;
-        }
+            align-items: center;
 
-        .copy-button {
-            flex-shrink: 0;
-            border: 0;
-            border-radius: 11px;
-            background: #111827;
-            color: white;
-            padding: 0 20px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s ease;
-        }
+            gap: 12px;
 
-        .copy-button:hover {
-            background: #1f2937;
+            margin-bottom: 18px;
         }
 
         .success-icon {
             width: 42px;
             height: 42px;
+
+            border-radius: 50%;
+
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
+
             background: #dcfce7;
+
             color: #16a34a;
+
+            font-size: 20px;
             font-weight: 800;
         }
 
+        .result-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .result-subtitle {
+            margin-top: 3px;
+
+            font-size: 13px;
+
+            color: #6b7280;
+        }
+
+        .short-url-box {
+            display: flex;
+
+            gap: 10px;
+
+            padding: 7px;
+
+            border:
+                1px solid #d1d5db;
+
+            border-radius: 12px;
+
+            background: white;
+        }
+
+        .short-url-input {
+            flex: 1;
+
+            min-width: 0;
+
+            border: 0;
+            outline: 0;
+
+            background: transparent;
+
+            padding:
+                9px 11px;
+
+            color: #2563eb;
+
+            font-size: 15px;
+            font-weight: 650;
+        }
+
+        .copy-button {
+            border: 0;
+
+            border-radius: 9px;
+
+            padding:
+                0 17px;
+
+            background: #2563eb;
+
+            color: white;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
         .qr-result-box {
-            border: 1px solid #e0e7ff;
-            background: #eef2ff;
-            border-radius: 16px;
-            padding: 18px;
+            margin-top: 18px;
+
+            padding: 20px;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 14px;
+
+            background: white;
+        }
+
+        .qr-result-title {
+            font-size: 15px;
+            font-weight: 800;
+
+            color: #111827;
+        }
+
+        .qr-result-description {
+            margin-top: 5px;
+
+            color: #6b7280;
+
+            font-size: 13px;
         }
 
         .download-qr-button {
             display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border-radius: 12px;
-            background: #4f46e5;
+
+            margin-top: 14px;
+
+            padding:
+                10px 16px;
+
+            border-radius: 9px;
+
+            background: #111827;
+
             color: white;
-            padding: 12px 20px;
-            font-size: 14px;
-            font-weight: 700;
+
             text-decoration: none;
-            transition: all .2s ease;
+
+            font-size: 13px;
+
+            font-weight: 700;
         }
 
-        .download-qr-button:hover {
-            background: #4338ca;
-            transform: translateY(-1px);
+
+        /* =========================================================
+           TRUST
+           ========================================================= */
+
+        .trust-section {
+            max-width: 900px;
+
+            margin:
+                30px auto 0;
+
+            display: flex;
+
+            justify-content: center;
+
+            gap: 30px;
+
+            flex-wrap: wrap;
+
+            color: #6b7280;
+
+            font-size: 13px;
+        }
+
+
+        /* =========================================================
+           FEATURES
+           ========================================================= */
+
+        .features-section {
+            max-width: 1200px;
+
+            margin: 0 auto;
+
+            padding:
+                95px 24px;
+        }
+
+        .section-heading {
+            max-width: 700px;
+
+            margin: 0 auto 50px;
+
+            text-align: center;
+        }
+
+        .section-label {
+            color: #2563eb;
+
+            font-size: 13px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing:
+                0.08em;
+        }
+
+        .section-title {
+            margin-top: 10px;
+
+            font-size:
+                clamp(28px, 4vw, 42px);
+
+            font-weight: 850;
+
+            letter-spacing:
+                -0.03em;
+
+            color: #111827;
+        }
+
+        .section-description {
+            margin-top: 14px;
+
+            color: #6b7280;
+
+            line-height: 1.7;
+        }
+
+        .features-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 20px;
         }
 
         .feature-card {
-            border: 1px solid #e5e7eb;
-            background: white;
-            border-radius: 20px;
             padding: 28px;
-            transition: all .25s ease;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 18px;
+
+            background: white;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
+
             box-shadow:
-                0 20px 40px rgba(15, 23, 42, 0.08);
-            border-color: #dbeafe;
+                0 20px 45px
+                rgba(15, 23, 42, 0.08);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 13px;
+
+            background: #eff6ff;
+
+            color: #2563eb;
+
+            font-size: 21px;
+        }
+
+        .feature-title {
+            margin-top: 18px;
+
+            font-size: 17px;
+
+            font-weight: 800;
+        }
+
+        .feature-description {
+            margin-top: 8px;
+
+            color: #6b7280;
+
+            font-size: 14px;
+
+            line-height: 1.7;
+        }
+
+
+        /* =========================================================
+           ANALYTICS PREVIEW
+           ========================================================= */
+
+        .analytics-section {
+            background: #f8fafc;
+
+            padding:
+                95px 24px;
+        }
+
+        .analytics-container {
+            max-width: 1100px;
+
+            margin: 0 auto;
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 60px;
+
+            align-items: center;
+        }
+
+        .analytics-copy h2 {
+            margin-top: 10px;
+
+            font-size:
+                clamp(30px, 4vw, 44px);
+
+            line-height: 1.15;
+
+            font-weight: 850;
+        }
+
+        .analytics-copy p {
+            margin-top: 18px;
+
+            color: #6b7280;
+
+            line-height: 1.8;
+        }
+
+        .analytics-card {
+            padding: 24px;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 18px;
+
+            background: white;
+
+            box-shadow:
+                0 20px 50px
+                rgba(15, 23, 42, 0.07);
+        }
+
+        .analytics-card-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+        .analytics-card-title {
+            font-weight: 800;
+        }
+
+        .analytics-period {
+            padding:
+                6px 9px;
+
+            border-radius: 8px;
+
+            background: #f3f4f6;
+
+            color: #6b7280;
+
+            font-size: 11px;
+        }
+
+        .analytics-number {
+            margin-top: 24px;
+
+            font-size: 34px;
+
+            font-weight: 850;
+        }
+
+        .analytics-growth {
+            margin-top: 4px;
+
+            color: #16a34a;
+
+            font-size: 13px;
+
+            font-weight: 700;
+        }
+
+        .analytics-bars {
+            height: 150px;
+
+            margin-top: 25px;
+
+            display: flex;
+
+            align-items: end;
+
+            gap: 9px;
+        }
+
+        .analytics-bar {
+            flex: 1;
+
+            border-radius:
+                7px 7px 0 0;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #60a5fa,
+                    #2563eb
+                );
+        }
+
+
+        /* =========================================================
+           HOW IT WORKS
+           ========================================================= */
+
+        .steps-section {
+            max-width: 1100px;
+
+            margin: 0 auto;
+
+            padding:
+                95px 24px;
+        }
+
+        .steps-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 20px;
         }
 
         .step-card {
             position: relative;
+
+            padding: 30px;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 18px;
+
+            background: white;
         }
 
         .step-number {
-            width: 60px;
-            height: 60px;
-            margin: auto;
+            width: 42px;
+            height: 42px;
+
             display: flex;
+
             align-items: center;
             justify-content: center;
-            border-radius: 18px;
+
+            border-radius: 50%;
+
+            background: #111827;
+
+            color: white;
+
+            font-weight: 800;
+        }
+
+        .step-title {
+            margin-top: 18px;
+
+            font-size: 17px;
+
+            font-weight: 800;
+        }
+
+        .step-description {
+            margin-top: 8px;
+
+            color: #6b7280;
+
+            font-size: 14px;
+
+            line-height: 1.7;
+        }
+
+
+        /* =========================================================
+           CTA
+           ========================================================= */
+
+        .cta-section {
+            max-width: 1100px;
+
+            margin:
+                0 auto 90px;
+
+            padding:
+                55px 30px;
+
+            border-radius: 24px;
+
+            text-align: center;
+
             background:
                 linear-gradient(
                     135deg,
-                    #4f46e5,
-                    #6366f1
+                    #111827,
+                    #1e3a8a
                 );
+
             color: white;
-            font-size: 20px;
-            font-weight: 800;
-            box-shadow:
-                0 12px 25px rgba(79, 70, 229, 0.22);
         }
 
-        @media (max-width: 640px) {
+        .cta-title {
+            font-size:
+                clamp(28px, 4vw, 42px);
+
+            font-weight: 850;
+        }
+
+        .cta-description {
+            max-width: 600px;
+
+            margin:
+                14px auto 0;
+
+            color: #dbeafe;
+
+            line-height: 1.7;
+        }
+
+        .cta-button {
+            display: inline-flex;
+
+            margin-top: 25px;
+
+            padding:
+                12px 20px;
+
+            border-radius: 10px;
+
+            background: white;
+
+            color: #111827;
+
+            text-decoration: none;
+
+            font-weight: 800;
+        }
+
+
+        /* =========================================================
+           FOOTER
+           ========================================================= */
+
+        .landing-footer {
+            border-top:
+                1px solid #e5e7eb;
+
+            padding:
+                30px 24px;
+
+            color: #6b7280;
+
+            font-size: 13px;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+
+            margin: 0 auto;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 20px;
+        }
+
+
+        /* =========================================================
+           RESPONSIVE
+           ========================================================= */
+
+        @media (max-width: 900px) {
+
+            .features-grid {
+                grid-template-columns:
+                    1fr 1fr;
+            }
+
+            .analytics-container {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .steps-grid {
+                grid-template-columns:
+                    1fr 1fr;
+            }
+        }
+
+
+        @media (max-width: 700px) {
+
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-button {
+                display: block;
+            }
+
+            .hero {
+                padding:
+                    65px 18px;
+            }
+
+            .hero-description {
+                font-size: 16px;
+            }
+
+            .generator-inner {
+                padding: 15px;
+            }
+
+            .url-input-wrapper {
+                padding:
+                    13px 14px;
+            }
+
+            .generator-buttons {
+                grid-template-columns:
+                    1fr;
+            }
 
             .short-url-box {
                 flex-direction: column;
-                padding: 8px;
             }
 
             .copy-button {
-                min-height: 46px;
+                min-height: 44px;
             }
 
-            .primary-generator-button,
-            .qr-generator-button {
-                width: 100%;
+            .features-grid {
+                grid-template-columns:
+                    1fr;
             }
 
+            .steps-grid {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+            }
         }
 
     </style>
@@ -299,41 +1170,38 @@
 </head>
 
 
-<body class="landing-page">
+<body>
 
-
-{{-- ========================================================= --}}
-{{-- NAVBAR --}}
-{{-- ========================================================= --}}
-
-<header
-    x-data="{ open: false }"
-    class="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur"
+<div
+    class="landing-page"
+    x-data="{ mobileMenu: false }"
 >
 
-    <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
 
-        <div class="flex h-20 items-center justify-between">
+    {{-- =========================================================
+         NAVBAR
+         ========================================================= --}}
 
-            {{-- Logo --}}
+    <nav class="landing-nav">
+
+        <div class="landing-nav-inner">
+
             <a
                 href="{{ route('home') }}"
-                class="flex items-center gap-3"
+                class="brand"
             >
 
-                <div
-                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-xl font-bold text-white shadow-sm"
-                >
+                <div class="brand-logo">
                     Q
                 </div>
 
                 <div>
 
-                    <div class="text-lg font-bold tracking-tight text-gray-900">
+                    <div class="brand-title">
                         URL Shortener
                     </div>
 
-                    <div class="text-xs text-gray-500">
+                    <div class="brand-subtitle">
                         Smart Link Management
                     </div>
 
@@ -342,66 +1210,45 @@
             </a>
 
 
-            {{-- Desktop navigation --}}
-            <nav class="hidden items-center gap-8 md:flex">
+            <div class="nav-links">
 
                 <a
                     href="#features"
-                    class="text-sm font-medium text-gray-600 hover:text-indigo-600"
+                    class="nav-link"
                 >
                     Features
                 </a>
 
                 <a
                     href="#how-it-works"
-                    class="text-sm font-medium text-gray-600 hover:text-indigo-600"
+                    class="nav-link"
                 >
                     How It Works
                 </a>
-
-                <a
-                    href="#analytics"
-                    class="text-sm font-medium text-gray-600 hover:text-indigo-600"
-                >
-                    Analytics
-                </a>
-
-            </nav>
-
-
-            {{-- Auth --}}
-            <div class="hidden items-center gap-4 md:flex">
 
                 @auth
 
                     <a
                         href="{{ route('dashboard') }}"
-                        class="text-sm font-semibold text-gray-700 hover:text-indigo-600"
+                        class="nav-link"
                     >
                         Dashboard
-                    </a>
-
-                    <a
-                        href="{{ route('links.create') }}"
-                        class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-                    >
-                        Create Link
                     </a>
 
                 @else
 
                     <a
                         href="{{ route('login') }}"
-                        class="text-sm font-semibold text-gray-700 hover:text-indigo-600"
+                        class="nav-link nav-login"
                     >
                         Login
                     </a>
 
                     <a
                         href="{{ route('register') }}"
-                        class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+                        class="nav-link nav-register"
                     >
-                        Sign Up
+                        Get Started
                     </a>
 
                 @endauth
@@ -409,169 +1256,117 @@
             </div>
 
 
-            {{-- Mobile --}}
             <button
                 type="button"
-                @click="open = !open"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700 md:hidden"
+                class="mobile-menu-button"
+                @click="mobileMenu = !mobileMenu"
             >
-
-                <svg
-                    x-show="!open"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 6h16M4 12h16M4 18h16"
-                    />
-                </svg>
-
-                <svg
-                    x-show="open"
-                    x-cloak
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                    />
-                </svg>
-
+                ☰
             </button>
 
         </div>
 
 
-        {{-- Mobile navigation --}}
+        {{-- Mobile Menu --}}
+
         <div
-            x-show="open"
+            x-show="mobileMenu"
             x-cloak
-            class="border-t border-gray-100 py-5 md:hidden"
+            class="px-6 pb-5"
         >
 
-            <nav class="flex flex-col gap-4">
+            <div class="flex flex-col gap-4">
 
-                <a href="#features" class="text-sm text-gray-600">
+                <a
+                    href="#features"
+                    class="nav-link"
+                    @click="mobileMenu = false"
+                >
                     Features
                 </a>
 
-                <a href="#how-it-works" class="text-sm text-gray-600">
+                <a
+                    href="#how-it-works"
+                    class="nav-link"
+                    @click="mobileMenu = false"
+                >
                     How It Works
                 </a>
 
-                <a href="#analytics" class="text-sm text-gray-600">
-                    Analytics
-                </a>
+                @auth
 
-                @guest
+                    <a
+                        href="{{ route('dashboard') }}"
+                        class="nav-link"
+                    >
+                        Dashboard
+                    </a>
+
+                @else
 
                     <a
                         href="{{ route('login') }}"
-                        class="text-sm font-semibold text-gray-700"
+                        class="nav-link"
                     >
                         Login
                     </a>
 
                     <a
                         href="{{ route('register') }}"
-                        class="rounded-lg bg-indigo-600 px-5 py-3 text-center text-sm font-semibold text-white"
+                        class="nav-link"
                     >
-                        Sign Up
+                        Get Started
                     </a>
 
-                @else
-
-                    <a
-                        href="{{ route('dashboard') }}"
-                        class="text-sm font-semibold text-gray-700"
-                    >
-                        Dashboard
-                    </a>
-
-                @endguest
-
-            </nav>
-
-        </div>
-
-    </div>
-
-</header>
-
-
-
-{{-- ========================================================= --}}
-{{-- HERO --}}
-{{-- ========================================================= --}}
-
-<section class="hero-gradient relative overflow-hidden">
-
-    <div class="mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-28">
-
-        <div class="mx-auto max-w-4xl text-center">
-
-            {{-- Badge --}}
-            <div
-                class="mb-7 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-4 py-2 text-sm font-medium text-indigo-700 shadow-sm"
-            >
-
-                <span class="h-2 w-2 rounded-full bg-indigo-600"></span>
-
-                Simple. Fast. Powerful.
+                @endauth
 
             </div>
 
+        </div>
 
-            {{-- Heading --}}
-            <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+    </nav>
 
-                Shorten URLs.
 
-                <span class="text-indigo-600">
-                    Share Smarter.
-                </span>
+    {{-- =========================================================
+         HERO
+         ========================================================= --}}
+
+    <section class="hero-gradient">
+
+        <div class="hero">
+
+            <div class="hero-badge">
+                ⚡ Fast • Simple • Powerful
+            </div>
+
+
+            <h1 class="hero-title">
+
+                Turn Long URLs Into
+                <span>Smart Links</span>
 
             </h1>
 
 
-            {{-- Description --}}
-            <p class="mx-auto mt-6 max-w-2xl text-base leading-7 text-gray-600 sm:text-lg">
+            <p class="hero-description">
 
-                Create short, memorable links in seconds.
-                Generate QR codes, track clicks, manage your links,
-                and understand your audience from one powerful platform.
+                Create short, shareable links and QR codes in seconds.
+                Track performance and manage all your links from one
+                powerful platform.
 
             </p>
 
 
+            {{-- =====================================================
+                 URL GENERATOR
+                 ===================================================== --}}
 
-            {{-- ================================================= --}}
-            {{-- URL GENERATOR --}}
-            {{-- ================================================= --}}
+            <div class="generator-card">
 
-            <div
-                class="mx-auto mt-10 max-w-4xl"
-                x-data="{
-                    url: @js(old('original_url', '')),
-                    copied: false
-                }"
-            >
+                <div class="generator-inner">
 
-                <div class="generator-card p-4 sm:p-5">
+                    {{-- Short URL Form --}}
 
-                    {{-- Main Short URL Form --}}
                     <form
                         method="POST"
                         action="{{ route('links.store') }}"
@@ -579,38 +1374,25 @@
 
                         @csrf
 
-                        <div class="flex flex-col gap-3 sm:flex-row">
+                        <div class="url-input-wrapper">
 
-                            <div class="relative flex-1">
+                            <span class="url-icon">
+                                🔗
+                            </span>
 
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
+                            <input
+                                type="url"
+                                name="original_url"
+                                required
+                                value="{{ old('original_url') }}"
+                                placeholder="Paste your long URL here..."
+                                class="url-input"
+                            >
 
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M13.828 10.172a4 4 0 015.656 0l.344.344a4 4 0 010 5.656l-3.172 3.172a4 4 0 01-5.656 0l-.344-.344a4 4 0 010-5.656m3.172-3.172a4 4 0 00-5.656 0L5 13.344a4 4 0 000 5.656l.344.344a4 4 0 005.656 0l3.172-3.172"
-                                    />
+                        </div>
 
-                                </svg>
 
-                                <input
-                                    type="url"
-                                    name="original_url"
-                                    x-model="url"
-                                    placeholder="Paste your long URL here..."
-                                    required
-                                    class="url-input"
-                                >
-
-                            </div>
-
+                        <div class="generator-buttons">
 
                             <button
                                 type="submit"
@@ -619,17 +1401,33 @@
                                 Shorten URL
                             </button>
 
+
+                            {{-- QR Form --}}
+
+                            <button
+                                type="button"
+                                class="qr-generator-button"
+                                @click="
+                                    document
+                                        .getElementById('guest-qr-form')
+                                        .submit()
+                                "
+                            >
+                                Generate QR Code
+                            </button>
+
                         </div>
 
                     </form>
 
 
+                    {{-- Separate QR Form --}}
 
-                    {{-- QR Form --}}
                     <form
+                        id="guest-qr-form"
                         method="POST"
                         action="{{ route('qr-codes.guest.generate') }}"
-                        class="mt-3"
+                        style="display:none;"
                     >
 
                         @csrf
@@ -637,637 +1435,477 @@
                         <input
                             type="hidden"
                             name="original_url"
-                            :value="url"
+                            id="guest-qr-url"
                         >
-
-                        <button
-                            type="submit"
-                            class="qr-generator-button flex w-full items-center justify-center gap-2"
-                        >
-
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 4h3m0 0v3m0-3h3m-3 0v-3"
-                                />
-
-                            </svg>
-
-                            Generate QR Code
-
-                        </button>
 
                     </form>
 
-                </div>
 
+                    <p class="generator-note">
 
+                        No registration required for basic URL shortening
+                        and QR generation.
 
-                {{-- Validation Error --}}
-                @error('original_url')
-
-                    <p class="mt-3 text-left text-sm font-medium text-red-600">
-                        {{ $message }}
                     </p>
 
-                @enderror
-
-
-                <p class="mt-4 text-sm text-gray-500">
-
-                    No registration required to create a basic short URL.
-
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-{{-- ========================================================= --}}
-{{-- GENERATED RESULT --}}
-{{-- ========================================================= --}}
-
-@if(session('guest_short_url') || session('short_url') || session('guest_qr'))
-
-<section class="bg-white px-5 py-12 sm:px-6 lg:px-8">
-
-    <div class="mx-auto max-w-3xl">
-
-        <div class="result-card overflow-hidden">
-
-            <div class="border-b border-gray-100 px-6 py-5 sm:px-8">
-
-                <div class="flex items-center gap-4">
-
-                    <div class="success-icon">
-
-                        ✓
-
-                    </div>
-
-                    <div>
-
-                        <h2 class="text-lg font-bold text-gray-900">
-
-                            Your result is ready
-
-                        </h2>
-
-                        <p class="mt-1 text-sm text-gray-500">
-
-                            Your URL has been processed successfully.
-
-                        </p>
-
-                    </div>
-
                 </div>
 
             </div>
 
 
-            <div class="space-y-6 p-6 sm:p-8">
+            {{-- =====================================================
+                 VALIDATION ERRORS
+                 ===================================================== --}}
+
+            @if($errors->any())
+
+                <div class="landing-alert">
+
+                    <ul class="m-0 list-disc pl-5">
+
+                        @foreach($errors->all() as $error)
+
+                            <li>
+                                {{ $error }}
+                            </li>
+
+                        @endforeach
+
+                    </ul>
+
+                </div>
+
+            @endif
 
 
-                {{-- ================================================= --}}
-                {{-- SHORT URL --}}
-                {{-- ================================================= --}}
+            {{-- =====================================================
+                 SUCCESS MESSAGE
+                 ===================================================== --}}
 
-                @if(session('guest_short_url') || session('short_url'))
+            @if(session('success'))
 
-                    <div>
+                <div class="landing-alert">
 
-                        <label class="mb-2 block text-sm font-bold text-gray-700">
+                    {{ session('success') }}
 
-                            Your Short URL
+                </div>
 
-                        </label>
-
-
-                        <div
-                            class="short-url-box"
-                            x-data="{ copied: false }"
-                        >
-
-                            <input
-                                id="generated-short-url"
-                                type="text"
-                                readonly
-                                value="{{ session('guest_short_url') ?? session('short_url') }}"
-                                class="short-url-input"
-                            >
+            @endif
 
 
-                            <button
-                                type="button"
-                                class="copy-button"
-                                @click="
-                                    navigator.clipboard.writeText(
-                                        document.getElementById('generated-short-url').value
-                                    ).then(() => {
-                                        copied = true;
-                                        setTimeout(() => copied = false, 2000);
-                                    });
-                                "
-                            >
+            {{-- =====================================================
+                 GENERATED RESULT
+                 ===================================================== --}}
 
-                                <span x-text="copied ? 'Copied!' : 'Copy'">
-                                    Copy
-                                </span>
+            @if(
+                session('guest_short_url') ||
+                session('short_url') ||
+                session('guest_qr')
+            )
 
-                            </button>
+                <div class="result-section">
 
-                        </div>
+                    <div class="result-card">
 
+                        <div class="result-header">
 
-                        <div class="mt-3 flex items-center gap-2 text-sm text-green-600">
-
-                            <span>✓</span>
-
-                            <span>
-                                Short URL created successfully.
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                @endif
-
-
-
-                {{-- ================================================= --}}
-                {{-- QR RESULT --}}
-                {{-- ================================================= --}}
-
-                @if(session('guest_qr'))
-
-                    <div class="qr-result-box">
-
-                        <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="success-icon">
+                                ✓
+                            </div>
 
                             <div>
 
-                                <div class="flex items-center gap-2">
+                                <div class="result-title">
+                                    Your result is ready
+                                </div>
 
-                                    <div class="text-lg">
-                                        ▦
-                                    </div>
+                                <div class="result-subtitle">
+                                    Your generated content is ready to use.
+                                </div>
 
-                                    <h3 class="font-bold text-gray-900">
-                                        QR Code Ready
-                                    </h3>
+                            </div>
+
+                        </div>
+
+
+                        {{-- =================================================
+                             SHORT URL RESULT
+                             ================================================= --}}
+
+                        @if(
+                            session('guest_short_url') ||
+                            session('short_url')
+                        )
+
+                            <div>
+
+                                <div class="mb-2 text-sm font-semibold text-gray-700">
+                                    Your Short URL
+                                </div>
+
+                                <div class="short-url-box">
+
+                                    <input
+                                        id="generated-short-url"
+                                        type="text"
+                                        readonly
+                                        value="{{ session('guest_short_url') ?? session('short_url') }}"
+                                        class="short-url-input"
+                                    >
+
+
+                                    <button
+                                        type="button"
+                                        class="copy-button"
+                                        x-data="{ copied: false }"
+                                        @click="
+                                            navigator.clipboard
+                                                .writeText(
+                                                    document
+                                                        .getElementById(
+                                                            'generated-short-url'
+                                                        )
+                                                        .value
+                                                )
+                                                .then(() => {
+                                                    copied = true;
+
+                                                    setTimeout(
+                                                        () => copied = false,
+                                                        2000
+                                                    );
+                                                });
+                                        "
+                                    >
+
+                                        <span
+                                            x-text="
+                                                copied
+                                                    ? 'Copied!'
+                                                    : 'Copy'
+                                            "
+                                        >
+                                            Copy
+                                        </span>
+
+                                    </button>
 
                                 </div>
 
-                                <p class="mt-1 text-sm text-gray-600">
+                            </div>
+
+                        @endif
+
+
+                        {{-- =================================================
+                             QR RESULT
+                             ================================================= --}}
+
+                        @if(session('guest_qr'))
+
+                            <div class="qr-result-box">
+
+                                <div class="qr-result-title">
+                                    QR Code Ready
+                                </div>
+
+                                <div class="qr-result-description">
 
                                     Your QR code contains the original URL.
 
-                                </p>
+                                </div>
+
+
+                                <a
+                                    href="{{ route('qr-codes.guest.download') }}"
+                                    class="download-qr-button"
+                                >
+                                    Download QR Code
+                                </a>
 
                             </div>
 
-
-                            <a
-                                href="{{ route('qr-codes.guest.download') }}"
-                                class="download-qr-button"
-                            >
-
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"
-                                    />
-
-                                </svg>
-
-                                Download QR Code
-
-                            </a>
-
-                        </div>
+                        @endif
 
                     </div>
 
-                @endif
+                </div>
 
+            @endif
+
+
+            {{-- =====================================================
+                 TRUST
+                 ===================================================== --}}
+
+            <div class="trust-section">
+
+                <span>
+                    ✓ No registration required
+                </span>
+
+                <span>
+                    ✓ Fast URL generation
+                </span>
+
+                <span>
+                    ✓ QR code support
+                </span>
+
+                <span>
+                    ✓ Secure platform
+                </span>
 
             </div>
 
         </div>
 
-    </div>
-
-</section>
-
-@endif
+    </section>
 
 
+    {{-- =========================================================
+         FEATURES
+         ========================================================= --}}
 
-{{-- ========================================================= --}}
-{{-- TRUST --}}
-{{-- ========================================================= --}}
+    <section
+        id="features"
+        class="features-section"
+    >
 
-<section class="border-y border-gray-100 bg-white">
+        <div class="section-heading">
 
-    <div class="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8">
-
-        <div class="grid gap-10 text-center sm:grid-cols-3">
-
-            <div>
-
-                <div class="text-3xl font-bold text-gray-900">
-                    Fast
-                </div>
-
-                <p class="mt-2 text-sm text-gray-500">
-                    Create short links in seconds.
-                </p>
-
-            </div>
-
-
-            <div>
-
-                <div class="text-3xl font-bold text-gray-900">
-                    Secure
-                </div>
-
-                <p class="mt-2 text-sm text-gray-500">
-                    Keep your links organized and protected.
-                </p>
-
-            </div>
-
-
-            <div>
-
-                <div class="text-3xl font-bold text-gray-900">
-                    Powerful
-                </div>
-
-                <p class="mt-2 text-sm text-gray-500">
-                    Understand clicks and audience activity.
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-{{-- ========================================================= --}}
-{{-- FEATURES --}}
-{{-- ========================================================= --}}
-
-<section
-    id="features"
-    class="bg-gray-50 px-5 py-20 sm:px-6 lg:px-8"
->
-
-    <div class="mx-auto max-w-7xl">
-
-        <div class="mx-auto max-w-2xl text-center">
-
-            <p class="text-sm font-bold uppercase tracking-wider text-indigo-600">
+            <div class="section-label">
                 Powerful Features
-            </p>
+            </div>
 
-            <h2 class="mt-3 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                Everything you need to manage your links
+            <h2 class="section-title">
+                Everything you need to manage links
             </h2>
 
-            <p class="mt-4 text-base leading-7 text-gray-600">
-                From simple URL shortening to advanced analytics,
-                everything is available in one place.
+            <p class="section-description">
+
+                Create, organize, analyze and share your links
+                from a single platform.
+
             </p>
 
         </div>
 
 
-        <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
+        <div class="features-grid">
 
             <div class="feature-card">
 
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                <div class="feature-icon">
                     🔗
                 </div>
 
-                <h3 class="mt-6 text-lg font-bold text-gray-900">
-                    Short Links
-                </h3>
+                <div class="feature-title">
+                    Short URLs
+                </div>
 
-                <p class="mt-3 text-sm leading-6 text-gray-600">
-                    Turn long URLs into clean and memorable links.
-                </p>
+                <div class="feature-description">
+
+                    Transform long URLs into clean,
+                    memorable and shareable links.
+
+                </div>
 
             </div>
 
 
             <div class="feature-card">
 
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                <div class="feature-icon">
                     ▦
                 </div>
 
-                <h3 class="mt-6 text-lg font-bold text-gray-900">
+                <div class="feature-title">
                     QR Codes
-                </h3>
-
-                <p class="mt-3 text-sm leading-6 text-gray-600">
-                    Generate downloadable QR codes for your URLs.
-                </p>
-
-            </div>
-
-
-            <div class="feature-card">
-
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600">
-                    ↗
                 </div>
 
-                <h3 class="mt-6 text-lg font-bold text-gray-900">
-                    Analytics
-                </h3>
+                <div class="feature-description">
 
-                <p class="mt-3 text-sm leading-6 text-gray-600">
-                    Track clicks and understand your link performance.
-                </p>
+                    Generate downloadable QR codes
+                    for your links and campaigns.
+
+                </div>
 
             </div>
 
 
             <div class="feature-card">
 
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                <div class="feature-icon">
+                    ◔
+                </div>
+
+                <div class="feature-title">
+                    Analytics
+                </div>
+
+                <div class="feature-description">
+
+                    Understand clicks, devices,
+                    browsers and traffic sources.
+
+                </div>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    ★
+                </div>
+
+                <div class="feature-title">
+                    Favorites
+                </div>
+
+                <div class="feature-description">
+
+                    Keep your most important links
+                    organized and easy to access.
+
+                </div>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
                     🔒
                 </div>
 
-                <h3 class="mt-6 text-lg font-bold text-gray-900">
-                    Link Security
-                </h3>
+                <div class="feature-title">
+                    Password Protection
+                </div>
 
-                <p class="mt-3 text-sm leading-6 text-gray-600">
-                    Protect links with passwords and expiration.
-                </p>
+                <div class="feature-description">
+
+                    Protect sensitive links with
+                    password-based access.
+
+                </div>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    ⏱
+                </div>
+
+                <div class="feature-title">
+                    Expiration
+                </div>
+
+                <div class="feature-description">
+
+                    Automatically deactivate links
+                    after a selected date.
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
-
-</section>
+    </section>
 
 
+    {{-- =========================================================
+         ANALYTICS
+         ========================================================= --}}
 
-{{-- ========================================================= --}}
-{{-- ANALYTICS --}}
-{{-- ========================================================= --}}
+    <section class="analytics-section">
 
-<section
-    id="analytics"
-    class="bg-white px-5 py-20 sm:px-6 lg:px-8"
->
+        <div class="analytics-container">
 
-    <div class="mx-auto max-w-7xl">
+            <div class="analytics-copy">
 
-        <div class="grid items-center gap-14 lg:grid-cols-2">
-
-            <div>
-
-                <p class="text-sm font-bold uppercase tracking-wider text-indigo-600">
+                <div class="section-label">
                     Link Analytics
-                </p>
+                </div>
 
-                <h2 class="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                    Know how your links are performing
+                <h2>
+                    Know how your links perform.
                 </h2>
 
-                <p class="mt-5 text-base leading-7 text-gray-600">
+                <p>
 
                     Registered users can monitor link performance
-                    through a centralized analytics dashboard.
+                    with detailed analytics and reports.
 
                 </p>
-
-                <div class="mt-8 space-y-5">
-
-                    <div class="flex gap-4">
-
-                        <div class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h3 class="font-semibold text-gray-900">
-                                Click Tracking
-                            </h3>
-
-                            <p class="mt-1 text-sm text-gray-600">
-                                Monitor how many times your links are opened.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="flex gap-4">
-
-                        <div class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h3 class="font-semibold text-gray-900">
-                                Organized Dashboard
-                            </h3>
-
-                            <p class="mt-1 text-sm text-gray-600">
-                                Manage your links and statistics from one place.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="flex gap-4">
-
-                        <div class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h3 class="font-semibold text-gray-900">
-                                Detailed Insights
-                            </h3>
-
-                            <p class="mt-1 text-sm text-gray-600">
-                                Understand your audience and link usage.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
 
             </div>
 
 
-            {{-- Dashboard preview --}}
-            <div>
+            <div class="analytics-card">
 
-                <div class="rounded-3xl border border-gray-200 bg-gray-50 p-4 shadow-xl">
+                <div class="analytics-card-header">
 
-                    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-
-                        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-
-                            <div>
-
-                                <div class="text-sm font-bold text-gray-900">
-                                    Link Analytics
-                                </div>
-
-                                <div class="mt-1 text-xs text-gray-500">
-                                    Performance overview
-                                </div>
-
-                            </div>
-
-                            <div class="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-600">
-                                Last 30 days
-                            </div>
-
-                        </div>
-
-
-                        <div class="grid grid-cols-3 gap-3 p-5">
-
-                            <div class="rounded-xl bg-gray-50 p-4">
-
-                                <div class="text-xs text-gray-500">
-                                    Total Clicks
-                                </div>
-
-                                <div class="mt-2 text-xl font-bold text-gray-900">
-                                    12,480
-                                </div>
-
-                                <div class="mt-1 text-xs font-medium text-green-600">
-                                    +18.4%
-                                </div>
-
-                            </div>
-
-
-                            <div class="rounded-xl bg-gray-50 p-4">
-
-                                <div class="text-xs text-gray-500">
-                                    Active Links
-                                </div>
-
-                                <div class="mt-2 text-xl font-bold text-gray-900">
-                                    248
-                                </div>
-
-                                <div class="mt-1 text-xs text-gray-500">
-                                    Currently active
-                                </div>
-
-                            </div>
-
-
-                            <div class="rounded-xl bg-gray-50 p-4">
-
-                                <div class="text-xs text-gray-500">
-                                    QR Codes
-                                </div>
-
-                                <div class="mt-2 text-xl font-bold text-gray-900">
-                                    86
-                                </div>
-
-                                <div class="mt-1 text-xs text-gray-500">
-                                    Generated
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="px-5 pb-6">
-
-                            <div class="rounded-xl border border-gray-100 bg-white p-4">
-
-                                <div class="mb-5 flex items-center justify-between">
-
-                                    <div class="text-sm font-semibold text-gray-900">
-                                        Click Activity
-                                    </div>
-
-                                    <div class="text-xs text-gray-500">
-                                        Weekly
-                                    </div>
-
-                                </div>
-
-
-                                <div class="flex h-40 items-end gap-2">
-
-                                    <div class="h-[35%] flex-1 rounded-t-md bg-indigo-100"></div>
-                                    <div class="h-[48%] flex-1 rounded-t-md bg-indigo-200"></div>
-                                    <div class="h-[42%] flex-1 rounded-t-md bg-indigo-300"></div>
-                                    <div class="h-[68%] flex-1 rounded-t-md bg-indigo-400"></div>
-                                    <div class="h-[55%] flex-1 rounded-t-md bg-indigo-500"></div>
-                                    <div class="h-[82%] flex-1 rounded-t-md bg-indigo-600"></div>
-                                    <div class="h-[72%] flex-1 rounded-t-md bg-indigo-500"></div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
+                    <div class="analytics-card-title">
+                        Total Clicks
                     </div>
+
+                    <div class="analytics-period">
+                        Last 7 days
+                    </div>
+
+                </div>
+
+
+                <div class="analytics-number">
+                    12,480
+                </div>
+
+                <div class="analytics-growth">
+                    ↑ 18.6% compared with previous period
+                </div>
+
+
+                <div class="analytics-bars">
+
+                    <div
+                        class="analytics-bar"
+                        style="height: 42%;"
+                    ></div>
+
+                    <div
+                        class="analytics-bar"
+                        style="height: 58%;"
+                    ></div>
+
+                    <div
+                        class="analytics-bar"
+                        style="height: 50%;"
+                    ></div>
+
+                    <div
+                        class="analytics-bar"
+                        style="height: 70%;"
+                    ></div>
+
+                    <div
+                        class="analytics-bar"
+                        style="height: 62%;"
+                    ></div>
+
+                    <div
+                        class="analytics-bar"
+                        style="height: 84%;"
+                    ></div>
+
+                    <div
+                        class="analytics-bar"
+                        style="height: 96%;"
+                    ></div>
 
                 </div>
 
@@ -1275,311 +1913,212 @@
 
         </div>
 
-    </div>
-
-</section>
+    </section>
 
 
+    {{-- =========================================================
+         HOW IT WORKS
+         ========================================================= --}}
 
-{{-- ========================================================= --}}
-{{-- HOW IT WORKS --}}
-{{-- ========================================================= --}}
+    <section
+        id="how-it-works"
+        class="steps-section"
+    >
 
-<section
-    id="how-it-works"
-    class="bg-gray-50 px-5 py-20 sm:px-6 lg:px-8"
->
+        <div class="section-heading">
 
-    <div class="mx-auto max-w-7xl">
-
-        <div class="mx-auto max-w-2xl text-center">
-
-            <p class="text-sm font-bold uppercase tracking-wider text-indigo-600">
+            <div class="section-label">
                 How It Works
-            </p>
+            </div>
 
-            <h2 class="mt-3 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                Three simple steps
+            <h2 class="section-title">
+                Create a smart link in three steps
             </h2>
 
         </div>
 
 
-        <div class="mt-14 grid gap-10 md:grid-cols-3">
+        <div class="steps-grid">
 
-            <div class="step-card text-center">
+            <div class="step-card">
 
                 <div class="step-number">
                     1
                 </div>
 
-                <h3 class="mt-6 text-xl font-bold text-gray-900">
-                    Paste Your URL
-                </h3>
+                <div class="step-title">
+                    Paste your URL
+                </div>
 
-                <p class="mx-auto mt-3 max-w-xs text-sm leading-6 text-gray-600">
-                    Enter the long URL you want to shorten or convert into a QR code.
-                </p>
+                <div class="step-description">
+
+                    Enter any valid long URL into
+                    the generator above.
+
+                </div>
 
             </div>
 
 
-            <div class="step-card text-center">
+            <div class="step-card">
 
                 <div class="step-number">
                     2
                 </div>
 
-                <h3 class="mt-6 text-xl font-bold text-gray-900">
+                <div class="step-title">
                     Generate
-                </h3>
+                </div>
 
-                <p class="mx-auto mt-3 max-w-xs text-sm leading-6 text-gray-600">
-                    Generate a short URL or QR code instantly.
-                </p>
+                <div class="step-description">
+
+                    Click Shorten URL or Generate QR Code
+                    depending on what you need.
+
+                </div>
 
             </div>
 
 
-            <div class="step-card text-center">
+            <div class="step-card">
 
                 <div class="step-number">
                     3
                 </div>
 
-                <h3 class="mt-6 text-xl font-bold text-gray-900">
-                    Share & Track
-                </h3>
+                <div class="step-title">
+                    Share
+                </div>
 
-                <p class="mx-auto mt-3 max-w-xs text-sm leading-6 text-gray-600">
-                    Share your links and track their performance.
-                </p>
+                <div class="step-description">
+
+                    Copy your short URL or download
+                    your QR code and share it anywhere.
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
-
-</section>
+    </section>
 
 
+    {{-- =========================================================
+         CTA
+         ========================================================= --}}
 
-{{-- ========================================================= --}}
-{{-- CTA --}}
-{{-- ========================================================= --}}
+    <section class="cta-section">
 
-<section class="px-5 py-20 sm:px-6 lg:px-8">
-
-    <div class="mx-auto max-w-6xl rounded-3xl bg-indigo-600 px-7 py-14 text-center shadow-xl sm:px-12">
-
-        <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <div class="cta-title">
             Ready to manage your links smarter?
-        </h2>
+        </div>
 
-        <p class="mx-auto mt-5 max-w-2xl text-base leading-7 text-indigo-100">
-            Create an account to unlock advanced link management,
-            analytics, QR codes, reports, and more.
-        </p>
+        <div class="cta-description">
 
-
-        <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-
-            @auth
-
-                <a
-                    href="{{ route('dashboard') }}"
-                    class="rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-indigo-600 hover:bg-gray-100"
-                >
-                    Go to Dashboard
-                </a>
-
-                <a
-                    href="{{ route('links.create') }}"
-                    class="rounded-xl border border-indigo-400 px-7 py-3.5 text-sm font-bold text-white hover:bg-indigo-700"
-                >
-                    Create a Link
-                </a>
-
-            @else
-
-                <a
-                    href="{{ route('register') }}"
-                    class="rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-indigo-600 hover:bg-gray-100"
-                >
-                    Create Free Account
-                </a>
-
-                <a
-                    href="{{ route('login') }}"
-                    class="rounded-xl border border-indigo-400 px-7 py-3.5 text-sm font-bold text-white hover:bg-indigo-700"
-                >
-                    Login
-                </a>
-
-            @endauth
+            Create an account to unlock analytics,
+            custom aliases, link management,
+            reports and more.
 
         </div>
 
-    </div>
 
-</section>
+        @auth
+
+            <a
+                href="{{ route('dashboard') }}"
+                class="cta-button"
+            >
+                Go to Dashboard
+            </a>
+
+        @else
+
+            <a
+                href="{{ route('register') }}"
+                class="cta-button"
+            >
+                Create Free Account
+            </a>
+
+        @endauth
+
+    </section>
 
 
+    {{-- =========================================================
+         FOOTER
+         ========================================================= --}}
 
-{{-- ========================================================= --}}
-{{-- FOOTER --}}
-{{-- ========================================================= --}}
+    <footer class="landing-footer">
 
-<footer class="border-t border-gray-100 bg-white">
-
-    <div class="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8">
-
-        <div class="grid gap-10 md:grid-cols-4">
-
-            <div class="md:col-span-2">
-
-                <a
-                    href="{{ route('home') }}"
-                    class="flex items-center gap-3"
-                >
-
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white">
-                        Q
-                    </div>
-
-                    <div>
-
-                        <div class="font-bold text-gray-900">
-                            URL Shortener
-                        </div>
-
-                        <div class="text-xs text-gray-500">
-                            Smart Link Management
-                        </div>
-
-                    </div>
-
-                </a>
-
-                <p class="mt-5 max-w-md text-sm leading-6 text-gray-500">
-                    A simple and powerful platform for shortening,
-                    managing, sharing, and analyzing your links.
-                </p>
-
-            </div>
-
+        <div class="footer-inner">
 
             <div>
-
-                <h3 class="text-sm font-bold text-gray-900">
-                    Product
-                </h3>
-
-                <div class="mt-5 space-y-3">
-
-                    <a
-                        href="#features"
-                        class="block text-sm text-gray-500 hover:text-indigo-600"
-                    >
-                        Features
-                    </a>
-
-                    <a
-                        href="#analytics"
-                        class="block text-sm text-gray-500 hover:text-indigo-600"
-                    >
-                        Analytics
-                    </a>
-
-                    <a
-                        href="#how-it-works"
-                        class="block text-sm text-gray-500 hover:text-indigo-600"
-                    >
-                        How It Works
-                    </a>
-
-                    <a
-                        href="{{ route('links.create') }}"
-                        class="block text-sm text-gray-500 hover:text-indigo-600"
-                    >
-                        Create Link
-                    </a>
-
-                </div>
-
+                © 2026 URL Shortener. All rights reserved.
             </div>
-
 
             <div>
-
-                <h3 class="text-sm font-bold text-gray-900">
-                    Account
-                </h3>
-
-                <div class="mt-5 space-y-3">
-
-                    @auth
-
-                        <a
-                            href="{{ route('dashboard') }}"
-                            class="block text-sm text-gray-500 hover:text-indigo-600"
-                        >
-                            Dashboard
-                        </a>
-
-                        <a
-                            href="{{ route('settings') }}"
-                            class="block text-sm text-gray-500 hover:text-indigo-600"
-                        >
-                            Settings
-                        </a>
-
-                    @else
-
-                        <a
-                            href="{{ route('login') }}"
-                            class="block text-sm text-gray-500 hover:text-indigo-600"
-                        >
-                            Login
-                        </a>
-
-                        <a
-                            href="{{ route('register') }}"
-                            class="block text-sm text-gray-500 hover:text-indigo-600"
-                        >
-                            Sign Up
-                        </a>
-
-                    @endauth
-
-                </div>
-
+                Smart Link Management Platform
             </div>
 
         </div>
 
+    </footer>
 
-        <div class="mt-10 border-t border-gray-100 pt-8">
+</div>
 
-            <div class="flex flex-col gap-3 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
 
-                <p>
-                    © {{ date('Y') }} URL Shortener. All rights reserved.
-                </p>
+<script>
 
-                <p>
-                    Smart Link Management
-                </p>
+    /*
+    |--------------------------------------------------------------------------
+    | Copy URL
+    |--------------------------------------------------------------------------
+    |
+    | Alpine handles the actual copy button.
+    |
+    */
 
-            </div>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
 
-        </div>
+            const urlInput =
+                document.querySelector(
+                    'input[name="original_url"]'
+                );
 
-    </div>
+            const qrUrlInput =
+                document.getElementById(
+                    'guest-qr-url'
+                );
 
-</footer>
+            if (
+                urlInput &&
+                qrUrlInput
+            ) {
 
+                urlInput.addEventListener(
+                    'input',
+                    function () {
+
+                        qrUrlInput.value =
+                            urlInput.value;
+
+                    }
+                );
+
+
+                qrUrlInput.value =
+                    urlInput.value;
+            }
+
+        }
+    );
+
+</script>
 
 </body>
+
 </html>
