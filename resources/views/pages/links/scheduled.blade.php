@@ -1,8 +1,24 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
-@section('content')
+<head>
 
-<div class="flex min-h-[60vh] items-center justify-center px-4">
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Short URL Not Active</title>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+</head>
+
+<body>
+
+<div class="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-gray-950">
 
     <div class="text-center">
 
@@ -14,8 +30,14 @@
             This short URL is not active yet.
         </h1>
 
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Please try again later.
+        </p>
+
     </div>
 
 </div>
 
-@endsection
+</body>
+
+</html>

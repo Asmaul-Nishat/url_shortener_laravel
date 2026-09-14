@@ -64,11 +64,13 @@
             stroke="currentColor"
             stroke-width="1.8"
         >
+
             <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 d="M12 5v14m-7-7h14"
             />
+
         </svg>
 
         Generate Report
@@ -111,6 +113,7 @@
                     stroke="currentColor"
                     stroke-width="1.8"
                 >
+
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -159,6 +162,7 @@
                     stroke="currentColor"
                     stroke-width="1.8"
                 >
+
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -209,6 +213,7 @@
                     stroke="currentColor"
                     stroke-width="1.8"
                 >
+
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -263,6 +268,7 @@
                     stroke="currentColor"
                     stroke-width="1.8"
                 >
+
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -501,11 +507,13 @@
                         stroke="currentColor"
                         stroke-width="1.8"
                     >
+
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M12 3v12m0 0l4-4m-4 4l-4-4M5 21h14"
                         />
+
                     </svg>
 
                     Generate Report
@@ -515,189 +523,6 @@
             </div>
 
         </form>
-
-    </div>
-
-</div>
-
-
-{{-- ============================================================
-     AVAILABLE REPORT TYPES
-============================================================= --}}
-<div class="mb-6">
-
-    <div class="mb-4">
-
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Available Reports
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Choose from different report categories based on your analytics needs.
-        </p>
-
-    </div>
-
-
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-
-        {{-- Link Performance --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-
-            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/[0.06]">
-
-                <svg
-                    class="h-5 w-5 text-gray-600 dark:text-gray-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M4 19V5m0 14h16"
-                    />
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M7 15l4-4 3 3 5-6"
-                    />
-
-                </svg>
-
-            </div>
-
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">
-                Link Performance
-            </h3>
-
-            <p class="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                View click activity and performance of your short links.
-            </p>
-
-        </div>
-
-
-        {{-- Geographic Analytics --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-
-            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/[0.06]">
-
-                <svg
-                    class="h-5 w-5 text-gray-600 dark:text-gray-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 21s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z"
-                    />
-
-                    <circle
-                        cx="12"
-                        cy="9"
-                        r="2.5"
-                    />
-
-                </svg>
-
-            </div>
-
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">
-                Geographic Analytics
-            </h3>
-
-            <p class="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                Analyze traffic by country, region and geographic location.
-            </p>
-
-        </div>
-
-
-        {{-- Device Analytics --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-
-            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/[0.06]">
-
-                <svg
-                    class="h-5 w-5 text-gray-600 dark:text-gray-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                >
-                    <rect
-                        x="7"
-                        y="3"
-                        width="10"
-                        height="18"
-                        rx="2"
-                    />
-
-                    <path
-                        stroke-linecap="round"
-                        d="M10 18h4"
-                    />
-
-                </svg>
-
-            </div>
-
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">
-                Device Analytics
-            </h3>
-
-            <p class="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                Understand visits by mobile, tablet and desktop devices.
-            </p>
-
-        </div>
-
-
-        {{-- Browser & OS --}}
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-
-            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/[0.06]">
-
-                <svg
-                    class="h-5 w-5 text-gray-600 dark:text-gray-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                >
-                    <rect
-                        x="3"
-                        y="4"
-                        width="18"
-                        height="14"
-                        rx="2"
-                    />
-
-                    <path
-                        stroke-linecap="round"
-                        d="M8 21h8M12 18v3"
-                    />
-
-                </svg>
-
-            </div>
-
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">
-                Browser & OS Analytics
-            </h3>
-
-            <p class="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                Review browser and operating system information from visitors.
-            </p>
-
-        </div>
 
     </div>
 
@@ -738,6 +563,7 @@
                     stroke="currentColor"
                     stroke-width="1.8"
                 >
+
                     <circle
                         cx="11"
                         cy="11"
@@ -852,9 +678,7 @@
                                 <div class="min-w-0">
 
                                     <p class="truncate text-sm font-medium text-gray-800 dark:text-white/90">
-
                                         {{ $report->name }}
-
                                     </p>
 
 
@@ -924,10 +748,8 @@
 
                             {{ $report->created_at->format('M d, Y') }}
 
-                            <span class="block mt-1 text-xs text-gray-400 dark:text-gray-500">
-
+                            <span class="mt-1 block text-xs text-gray-400 dark:text-gray-500">
                                 {{ $report->created_at->format('h:i A') }}
-
                             </span>
 
                         </td>
@@ -1110,8 +932,9 @@
 
 </div>
 
+
 {{-- ================================================================
-REPORT SEARCH
+     REPORT SEARCH
 ================================================================= --}}
 
 <script>
