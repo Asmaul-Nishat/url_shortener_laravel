@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -96,6 +95,11 @@ class AdminUserController extends Controller
 
     /**
      * Update a user.
+     *
+     * Admin can update user profile information,
+     * role, and account status.
+     *
+     * Password cannot be viewed or changed by admin.
      */
     public function update(
         Request $request,
@@ -163,21 +167,15 @@ class AdminUserController extends Controller
                 'required',
                 Rule::in(['active', 'inactive']),
             ],
-
-            'password' => [
-                'nullable',
-                'string',
-                'min:8',
-                'confirmed',
-            ],
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Protect the current admin account
+        | Protect Current Admin Account
         |--------------------------------------------------------------------------
         |
-        | An admin should not accidentally remove their own admin access.
+        | The logged-in admin cannot remove their own admin role
+        | or deactivate their own account.
         |
         */
 
@@ -186,13 +184,20 @@ class AdminUserController extends Controller
             $validated['status'] = 'active';
         }
 
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        } else {
-            $validated['password'] = Hash::make(
-                $validated['password']
-            );
-        }
+        /*
+        |--------------------------------------------------------------------------
+        | Password Protection
+        |--------------------------------------------------------------------------
+        |
+        | Password is intentionally NOT included here.
+        |
+        | Admin cannot:
+        | - View a password
+        | - Change a password
+        | - Set a new password
+        | - Reset a password
+        |
+        */
 
         $user->update($validated);
 
@@ -213,7 +218,7 @@ class AdminUserController extends Controller
     ): RedirectResponse {
         /*
         |--------------------------------------------------------------------------
-        | Prevent self-deactivation
+        | Prevent Self-Deactivation
         |--------------------------------------------------------------------------
         */
 
@@ -246,7 +251,7 @@ class AdminUserController extends Controller
     ): RedirectResponse {
         /*
         |--------------------------------------------------------------------------
-        | Prevent self-deletion
+        | Prevent Self-Deletion
         |--------------------------------------------------------------------------
         */
 
@@ -259,7 +264,7 @@ class AdminUserController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Prevent deleting the last administrator
+        | Prevent Deleting the Last Administrator
         |--------------------------------------------------------------------------
         */
 
@@ -273,6 +278,12 @@ class AdminUserController extends Controller
                 );
             }
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete User
+        |--------------------------------------------------------------------------
+        */
 
         $user->delete();
 

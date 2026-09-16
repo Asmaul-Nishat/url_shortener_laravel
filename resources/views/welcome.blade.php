@@ -249,7 +249,7 @@
             margin: 0 auto;
 
             padding:
-                85px 24px 80px;
+                32px 24px 80px;
 
             text-align: center;
         }
@@ -279,13 +279,13 @@
         }
 
         .hero-title {
-            max-width: 850px;
+            max-width: none;
 
             margin:
                 22px auto 0;
 
             font-size:
-                clamp(38px, 6vw, 68px);
+                clamp(38px, 5.2vw, 64px);
 
             line-height: 1.05;
 
@@ -295,6 +295,8 @@
             font-weight: 850;
 
             color: #111827;
+
+            white-space: nowrap;
         }
 
         .hero-title span {
@@ -794,6 +796,188 @@
 
 
         /* =========================================================
+           QR MODAL
+           ========================================================= */
+
+        .qr-modal {
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 100;
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+        }
+
+        .qr-modal.is-open {
+            display: flex;
+        }
+
+        .qr-modal-backdrop {
+            position: absolute;
+
+            inset: 0;
+
+            background:
+                rgba(15, 23, 42, 0.60);
+
+            backdrop-filter:
+                blur(6px);
+        }
+
+        .qr-modal-dialog {
+            position: relative;
+
+            z-index: 1;
+
+            width: min(430px, 100%);
+
+            max-height: calc(100vh - 40px);
+
+            overflow-y: auto;
+
+            padding: 28px;
+
+            border-radius: 22px;
+
+            background: white;
+
+            box-shadow:
+                0 30px 80px
+                rgba(15, 23, 42, 0.25);
+
+            text-align: center;
+        }
+
+        .qr-modal-close {
+            position: absolute;
+
+            top: 12px;
+
+            right: 14px;
+
+            width: 36px;
+
+            height: 36px;
+
+            border: 0;
+
+            border-radius: 50%;
+
+            background: #f3f4f6;
+
+            color: #374151;
+
+            font-size: 23px;
+
+            line-height: 1;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        .qr-modal-close:hover {
+            background: #e5e7eb;
+        }
+
+        .qr-modal-title {
+            margin-top: 8px;
+
+            font-size: 22px;
+
+            font-weight: 850;
+
+            color: #111827;
+        }
+
+        .qr-modal-description {
+            max-width: 330px;
+
+            margin:
+                8px auto 0;
+
+            color: #6b7280;
+
+            font-size: 14px;
+
+            line-height: 1.6;
+        }
+
+        .qr-modal-image-wrapper {
+            width: 270px;
+
+            height: 270px;
+
+            margin:
+                24px auto 0;
+
+            padding: 14px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 16px;
+
+            background: white;
+
+            box-shadow:
+                0 10px 30px
+                rgba(15, 23, 42, 0.08);
+        }
+
+        .qr-modal-image {
+            display: block;
+
+            max-width: 100%;
+
+            max-height: 100%;
+
+            width: auto;
+
+            height: auto;
+
+            object-fit: contain;
+        }
+
+        .qr-modal-loading {
+            color: #6b7280;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+        .qr-modal-download {
+            justify-content: center;
+
+            width: 100%;
+
+            margin-top: 20px;
+
+            min-height: 46px;
+
+            align-items: center;
+        }
+
+
+        /* =========================================================
            TRUST
            ========================================================= */
 
@@ -818,6 +1002,204 @@
 
 
         /* =========================================================
+           SOCIAL PROOF
+           ========================================================= */
+
+        .social-proof-section {
+            max-width: 1100px;
+
+            margin:
+                0 auto;
+
+            padding:
+                55px 24px 55px;
+        }
+
+        .social-proof-heading {
+            max-width: 700px;
+
+            margin:
+                0 auto 38px;
+
+            text-align: center;
+        }
+
+        .social-proof-label {
+            color: #2563eb;
+
+            font-size: 13px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing:
+                0.08em;
+        }
+
+        .social-proof-title {
+            margin-top: 10px;
+
+            font-size:
+                clamp(28px, 4vw, 40px);
+
+            line-height: 1.15;
+
+            font-weight: 850;
+
+            letter-spacing:
+                -0.03em;
+
+            color: #111827;
+        }
+
+        .social-proof-description {
+            margin:
+                14px auto 0;
+
+            color: #6b7280;
+
+            font-size: 15px;
+
+            line-height: 1.7;
+        }
+
+        .social-proof-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 20px;
+        }
+
+        .social-proof-card {
+            position: relative;
+
+            padding: 26px;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #ffffff,
+                    #f8fafc
+                );
+
+            box-shadow:
+                0 12px 35px
+                rgba(15, 23, 42, 0.05);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+        .social-proof-card:hover {
+            transform:
+                translateY(-4px);
+
+            border-color: #dbeafe;
+
+            box-shadow:
+                0 20px 45px
+                rgba(15, 23, 42, 0.08);
+        }
+
+        .social-proof-stars {
+            color: #f59e0b;
+
+            font-size: 16px;
+
+            letter-spacing:
+                2px;
+        }
+
+        .social-proof-card-title {
+            margin-top: 16px;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+            color: #111827;
+        }
+
+        .social-proof-card-text {
+            margin-top: 9px;
+
+            color: #6b7280;
+
+            font-size: 14px;
+
+            line-height: 1.7;
+        }
+
+        .social-proof-card-footer {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-top: 20px;
+
+            padding-top: 17px;
+
+            border-top:
+                1px solid #eef2f7;
+        }
+
+        .social-proof-avatar {
+            width: 38px;
+
+            height: 38px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eff6ff,
+                    #ede9fe
+                );
+
+            color: #2563eb;
+
+            font-size: 14px;
+
+            font-weight: 800;
+        }
+
+        .social-proof-person {
+            font-size: 13px;
+
+            font-weight: 750;
+
+            color: #374151;
+        }
+
+        .social-proof-role {
+            margin-top: 2px;
+
+            color: #9ca3af;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================================================
            FEATURES
            ========================================================= */
 
@@ -827,14 +1209,14 @@
             margin: 0 auto;
 
             padding:
-                95px 24px;
+                55px 24px 95px;
         }
 
         .section-heading {
             max-width: 700px;
 
             margin:
-                0 auto 50px;
+                0 auto 32px;
 
             text-align: center;
         }
@@ -1248,6 +1630,15 @@
            RESPONSIVE
            ========================================================= */
 
+        @media (max-width: 1000px) {
+
+            .hero-title {
+                font-size: 54px;
+            }
+
+        }
+
+
         @media (max-width: 900px) {
 
             .features-grid {
@@ -1264,6 +1655,12 @@
                 grid-template-columns:
                     1fr 1fr;
             }
+
+            .social-proof-grid {
+                grid-template-columns:
+                    1fr 1fr;
+            }
+
         }
 
 
@@ -1279,7 +1676,16 @@
 
             .hero {
                 padding:
-                    65px 18px;
+                    45px 18px 65px;
+            }
+
+            .hero-title {
+                max-width: 850px;
+
+                font-size:
+                    clamp(38px, 11vw, 54px);
+
+                white-space: normal;
             }
 
             .hero-description {
@@ -1318,9 +1724,31 @@
                     1fr;
             }
 
+            .social-proof-section {
+                padding:
+                    60px 18px 75px;
+            }
+
+            .social-proof-grid {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .qr-modal-dialog {
+                padding:
+                    24px 18px;
+            }
+
+            .qr-modal-image-wrapper {
+                width: 240px;
+
+                height: 240px;
+            }
+
             .footer-inner {
                 flex-direction: column;
             }
+
         }
 
     </style>
@@ -1694,13 +2122,12 @@
 
 
             {{-- =====================================================
-                 OLD SESSION RESULT
+                 OLD SESSION SHORT URL RESULT
                  ===================================================== --}}
 
             @if(
                 session('guest_short_url') ||
-                session('short_url') ||
-                session('guest_qr')
+                session('short_url')
             )
 
                 <div class="result-section">
@@ -1720,7 +2147,7 @@
                                 </div>
 
                                 <div class="result-subtitle">
-                                    Your generated content is ready to use.
+                                    Your generated short URL is ready to use.
                                 </div>
 
                             </div>
@@ -1729,79 +2156,42 @@
 
 
 
-                        {{-- SHORT URL RESULT --}}
+                        <div>
 
-                        @if(
-                            session('guest_short_url') ||
-                            session('short_url')
-                        )
-
-                            <div>
-
-                                <div class="result-label">
-                                    Your Short URL
-                                </div>
-
-
-                                <div class="short-url-box">
-
-                                    <input
-                                        id="generated-session-short-url"
-                                        type="text"
-                                        readonly
-                                        value="{{ session('guest_short_url') ?? session('short_url') }}"
-                                        class="short-url-input"
-                                    >
-
-
-                                    <button
-                                        type="button"
-                                        class="copy-button"
-                                        onclick="
-                                            copyText(
-                                                document.getElementById(
-                                                    'generated-session-short-url'
-                                                ).value,
-                                                this
-                                            )
-                                        "
-                                    >
-                                        Copy
-                                    </button>
-
-                                </div>
-
+                            <div class="result-label">
+                                Your Short URL
                             </div>
 
-                        @endif
 
+                            <div class="short-url-box">
 
-
-                        {{-- QR RESULT --}}
-
-                        @if(session('guest_qr'))
-
-                            <div class="qr-result-box">
-
-                                <div class="qr-result-title">
-                                    QR Code Ready
-                                </div>
-
-                                <div class="qr-result-description">
-                                    Your QR code contains the original URL.
-                                </div>
-
-
-                                <a
-                                    href="{{ route('qr-codes.guest.download') }}"
-                                    class="download-qr-button"
+                                <input
+                                    id="generated-session-short-url"
+                                    type="text"
+                                    readonly
+                                    value="{{ session('guest_short_url') ?? session('short_url') }}"
+                                    class="short-url-input"
                                 >
-                                    Download QR Code
-                                </a>
+
+
+                                <button
+                                    type="button"
+                                    class="copy-button"
+                                    onclick="
+                                        copyText(
+                                            document.getElementById(
+                                                'generated-session-short-url'
+                                            ).value,
+                                            this
+                                        )
+                                    "
+                                >
+                                    Copy
+                                </button>
 
                             </div>
 
-                        @endif
+                        </div>
 
                     </div>
 
@@ -1834,6 +2224,156 @@
                 </span>
 
             </div>
+
+        </div>
+
+    </section>
+
+
+
+    {{-- =========================================================
+         SOCIAL PROOF
+         ========================================================= --}}
+
+    <section class="social-proof-section">
+
+        <div class="social-proof-heading">
+
+            <div class="social-proof-label">
+                Why Use URL Shortener
+            </div>
+
+            <h2 class="social-proof-title">
+                Built for simple and effective link sharing
+            </h2>
+
+            <p class="social-proof-description">
+                Everything is designed to make creating, sharing,
+                and managing links quick and straightforward.
+            </p>
+
+        </div>
+
+
+        <div class="social-proof-grid">
+
+
+            <div class="social-proof-card">
+
+                <div class="social-proof-stars">
+                    ★★★★★
+                </div>
+
+                <div class="social-proof-card-title">
+                    Simple to use
+                </div>
+
+                <div class="social-proof-card-text">
+                    Create a short link in seconds without
+                    going through a complicated setup process.
+                </div>
+
+                <div class="social-proof-card-footer">
+
+                    <div class="social-proof-avatar">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <div class="social-proof-person">
+                            Quick & Simple
+                        </div>
+
+                        <div class="social-proof-role">
+                            Link creation
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="social-proof-card">
+
+                <div class="social-proof-stars">
+                    ★★★★★
+                </div>
+
+                <div class="social-proof-card-title">
+                    Share anywhere
+                </div>
+
+                <div class="social-proof-card-text">
+                    Use short links or downloadable QR codes
+                    across websites, social media, print, and more.
+                </div>
+
+                <div class="social-proof-card-footer">
+
+                    <div class="social-proof-avatar">
+                        ↗
+                    </div>
+
+                    <div>
+
+                        <div class="social-proof-person">
+                            Flexible Sharing
+                        </div>
+
+                        <div class="social-proof-role">
+                            Links & QR codes
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="social-proof-card">
+
+                <div class="social-proof-stars">
+                    ★★★★★
+                </div>
+
+                <div class="social-proof-card-title">
+                    Manage with confidence
+                </div>
+
+                <div class="social-proof-card-text">
+                    Registered users can organize links,
+                    monitor performance, and manage their
+                    short-link collection from one place.
+                </div>
+
+                <div class="social-proof-card-footer">
+
+                    <div class="social-proof-avatar">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <div class="social-proof-person">
+                            Organized Workflow
+                        </div>
+
+                        <div class="social-proof-role">
+                            Link management
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
 
         </div>
 
@@ -2268,6 +2808,92 @@
 
 
 
+{{-- =============================================================
+     QR CODE POPUP / MODAL
+     ============================================================= --}}
+
+<div
+    id="qr-modal"
+    class="qr-modal"
+    aria-hidden="true"
+>
+
+    <div
+        id="qr-modal-backdrop"
+        class="qr-modal-backdrop"
+    ></div>
+
+
+    <div
+        class="qr-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="qr-modal-title"
+    >
+
+        <button
+            type="button"
+            id="qr-modal-close"
+            class="qr-modal-close"
+            aria-label="Close QR code popup"
+        >
+            ×
+        </button>
+
+
+        <div
+            id="qr-modal-title"
+            class="qr-modal-title"
+        >
+            QR Code Ready
+        </div>
+
+
+        <div class="qr-modal-description">
+
+            Your QR code has been generated successfully.
+            Scan it to open the original URL.
+
+        </div>
+
+
+        <div class="qr-modal-image-wrapper">
+
+            <div
+                id="qr-modal-loading"
+                class="qr-modal-loading"
+            >
+                Preparing your QR code...
+            </div>
+
+
+            <img
+                id="qr-modal-image"
+                class="qr-modal-image"
+                src=""
+                alt="Generated QR Code"
+                style="display: none;"
+            >
+
+        </div>
+
+
+        <a
+            id="qr-modal-download"
+            href="#"
+            class="download-qr-button qr-modal-download"
+            download="qr-code.png"
+            style="display: none;"
+        >
+            Download QR Code
+        </a>
+
+    </div>
+
+</div>
+
+
+
 <script>
 
     /*
@@ -2330,6 +2956,51 @@
         document.getElementById(
             'ajax-error'
         );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QR MODAL ELEMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    const qrModal =
+        document.getElementById(
+            'qr-modal'
+        );
+
+
+    const qrModalBackdrop =
+        document.getElementById(
+            'qr-modal-backdrop'
+        );
+
+
+    const qrModalClose =
+        document.getElementById(
+            'qr-modal-close'
+        );
+
+
+    const qrModalImage =
+        document.getElementById(
+            'qr-modal-image'
+        );
+
+
+    const qrModalLoading =
+        document.getElementById(
+            'qr-modal-loading'
+        );
+
+
+    const qrModalDownload =
+        document.getElementById(
+            'qr-modal-download'
+        );
+
+
+    let qrObjectUrl = null;
 
 
     /*
@@ -2478,6 +3149,277 @@
 
     /*
     |--------------------------------------------------------------------------
+    | CLOSE QR MODAL
+    |--------------------------------------------------------------------------
+    */
+
+    function closeQrModal() {
+
+        qrModal.classList.remove(
+            'is-open'
+        );
+
+        qrModal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+        document.body.style.overflow =
+            '';
+
+
+        qrModalImage.src =
+            '';
+
+        qrModalImage.style.display =
+            'none';
+
+        qrModalLoading.style.display =
+            'block';
+
+        qrModalLoading.textContent =
+            'Preparing your QR code...';
+
+        qrModalDownload.style.display =
+            'none';
+
+
+        if (qrObjectUrl) {
+
+            URL.revokeObjectURL(
+                qrObjectUrl
+            );
+
+            qrObjectUrl =
+                null;
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | OPEN QR MODAL
+    |--------------------------------------------------------------------------
+    */
+
+    function openQrModal() {
+
+        qrModal.classList.add(
+            'is-open'
+        );
+
+        qrModal.setAttribute(
+            'aria-hidden',
+            'false'
+        );
+
+        document.body.style.overflow =
+            'hidden';
+
+        qrModalClose.focus();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW QR RESULT
+    |--------------------------------------------------------------------------
+    */
+
+    async function showQrResult(
+        downloadUrl
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Open popup immediately
+        |--------------------------------------------------------------------------
+        */
+
+        openQrModal();
+
+
+        qrModalImage.style.display =
+            'none';
+
+        qrModalDownload.style.display =
+            'none';
+
+        qrModalLoading.style.display =
+            'block';
+
+        qrModalLoading.textContent =
+            'Preparing your QR code...';
+
+
+        try {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Fetch QR image once
+            |
+            | The returned Blob is used for BOTH:
+            | 1. Preview
+            | 2. Download
+            |
+            | This prevents the guest QR session from being consumed twice.
+            |--------------------------------------------------------------------------
+            */
+
+            const response =
+                await fetch(
+                    downloadUrl,
+                    {
+                        method: 'GET',
+
+                        headers: {
+                            'Accept':
+                                'image/png'
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    'Unable to load QR code.'
+                );
+            }
+
+
+            const blob =
+                await response.blob();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Remove previous object URL
+            |--------------------------------------------------------------------------
+            */
+
+            if (qrObjectUrl) {
+
+                URL.revokeObjectURL(
+                    qrObjectUrl
+                );
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Create local browser URL
+            |--------------------------------------------------------------------------
+            */
+
+            qrObjectUrl =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Show QR image
+            |--------------------------------------------------------------------------
+            */
+
+            qrModalImage.src =
+                qrObjectUrl;
+
+            qrModalImage.style.display =
+                'block';
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Enable download
+            |--------------------------------------------------------------------------
+            */
+
+            qrModalDownload.href =
+                qrObjectUrl;
+
+            qrModalDownload.download =
+                'qr-code.png';
+
+            qrModalDownload.style.display =
+                'inline-flex';
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Hide loading
+            |--------------------------------------------------------------------------
+            */
+
+            qrModalLoading.style.display =
+                'none';
+
+        } catch (error) {
+
+            console.error(
+                'QR preview error:',
+                error
+            );
+
+
+            qrModalLoading.textContent =
+                'Unable to display the QR code. Please try again.';
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLOSE QR MODAL EVENTS
+    |--------------------------------------------------------------------------
+    */
+
+    if (qrModalClose) {
+
+        qrModalClose.addEventListener(
+            'click',
+            closeQrModal
+        );
+
+    }
+
+
+    if (qrModalBackdrop) {
+
+        qrModalBackdrop.addEventListener(
+            'click',
+            closeQrModal
+        );
+
+    }
+
+
+    document.addEventListener(
+        'keydown',
+        function (event) {
+
+            if (
+                event.key === 'Escape'
+                &&
+                qrModal.classList.contains(
+                    'is-open'
+                )
+            ) {
+
+                closeQrModal();
+
+            }
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
     | SHOW SHORT URL RESULT
     |--------------------------------------------------------------------------
     */
@@ -2597,116 +3539,6 @@
         document
             .getElementById(
                 'ajax-clear-button'
-            )
-            .addEventListener(
-                'click',
-                clearAjaxResult
-            );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | SCROLL TO RESULT
-        |--------------------------------------------------------------------------
-        */
-
-        ajaxResult.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest'
-        });
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | SHOW QR RESULT
-    |--------------------------------------------------------------------------
-    */
-
-    function showQrResult(
-        downloadUrl
-    ) {
-
-        ajaxResult.innerHTML = `
-
-            <div class="result-section">
-
-                <div class="result-card">
-
-                    <div class="result-header">
-
-                        <div class="success-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <div class="result-title">
-                                QR Code is ready
-                            </div>
-
-                            <div class="result-subtitle">
-                                Your QR code was generated successfully.
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="qr-result-box">
-
-                        <div class="qr-result-title">
-                            QR Code Ready
-                        </div>
-
-                        <div class="qr-result-description">
-
-                            Your QR code contains the original URL.
-                            Click the button below to download it.
-
-                        </div>
-
-
-                        <a
-                            href="${escapeHtml(downloadUrl)}"
-                            class="download-qr-button"
-                        >
-                            Download QR Code
-                        </a>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="clear-result-button"
-                        id="ajax-clear-qr-button"
-                    >
-                        Clear result
-                    </button>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        ajaxResult.style.display =
-            'block';
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CLEAR QR RESULT
-        |--------------------------------------------------------------------------
-        */
-
-        document
-            .getElementById(
-                'ajax-clear-qr-button'
             )
             .addEventListener(
                 'click',
