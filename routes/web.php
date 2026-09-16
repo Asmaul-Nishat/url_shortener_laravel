@@ -51,6 +51,9 @@ Route::post('/links', [
 |--------------------------------------------------------------------------
 | Public Guest QR Code
 |--------------------------------------------------------------------------
+|
+| Guests can generate a QR code without logging in.
+|
 */
 
 Route::post('/qr-codes/guest/generate', [
@@ -69,11 +72,16 @@ Route::get('/qr-codes/guest/download', [
 | Admin Panel
 |--------------------------------------------------------------------------
 |
-| Only authenticated, verified administrators can access these routes.
+| Only authenticated, verified administrators can access
+| these routes.
 |
 */
 
-Route::middleware(['auth', 'verified', 'admin'])
+Route::middleware([
+    'auth',
+    'verified',
+    'admin',
+])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -131,12 +139,30 @@ Route::middleware(['auth', 'verified', 'admin'])
         |--------------------------------------------------------------------------
         | Admin Links
         |--------------------------------------------------------------------------
+        |
+        | Admin can manage ALL users' links.
+        |
+        | Admin Links:
+        | - All Links
+        | - Create Link
+        | - Favorites
+        | - Trash
+        |
         */
 
+
         /*
-        | IMPORTANT:
-        | /create must appear before /{shortUrl}
-        | so "create" is not interpreted as a short URL ID.
+        |--------------------------------------------------------------------------
+        | All Links
+        |--------------------------------------------------------------------------
+        |
+        | /admin/links
+        |
+        | Also handles:
+        |
+        | /admin/links?favorite=1
+        | /admin/links?trash=1
+        |
         */
 
         Route::get('/links', [
@@ -144,40 +170,63 @@ Route::middleware(['auth', 'verified', 'admin'])
             'index',
         ])->name('links.index');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Link
+        |--------------------------------------------------------------------------
+        |
+        | MUST be before /links/{id}.
+        |
+        */
+
         Route::get('/links/create', [
             AdminLinkController::class,
             'create',
         ])->name('links.create');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Store Link
+        |--------------------------------------------------------------------------
+        */
 
         Route::post('/links', [
             AdminLinkController::class,
             'store',
         ])->name('links.store');
 
-        Route::get('/links/{shortUrl}', [
-            AdminLinkController::class,
-            'show',
-        ])->name('links.show');
 
-        Route::get('/links/{shortUrl}/edit', [
-            AdminLinkController::class,
-            'edit',
-        ])->name('links.edit');
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Trash Actions
+        |--------------------------------------------------------------------------
+        |
+        | These MUST appear before /links/{id}.
+        |
+        */
 
-        Route::patch('/links/{shortUrl}', [
-            AdminLinkController::class,
-            'update',
-        ])->name('links.update');
 
-        Route::delete('/links/{shortUrl}', [
-            AdminLinkController::class,
-            'destroy',
-        ])->name('links.destroy');
+        /*
+        | Restore trashed link
+        |
+        | /admin/links/trash/{id}/restore
+        |
+        */
 
         Route::patch('/links/trash/{id}/restore', [
             AdminLinkController::class,
             'restore',
         ])->name('links.restore');
+
+
+        /*
+        | Permanently delete trashed link
+        |
+        | /admin/links/trash/{id}/force-delete
+        |
+        */
 
         Route::delete('/links/trash/{id}/force-delete', [
             AdminLinkController::class,
@@ -187,8 +236,68 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         /*
         |--------------------------------------------------------------------------
+        | View Individual Link
+        |--------------------------------------------------------------------------
+        |
+        | Using {id} instead of implicit {shortUrl} binding is intentional.
+        |
+        | The controller uses withTrashed(), so Admin can also
+        | view links that are currently in Trash.
+        |
+        */
+
+        Route::get('/links/{id}', [
+            AdminLinkController::class,
+            'show',
+        ])->name('links.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Edit Individual Link
+        |--------------------------------------------------------------------------
+        |
+        | Admin can edit any user's link.
+        |
+        */
+
+        Route::get('/links/{id}/edit', [
+            AdminLinkController::class,
+            'edit',
+        ])->name('links.edit');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Individual Link
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch('/links/{id}', [
+            AdminLinkController::class,
+            'update',
+        ])->name('links.update');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Move Link To Trash
+        |--------------------------------------------------------------------------
+        */
+
+        Route::delete('/links/{id}', [
+            AdminLinkController::class,
+            'destroy',
+        ])->name('links.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Admin Analytics
         |--------------------------------------------------------------------------
+        |
+        | Admin sees system-wide analytics.
+        |
         */
 
         Route::get('/analytics', [
@@ -201,6 +310,9 @@ Route::middleware(['auth', 'verified', 'admin'])
         |--------------------------------------------------------------------------
         | Admin Activity Logs
         |--------------------------------------------------------------------------
+        |
+        | Admin sees system-wide activity logs.
+        |
         */
 
         Route::get('/activity-logs', [
@@ -220,14 +332,18 @@ Route::middleware(['auth', 'verified', 'admin'])
 | Authenticated User Panel
 |--------------------------------------------------------------------------
 |
-| IMPORTANT:
-| These routes are now restricted to users with role = "user".
+| Only normal users with role = "user" can access these routes.
 |
-| Administrators cannot enter the normal user business panel.
+| Administrators are intentionally prevented from accessing the
+| normal user business panel.
 |
 */
 
-Route::middleware(['auth', 'verified', 'user'])->group(function () {
+Route::middleware([
+    'auth',
+    'verified',
+    'user',
+])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -247,40 +363,80 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
+
+    /*
+    | All user's links
+    */
+
     Route::get('/links', [
         ShortUrlController::class,
         'index',
     ])->name('links.index');
+
+
+    /*
+    | User Favorites
+    */
 
     Route::get('/links/favorites', [
         ShortUrlController::class,
         'favorites',
     ])->name('links.favorites');
 
+
+    /*
+    | Add/remove favorite
+    */
+
     Route::post('/links/{shortUrl}/favorite', [
         ShortUrlController::class,
         'toggleFavorite',
     ])->name('links.favorite');
+
+
+    /*
+    | User Trash
+    */
 
     Route::get('/links/trash', [
         ShortUrlController::class,
         'trash',
     ])->name('links.trash');
 
+
+    /*
+    | Move user's link to Trash
+    */
+
     Route::delete('/links/{shortUrl}', [
         ShortUrlController::class,
         'destroy',
     ])->name('links.destroy');
+
+
+    /*
+    | Restore user's trashed link
+    */
 
     Route::patch('/links/trash/{shortUrl}/restore', [
         ShortUrlController::class,
         'restore',
     ])->name('links.restore');
 
+
+    /*
+    | Permanently delete user's trashed link
+    */
+
     Route::delete('/links/trash/{shortUrl}/force-delete', [
         ShortUrlController::class,
         'forceDelete',
     ])->name('links.force-delete');
+
+
+    /*
+    | Empty user's entire Trash
+    */
 
     Route::delete('/links/trash/empty', [
         ShortUrlController::class,
@@ -292,6 +448,10 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     | User Analytics
     |--------------------------------------------------------------------------
+    |
+    | Only the logged-in user's analytics should be shown
+    | by AnalyticsController.
+    |
     */
 
     Route::get('/analytics', [
@@ -306,25 +466,50 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
+
+    /*
+    | QR Code list
+    */
+
     Route::get('/qr-codes', [
         QrCodeController::class,
         'index',
     ])->name('qr-codes');
+
+
+    /*
+    | Generate QR Code
+    */
 
     Route::post('/qr-codes/generate', [
         QrCodeController::class,
         'generate',
     ])->name('qr-codes.generate');
 
+
+    /*
+    | Download PNG
+    */
+
     Route::get('/qr-codes/{qrCode}/download/png', [
         QrCodeController::class,
         'downloadPng',
     ])->name('qr-codes.download.png');
 
+
+    /*
+    | Download SVG
+    */
+
     Route::get('/qr-codes/{qrCode}/download/svg', [
         QrCodeController::class,
         'downloadSvg',
     ])->name('qr-codes.download.svg');
+
+
+    /*
+    | Delete QR Code
+    */
 
     Route::delete('/qr-codes/{qrCode}', [
         QrCodeController::class,
@@ -336,6 +521,10 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     | User Reports
     |--------------------------------------------------------------------------
+    |
+    | Only the logged-in user's reports should be returned
+    | by ReportController.
+    |
     */
 
     Route::get('/reports', [
@@ -343,15 +532,30 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
         'index',
     ])->name('reports');
 
+
+    /*
+    | Generate Report
+    */
+
     Route::post('/reports/generate', [
         ReportController::class,
         'generate',
     ])->name('reports.generate');
 
+
+    /*
+    | Download Report
+    */
+
     Route::get('/reports/{report}/download', [
         ReportController::class,
         'download',
     ])->name('reports.download');
+
+
+    /*
+    | Delete Report
+    */
 
     Route::delete('/reports/{report}', [
         ReportController::class,
@@ -363,12 +567,21 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     | User Activity Logs
     |--------------------------------------------------------------------------
+    |
+    | Only the logged-in user's activity should be returned
+    | by ActivityLogController.
+    |
     */
 
     Route::get('/activity-logs', [
         ActivityLogController::class,
         'index',
     ])->name('activity-logs');
+
+
+    /*
+    | Export user's activity logs
+    */
 
     Route::get('/activity-logs/export', [
         ActivityLogController::class,
@@ -387,6 +600,11 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
         'index',
     ])->name('settings');
 
+
+    /*
+    | Update user settings
+    */
+
     Route::patch('/settings', [
         SettingsController::class,
         'update',
@@ -399,22 +617,40 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 | Profile
 |--------------------------------------------------------------------------
 |
-| Profile is an account-level feature.
-| Both admins and normal users can manage their own profile.
+| Account-level profile.
+|
+| Both Admin and User can manage their own profile.
 |
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware([
+    'auth',
+    'verified',
+])->group(function () {
+
+    /*
+    | Edit profile
+    */
 
     Route::get('/profile', [
         ProfileController::class,
         'edit',
     ])->name('profile.edit');
 
+
+    /*
+    | Update profile
+    */
+
     Route::patch('/profile', [
         ProfileController::class,
         'update',
     ])->name('profile.update');
+
+
+    /*
+    | Delete own account
+    */
 
     Route::delete('/profile', [
         ProfileController::class,
@@ -436,6 +672,9 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 | Password-Protected Short URL
 |--------------------------------------------------------------------------
+|
+| This route handles password verification for protected links.
+|
 */
 
 Route::post('/password/{shortCode}', [
@@ -450,7 +689,13 @@ Route::post('/password/{shortCode}', [
 |--------------------------------------------------------------------------
 |
 | IMPORTANT:
-| This wildcard route MUST remain at the very bottom.
+|
+| This wildcard route MUST remain at the very bottom of this file.
+|
+| Example:
+|
+| /abc123
+| /my-custom-link
 |
 */
 

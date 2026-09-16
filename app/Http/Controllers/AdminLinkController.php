@@ -7,121 +7,92 @@ use App\Models\ShortUrl;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AdminLinkController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | All Links / Favorites / Trash
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Display all links, favorite links, or trashed links.
+     */
     public function index(Request $request): View
     {
         $isTrash = $request->boolean('trash');
         $isFavorite = $request->boolean('favorite');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Trash
-        |--------------------------------------------------------------------------
-        */
-
         if ($isTrash) {
-
             $query = ShortUrl::onlyTrashed()
                 ->with('user');
-
         } else {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Normal Links
-            |--------------------------------------------------------------------------
-            */
-
             $query = ShortUrl::with('user');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Favorites
-            |--------------------------------------------------------------------------
-            */
-
             if ($isFavorite) {
-
                 $query->where(
                     'is_favorite',
                     true
                 );
             }
+        }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Search
-            |--------------------------------------------------------------------------
-            */
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
 
-            if ($request->filled('search')) {
+        if ($request->filled('search')) {
+            $search = $request->input('search');
 
-                $search = $request->input('search');
-
-                $query->where(function ($query) use ($search) {
-
-                    $query->where(
+            $query->where(function ($query) use ($search) {
+                $query
+                    ->where(
                         'short_code',
                         'like',
                         "%{$search}%"
                     )
-
                     ->orWhere(
                         'custom_alias',
                         'like',
                         "%{$search}%"
                     )
-
                     ->orWhere(
                         'original_url',
                         'like',
                         "%{$search}%"
                     );
+            });
+        }
 
-                });
-            }
+        /*
+        |--------------------------------------------------------------------------
+        | Filter by User
+        |--------------------------------------------------------------------------
+        */
 
-            /*
-            |--------------------------------------------------------------------------
-            | Filter by User
-            |--------------------------------------------------------------------------
-            */
+        if ($request->filled('user_id')) {
+            $query->where(
+                'user_id',
+                $request->input('user_id')
+            );
+        }
 
-            if ($request->filled('user_id')) {
+        /*
+        |--------------------------------------------------------------------------
+        | Filter by Status
+        |--------------------------------------------------------------------------
+        */
 
-                $query->where(
-                    'user_id',
-                    $request->input('user_id')
-                );
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Filter by Status
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                $request->filled('status')
-                &&
-                !$isTrash
-            ) {
-
-                $query->where(
-                    'status',
-                    $request->input('status')
-                );
-            }
+        if (
+            $request->filled('status')
+            &&
+            !$isTrash
+        ) {
+            $query->where(
+                'status',
+                $request->input('status')
+            );
         }
 
         /*
@@ -137,7 +108,7 @@ class AdminLinkController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Users for Filter / Link Assignment
+        | Users
         |--------------------------------------------------------------------------
         */
 
@@ -150,12 +121,6 @@ class AdminLinkController extends Controller
             ->orderBy('name')
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Return View
-        |--------------------------------------------------------------------------
-        */
-
         return view(
             'pages.admin.links.index',
             [
@@ -167,18 +132,21 @@ class AdminLinkController extends Controller
         );
     }
 
+    /**
+     * Display one link.
+     *
+     * withTrashed() is important because Admin can view
+     * links that are currently in Trash.
+     */
+    public function show(int $id): View
+    {
+        $shortUrl = ShortUrl::withTrashed()
+            ->with('user')
+            ->findOrFail($id);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Show Link
-    |--------------------------------------------------------------------------
-    */
-
-    public function show(
-        ShortUrl $shortUrl
-    ): View {
-
-        $shortUrl->load('user');
+        $shortUrl->load([
+            'qrCodes',
+        ]);
 
         return view(
             'pages.admin.links.show',
@@ -188,13 +156,9 @@ class AdminLinkController extends Controller
         );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Create Link
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Show create link page.
+     */
     public function create(): View
     {
         $users = User::query()
@@ -214,13 +178,9 @@ class AdminLinkController extends Controller
         );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Store Link
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Store a new link.
+     */
     public function store(
         Request $request
     ): RedirectResponse {
@@ -272,45 +232,11 @@ class AdminLinkController extends Controller
                 'nullable',
                 'boolean',
             ],
-        ], [
-
-            'user_id.required' =>
-                'Please select a user.',
-
-            'user_id.exists' =>
-                'The selected user does not exist.',
-
-            'original_url.required' =>
-                'Please enter a URL.',
-
-            'original_url.url' =>
-                'Please enter a valid URL.',
-
-            'original_url.max' =>
-                'The URL cannot be longer than 2048 characters.',
-
-            'custom_alias.min' =>
-                'Custom alias must be at least 3 characters.',
-
-            'custom_alias.max' =>
-                'Custom alias cannot exceed 100 characters.',
-
-            'custom_alias.alpha_dash' =>
-                'Custom alias may only contain letters, numbers, dashes and underscores.',
-
-            'custom_alias.unique' =>
-                'This custom alias is already in use.',
-
-            'expires_at.after' =>
-                'Expiration date must be in the future.',
-
-            'scheduled_at.after' =>
-                'Scheduled activation must be in the future.',
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Validate Scheduled / Expiration Relationship
+        | Validate Scheduled Time
         |--------------------------------------------------------------------------
         */
 
@@ -319,17 +245,19 @@ class AdminLinkController extends Controller
             &&
             !empty($validated['expires_at'])
         ) {
+            $scheduledAt = \Carbon\Carbon::parse(
+                $validated['scheduled_at']
+            );
+
+            $expiresAt = \Carbon\Carbon::parse(
+                $validated['expires_at']
+            );
 
             if (
-                \Carbon\Carbon::parse(
-                    $validated['scheduled_at']
-                )->greaterThanOrEqualTo(
-                    \Carbon\Carbon::parse(
-                        $validated['expires_at']
-                    )
+                $scheduledAt->greaterThanOrEqualTo(
+                    $expiresAt
                 )
             ) {
-
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -346,11 +274,9 @@ class AdminLinkController extends Controller
         */
 
         do {
-
-            $shortCode = strtolower(
-                \Illuminate\Support\Str::random(6)
+            $shortCode = Str::lower(
+                Str::random(6)
             );
-
         } while (
             ShortUrl::where(
                 'short_code',
@@ -362,13 +288,6 @@ class AdminLinkController extends Controller
         |--------------------------------------------------------------------------
         | Create Link
         |--------------------------------------------------------------------------
-        |
-        | IMPORTANT:
-        | Password is intentionally NOT included.
-        |
-        | Admin cannot create or modify a user's password-protected
-        | link password from the Admin Links section.
-        |
         */
 
         $shortUrl = ShortUrl::create([
@@ -400,12 +319,6 @@ class AdminLinkController extends Controller
                 $request->boolean('is_favorite'),
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Activity Log
-        |--------------------------------------------------------------------------
-        */
-
         ActivityLogger::log(
             'admin_created',
             'Admin created short URL: ' .
@@ -415,7 +328,7 @@ class AdminLinkController extends Controller
         return redirect()
             ->route(
                 'admin.links.show',
-                $shortUrl
+                $shortUrl->id
             )
             ->with(
                 'success',
@@ -423,18 +336,16 @@ class AdminLinkController extends Controller
             );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Edit Link
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Show edit page.
+     */
     public function edit(
-        ShortUrl $shortUrl
+        int $id
     ): View {
 
-        $shortUrl->load('user');
+        $shortUrl = ShortUrl::withTrashed()
+            ->with('user')
+            ->findOrFail($id);
 
         $users = User::query()
             ->select([
@@ -454,36 +365,20 @@ class AdminLinkController extends Controller
         );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update Link
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Update a link.
+     *
+     * Admin does NOT change the link password.
+     */
     public function update(
         Request $request,
-        ShortUrl $shortUrl
+        int $id
     ): RedirectResponse {
 
-        /*
-        |--------------------------------------------------------------------------
-        | IMPORTANT SECURITY RULE
-        |--------------------------------------------------------------------------
-        |
-        | There is intentionally NO password field here.
-        |
-        | Even if someone manually sends:
-        |
-        | password=...
-        |
-        | the password will not be updated because the update array
-        | below contains only approved fields.
-        |
-        */
+        $shortUrl = ShortUrl::withTrashed()
+            ->findOrFail($id);
 
         $validated = $request->validate([
-
             'user_id' => [
                 'required',
                 'integer',
@@ -533,39 +428,11 @@ class AdminLinkController extends Controller
                 'nullable',
                 'boolean',
             ],
-        ], [
-
-            'user_id.required' =>
-                'Please select a user.',
-
-            'user_id.exists' =>
-                'The selected user does not exist.',
-
-            'original_url.required' =>
-                'Please enter a URL.',
-
-            'original_url.url' =>
-                'Please enter a valid URL.',
-
-            'original_url.max' =>
-                'The URL cannot be longer than 2048 characters.',
-
-            'custom_alias.min' =>
-                'Custom alias must be at least 3 characters.',
-
-            'custom_alias.max' =>
-                'Custom alias cannot exceed 100 characters.',
-
-            'custom_alias.alpha_dash' =>
-                'Custom alias may only contain letters, numbers, dashes and underscores.',
-
-            'custom_alias.unique' =>
-                'This custom alias is already in use.',
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Validate Scheduled / Expiration Relationship
+        | Validate Scheduled Time
         |--------------------------------------------------------------------------
         */
 
@@ -574,17 +441,19 @@ class AdminLinkController extends Controller
             &&
             !empty($validated['expires_at'])
         ) {
+            $scheduledAt = \Carbon\Carbon::parse(
+                $validated['scheduled_at']
+            );
+
+            $expiresAt = \Carbon\Carbon::parse(
+                $validated['expires_at']
+            );
 
             if (
-                \Carbon\Carbon::parse(
-                    $validated['scheduled_at']
-                )->greaterThanOrEqualTo(
-                    \Carbon\Carbon::parse(
-                        $validated['expires_at']
-                    )
+                $scheduledAt->greaterThanOrEqualTo(
+                    $expiresAt
                 )
             ) {
-
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -596,11 +465,8 @@ class AdminLinkController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Update ONLY Allowed Fields
+        | Update Link
         |--------------------------------------------------------------------------
-        |
-        | Password is deliberately omitted.
-        |
         */
 
         $shortUrl->update([
@@ -626,12 +492,6 @@ class AdminLinkController extends Controller
                 $request->boolean('is_favorite'),
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Activity Log
-        |--------------------------------------------------------------------------
-        */
-
         ActivityLogger::log(
             'admin_updated',
             'Admin updated short URL: ' .
@@ -641,7 +501,7 @@ class AdminLinkController extends Controller
         return redirect()
             ->route(
                 'admin.links.show',
-                $shortUrl
+                $shortUrl->id
             )
             ->with(
                 'success',
@@ -649,16 +509,14 @@ class AdminLinkController extends Controller
             );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Move Link to Trash
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Move link to Trash.
+     */
     public function destroy(
-        ShortUrl $shortUrl
+        int $id
     ): RedirectResponse {
+
+        $shortUrl = ShortUrl::findOrFail($id);
 
         $shortCode =
             $shortUrl->short_code;
@@ -681,13 +539,9 @@ class AdminLinkController extends Controller
             );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Restore Link
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Restore a trashed link.
+     */
     public function restore(
         int $id
     ): RedirectResponse {
@@ -719,18 +573,15 @@ class AdminLinkController extends Controller
             );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Permanently Delete Link
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * Permanently delete a trashed link.
+     */
     public function forceDelete(
         int $id
     ): RedirectResponse {
 
         $shortUrl = ShortUrl::onlyTrashed()
+            ->with('qrCodes')
             ->findOrFail($id);
 
         $shortCode =
@@ -738,12 +589,30 @@ class AdminLinkController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Delete QR Codes First
+        | Delete QR logos
         |--------------------------------------------------------------------------
-        |
-        | This prevents orphan QR records if the relationship does not
-        | have cascade delete configured at the database level.
-        |
+        */
+
+        foreach (
+            $shortUrl->qrCodes as $qrCode
+        ) {
+            if (
+                $qrCode->logo_path
+                &&
+                Storage::disk('public')->exists(
+                    $qrCode->logo_path
+                )
+            ) {
+                Storage::disk('public')->delete(
+                    $qrCode->logo_path
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete QR records
+        |--------------------------------------------------------------------------
         */
 
         $shortUrl->qrCodes()->delete();
