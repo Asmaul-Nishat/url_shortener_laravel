@@ -17,38 +17,11 @@ class ActivityLogController extends Controller
 
     public function index(Request $request)
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Search
-        |--------------------------------------------------------------------------
-        */
-
         $search = $request->input('search');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Activity Type
-        |--------------------------------------------------------------------------
-        */
 
         $type = $request->input('type');
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Status
-        |--------------------------------------------------------------------------
-        */
-
         $status = $request->input('status');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Date Range
-        |--------------------------------------------------------------------------
-        */
 
         $dateRange = $request->input(
             'date_range',
@@ -61,44 +34,54 @@ class ActivityLogController extends Controller
         | Base Query
         |--------------------------------------------------------------------------
         |
-        | Admin can see activity logs from all users.
+        | Admin:
+        |     Can see all users' activity logs.
+        |
+        | User:
+        |     Can only see their own activity logs.
         |
         */
 
         $query = ActivityLog::with('user');
 
+        if (!Auth::user()->isAdmin()) {
+            $query->where(
+                'user_id',
+                Auth::id()
+            );
+        }
+
 
         /*
         |--------------------------------------------------------------------------
-        | Search Filter
+        | Search
         |--------------------------------------------------------------------------
-        |
-        | Search by:
-        | - User name
-        | - Activity
-        | - Description
-        | - IP address
-        |
         */
 
         if ($search) {
             $query->where(function ($q) use ($search) {
 
-                $q->where('activity', 'like', '%' . $search . '%')
+                $q->where(
+                    'activity',
+                    'like',
+                    '%' . $search . '%'
+                )
 
-                    ->orWhere(
-                        'description',
-                        'like',
-                        '%' . $search . '%'
-                    )
+                ->orWhere(
+                    'description',
+                    'like',
+                    '%' . $search . '%'
+                )
 
-                    ->orWhere(
-                        'ip_address',
-                        'like',
-                        '%' . $search . '%'
-                    )
+                ->orWhere(
+                    'ip_address',
+                    'like',
+                    '%' . $search . '%'
+                )
 
-                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                ->orWhereHas(
+                    'user',
+                    function ($userQuery) use ($search) {
 
                         $userQuery->where(
                             'name',
@@ -106,7 +89,8 @@ class ActivityLogController extends Controller
                             '%' . $search . '%'
                         );
 
-                    });
+                    }
+                );
             });
         }
 
@@ -117,8 +101,14 @@ class ActivityLogController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($type && $type !== 'All Activities') {
-            $query->where('type', $type);
+        if (
+            $type &&
+            $type !== 'All Activities'
+        ) {
+            $query->where(
+                'type',
+                $type
+            );
         }
 
 
@@ -128,8 +118,14 @@ class ActivityLogController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($status && $status !== 'All Status') {
-            $query->where('status', $status);
+        if (
+            $status &&
+            $status !== 'All Status'
+        ) {
+            $query->where(
+                'status',
+                $status
+            );
         }
 
 
@@ -146,7 +142,9 @@ class ActivityLogController extends Controller
                 $query->where(
                     'created_at',
                     '>=',
-                    now()->subDays(6)->startOfDay()
+                    now()
+                        ->subDays(6)
+                        ->startOfDay()
                 );
 
                 break;
@@ -157,7 +155,9 @@ class ActivityLogController extends Controller
                 $query->where(
                     'created_at',
                     '>=',
-                    now()->subDays(29)->startOfDay()
+                    now()
+                        ->subDays(29)
+                        ->startOfDay()
                 );
 
                 break;
@@ -168,7 +168,9 @@ class ActivityLogController extends Controller
                 $query->where(
                     'created_at',
                     '>=',
-                    now()->subDays(89)->startOfDay()
+                    now()
+                        ->subDays(89)
+                        ->startOfDay()
                 );
 
                 break;
@@ -191,11 +193,13 @@ class ActivityLogController extends Controller
                     $request->filled('end_date')
                 ) {
 
-                    $query->whereBetween('created_at', [
-                        $request->start_date . ' 00:00:00',
-
-                        $request->end_date . ' 23:59:59',
-                    ]);
+                    $query->whereBetween(
+                        'created_at',
+                        [
+                            $request->start_date . ' 00:00:00',
+                            $request->end_date . ' 23:59:59',
+                        ]
+                    );
                 }
 
                 break;
@@ -218,27 +222,51 @@ class ActivityLogController extends Controller
         |--------------------------------------------------------------------------
         | Summary Cards
         |--------------------------------------------------------------------------
+        |
+        | Admin:
+        |     System-wide statistics.
+        |
+        | User:
+        |     Current user's statistics.
+        |
         */
 
-        $totalActivities = ActivityLog::count();
+        $summaryQuery = ActivityLog::query();
+
+        if (!Auth::user()->isAdmin()) {
+            $summaryQuery->where(
+                'user_id',
+                Auth::id()
+            );
+        }
 
 
-        $today = ActivityLog::whereDate(
-            'created_at',
-            today()
-        )->count();
+        $totalActivities = (clone $summaryQuery)
+            ->count();
 
 
-        $successful = ActivityLog::where(
-            'status',
-            'Successful'
-        )->count();
+        $today = (clone $summaryQuery)
+            ->whereDate(
+                'created_at',
+                today()
+            )
+            ->count();
 
 
-        $failed = ActivityLog::where(
-            'status',
-            'Failed'
-        )->count();
+        $successful = (clone $summaryQuery)
+            ->where(
+                'status',
+                'Successful'
+            )
+            ->count();
+
+
+        $failed = (clone $summaryQuery)
+            ->where(
+                'status',
+                'Failed'
+            )
+            ->count();
 
 
         /*
@@ -266,7 +294,7 @@ class ActivityLogController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Export
+    | Export Activity Logs
     |--------------------------------------------------------------------------
     */
 
@@ -274,11 +302,26 @@ class ActivityLogController extends Controller
     {
         /*
         |--------------------------------------------------------------------------
-        | Get All Activities
+        | Base Query
         |--------------------------------------------------------------------------
+        |
+        | Admin exports all activity logs.
+        |
+        | User exports only their own activity logs.
+        |
         */
 
-        $activities = ActivityLog::with('user')
+        $query = ActivityLog::with('user');
+
+        if (!Auth::user()->isAdmin()) {
+            $query->where(
+                'user_id',
+                Auth::id()
+            );
+        }
+
+
+        $activities = $query
             ->latest('created_at')
             ->get();
 

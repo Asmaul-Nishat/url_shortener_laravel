@@ -12,7 +12,7 @@ class AnalyticsController extends Controller
 {
     public function index(Request $request): View
     {
-        $userId = Auth::id();
+        $user = Auth::user();
 
         /*
         |--------------------------------------------------------------------------
@@ -20,39 +20,84 @@ class AnalyticsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $period = $request->get('period', '7');
+        $period = $request->get(
+            'period',
+            '7'
+        );
 
         switch ($period) {
+
             case '30':
-                $startDate = now()->subDays(29)->startOfDay();
+
+                $startDate = now()
+                    ->subDays(29)
+                    ->startOfDay();
+
                 $periodLabel = 'Last 30 Days';
+
                 break;
+
 
             case '90':
-                $startDate = now()->subDays(89)->startOfDay();
+
+                $startDate = now()
+                    ->subDays(89)
+                    ->startOfDay();
+
                 $periodLabel = 'Last 90 Days';
+
                 break;
+
 
             case 'year':
-                $startDate = now()->startOfYear();
+
+                $startDate = now()
+                    ->startOfYear();
+
                 $periodLabel = 'This Year';
+
                 break;
 
+
             default:
-                $startDate = now()->subDays(6)->startOfDay();
+
+                $startDate = now()
+                    ->subDays(6)
+                    ->startOfDay();
+
                 $period = '7';
+
                 $periodLabel = 'Last 7 Days';
+
                 break;
         }
 
+
         /*
         |--------------------------------------------------------------------------
-        | User's Short URLs
+        | Short URLs
         |--------------------------------------------------------------------------
+        |
+        | Admin:
+        |     All links.
+        |
+        | User:
+        |     Only current user's links.
+        |
         */
 
-        $shortUrlIds = ShortUrl::where('user_id', $userId)
+        $shortUrlQuery = ShortUrl::query();
+
+        if (!$user->isAdmin()) {
+            $shortUrlQuery->where(
+                'user_id',
+                $user->id
+            );
+        }
+
+        $shortUrlIds = $shortUrlQuery
             ->pluck('id');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -65,38 +110,56 @@ class AnalyticsController extends Controller
             $shortUrlIds
         );
 
+
         /*
         |--------------------------------------------------------------------------
         | Overview Statistics
         |--------------------------------------------------------------------------
         */
 
-        $totalClicks = (clone $allClicks)->count();
+        $totalClicks = (clone $allClicks)
+            ->count();
+
 
         $todayClicks = (clone $allClicks)
-            ->whereDate('clicked_at', today())
+            ->whereDate(
+                'clicked_at',
+                today()
+            )
             ->count();
+
 
         $yesterdayClicks = (clone $allClicks)
             ->whereDate(
                 'clicked_at',
-                now()->subDay()->toDateString()
+                now()
+                    ->subDay()
+                    ->toDateString()
             )
             ->count();
 
+
         $weekClicks = (clone $allClicks)
-            ->whereBetween('clicked_at', [
-                now()->startOfWeek(),
-                now()->endOfWeek(),
-            ])
+            ->whereBetween(
+                'clicked_at',
+                [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ]
+            )
             ->count();
 
+
         $monthClicks = (clone $allClicks)
-            ->whereBetween('clicked_at', [
-                now()->startOfMonth(),
-                now()->endOfMonth(),
-            ])
+            ->whereBetween(
+                'clicked_at',
+                [
+                    now()->startOfMonth(),
+                    now()->endOfMonth(),
+                ]
+            )
             ->count();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -105,9 +168,14 @@ class AnalyticsController extends Controller
         */
 
         $filteredClicks = (clone $allClicks)
-            ->where('clicked_at', '>=', $startDate)
+            ->where(
+                'clicked_at',
+                '>=',
+                $startDate
+            )
             ->orderBy('clicked_at')
             ->get();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -116,6 +184,7 @@ class AnalyticsController extends Controller
         */
 
         $dailyLabels = [];
+
         $dailyData = [];
 
         $chartEnd = now()->endOfDay();
@@ -126,17 +195,25 @@ class AnalyticsController extends Controller
 
             $date = $currentDate->toDateString();
 
-            $dailyLabels[] = $currentDate->format('M d');
+            $dailyLabels[] = $currentDate
+                ->format('M d');
+
 
             $dailyData[] = $filteredClicks
-                ->filter(function ($click) use ($date) {
-                    return $click->clicked_at
-                        && $click->clicked_at->toDateString() === $date;
-                })
+                ->filter(
+                    function ($click) use ($date) {
+
+                        return $click->clicked_at
+                            && $click->clicked_at
+                                ->toDateString() === $date;
+                    }
+                )
                 ->count();
+
 
             $currentDate->addDay();
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -146,21 +223,32 @@ class AnalyticsController extends Controller
 
         $weeklyData = [];
 
-        foreach ($filteredClicks->groupBy(function ($click) {
-            return $click->clicked_at
-                ? $click->clicked_at->startOfWeek()->format('Y-m-d')
-                : null;
-        }) as $week => $clicks) {
+        foreach (
+            $filteredClicks->groupBy(
+                function ($click) {
+
+                    return $click->clicked_at
+                        ? $click->clicked_at
+                            ->startOfWeek()
+                            ->format('Y-m-d')
+                        : null;
+                }
+            )
+            as $week => $clicks
+        ) {
 
             if ($week) {
+
                 $weeklyData[] = [
                     'label' => now()
                         ->parse($week)
                         ->format('M d'),
+
                     'count' => $clicks->count(),
                 ];
             }
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -170,21 +258,31 @@ class AnalyticsController extends Controller
 
         $monthlyData = [];
 
-        foreach ($filteredClicks->groupBy(function ($click) {
-            return $click->clicked_at
-                ? $click->clicked_at->format('Y-m')
-                : null;
-        }) as $month => $clicks) {
+        foreach (
+            $filteredClicks->groupBy(
+                function ($click) {
+
+                    return $click->clicked_at
+                        ? $click->clicked_at
+                            ->format('Y-m')
+                        : null;
+                }
+            )
+            as $month => $clicks
+        ) {
 
             if ($month) {
+
                 $monthlyData[] = [
                     'label' => now()
                         ->parse($month . '-01')
                         ->format('M Y'),
+
                     'count' => $clicks->count(),
                 ];
             }
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -199,38 +297,89 @@ class AnalyticsController extends Controller
             'Other' => 0,
         ];
 
+
         foreach ($filteredClicks as $click) {
 
             $userAgent = strtolower(
                 $click->user_agent ?? ''
             );
 
+
             if (
-                str_contains($userAgent, 'ipad') ||
-                str_contains($userAgent, 'tablet') ||
+                str_contains(
+                    $userAgent,
+                    'ipad'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'tablet'
+                )
+                ||
                 (
-                    str_contains($userAgent, 'android') &&
-                    !str_contains($userAgent, 'mobile')
+                    str_contains(
+                        $userAgent,
+                        'android'
+                    )
+                    &&
+                    !str_contains(
+                        $userAgent,
+                        'mobile'
+                    )
                 )
             ) {
+
                 $devices['Tablet']++;
+
             } elseif (
-                str_contains($userAgent, 'mobile') ||
-                str_contains($userAgent, 'iphone') ||
-                str_contains($userAgent, 'android')
+                str_contains(
+                    $userAgent,
+                    'mobile'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'iphone'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'android'
+                )
             ) {
+
                 $devices['Mobile']++;
+
             } elseif (
-                str_contains($userAgent, 'windows') ||
-                str_contains($userAgent, 'macintosh') ||
-                str_contains($userAgent, 'linux') ||
-                str_contains($userAgent, 'x11')
+                str_contains(
+                    $userAgent,
+                    'windows'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'macintosh'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'linux'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'x11'
+                )
             ) {
+
                 $devices['Desktop']++;
+
             } else {
+
                 $devices['Other']++;
             }
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -247,35 +396,80 @@ class AnalyticsController extends Controller
             'Other' => 0,
         ];
 
+
         foreach ($filteredClicks as $click) {
 
             $userAgent = strtolower(
                 $click->user_agent ?? ''
             );
 
-            if (str_contains($userAgent, 'edg/')) {
+
+            if (
+                str_contains(
+                    $userAgent,
+                    'edg/'
+                )
+            ) {
+
                 $browsers['Edge']++;
+
             } elseif (
-                str_contains($userAgent, 'opr/') ||
-                str_contains($userAgent, 'opera')
+                str_contains(
+                    $userAgent,
+                    'opr/'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'opera'
+                )
             ) {
+
                 $browsers['Opera']++;
-            } elseif (str_contains($userAgent, 'firefox')) {
+
+            } elseif (
+                str_contains(
+                    $userAgent,
+                    'firefox'
+                )
+            ) {
+
                 $browsers['Firefox']++;
+
             } elseif (
-                str_contains($userAgent, 'chrome') &&
-                !str_contains($userAgent, 'edg/')
+                str_contains(
+                    $userAgent,
+                    'chrome'
+                )
+                &&
+                !str_contains(
+                    $userAgent,
+                    'edg/'
+                )
             ) {
+
                 $browsers['Chrome']++;
+
             } elseif (
-                str_contains($userAgent, 'safari') &&
-                !str_contains($userAgent, 'chrome')
+                str_contains(
+                    $userAgent,
+                    'safari'
+                )
+                &&
+                !str_contains(
+                    $userAgent,
+                    'chrome'
+                )
             ) {
+
                 $browsers['Safari']++;
+
             } else {
+
                 $browsers['Other']++;
             }
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -292,33 +486,80 @@ class AnalyticsController extends Controller
             'Other' => 0,
         ];
 
+
         foreach ($filteredClicks as $click) {
 
             $userAgent = strtolower(
                 $click->user_agent ?? ''
             );
 
-            if (str_contains($userAgent, 'windows')) {
+
+            if (
+                str_contains(
+                    $userAgent,
+                    'windows'
+                )
+            ) {
+
                 $operatingSystems['Windows']++;
+
             } elseif (
-                str_contains($userAgent, 'iphone') ||
-                str_contains($userAgent, 'ipad') ||
-                str_contains($userAgent, 'ios')
+                str_contains(
+                    $userAgent,
+                    'iphone'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'ipad'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'ios'
+                )
             ) {
+
                 $operatingSystems['iOS']++;
-            } elseif (str_contains($userAgent, 'android')) {
-                $operatingSystems['Android']++;
+
             } elseif (
-                str_contains($userAgent, 'macintosh') ||
-                str_contains($userAgent, 'mac os')
+                str_contains(
+                    $userAgent,
+                    'android'
+                )
             ) {
+
+                $operatingSystems['Android']++;
+
+            } elseif (
+                str_contains(
+                    $userAgent,
+                    'macintosh'
+                )
+                ||
+                str_contains(
+                    $userAgent,
+                    'mac os'
+                )
+            ) {
+
                 $operatingSystems['macOS']++;
-            } elseif (str_contains($userAgent, 'linux')) {
+
+            } elseif (
+                str_contains(
+                    $userAgent,
+                    'linux'
+                )
+            ) {
+
                 $operatingSystems['Linux']++;
+
             } else {
+
                 $operatingSystems['Other']++;
             }
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -327,22 +568,25 @@ class AnalyticsController extends Controller
         */
 
         $referrers = $filteredClicks
-            ->map(function ($click) {
+            ->map(
+                function ($click) {
 
-                if (!$click->referer) {
-                    return 'Direct';
+                    if (!$click->referer) {
+                        return 'Direct';
+                    }
+
+                    $host = parse_url(
+                        $click->referer,
+                        PHP_URL_HOST
+                    );
+
+                    return $host ?: 'Direct';
                 }
-
-                $host = parse_url(
-                    $click->referer,
-                    PHP_URL_HOST
-                );
-
-                return $host ?: 'Direct';
-            })
+            )
             ->countBy()
             ->sortDesc()
             ->take(10);
+
 
         /*
         |--------------------------------------------------------------------------
@@ -350,13 +594,21 @@ class AnalyticsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $topLinks = ShortUrl::where(
-            'user_id',
-            $userId
-        )
-        ->orderByDesc('click_count')
-        ->take(10)
-        ->get();
+        $topLinksQuery = ShortUrl::query()
+            ->orderByDesc('click_count')
+            ->take(10);
+
+
+        if (!$user->isAdmin()) {
+            $topLinksQuery->where(
+                'user_id',
+                $user->id
+            );
+        }
+
+
+        $topLinks = $topLinksQuery->get();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -364,29 +616,42 @@ class AnalyticsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        return view('pages.analytics.index', [
-            'totalClicks' => $totalClicks,
-            'todayClicks' => $todayClicks,
-            'yesterdayClicks' => $yesterdayClicks,
-            'weekClicks' => $weekClicks,
-            'monthClicks' => $monthClicks,
+        return view(
+            'pages.analytics.index',
+            [
+                'totalClicks' => $totalClicks,
 
-            'period' => $period,
-            'periodLabel' => $periodLabel,
+                'todayClicks' => $todayClicks,
 
-            'dailyLabels' => $dailyLabels,
-            'dailyData' => $dailyData,
+                'yesterdayClicks' => $yesterdayClicks,
 
-            'weeklyData' => $weeklyData,
-            'monthlyData' => $monthlyData,
+                'weekClicks' => $weekClicks,
 
-            'devices' => $devices,
-            'browsers' => $browsers,
-            'operatingSystems' => $operatingSystems,
+                'monthClicks' => $monthClicks,
 
-            'referrers' => $referrers,
+                'period' => $period,
 
-            'topLinks' => $topLinks,
-        ]);
+                'periodLabel' => $periodLabel,
+
+                'dailyLabels' => $dailyLabels,
+
+                'dailyData' => $dailyData,
+
+                'weeklyData' => $weeklyData,
+
+                'monthlyData' => $monthlyData,
+
+                'devices' => $devices,
+
+                'browsers' => $browsers,
+
+                'operatingSystems' =>
+                    $operatingSystems,
+
+                'referrers' => $referrers,
+
+                'topLinks' => $topLinks,
+            ]
+        );
     }
 }

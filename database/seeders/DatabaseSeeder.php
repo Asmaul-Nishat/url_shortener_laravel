@@ -3,23 +3,62 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        /*
+        |--------------------------------------------------------------------------
+        | Admin User
+        |--------------------------------------------------------------------------
+        |
+        | This account is used to access the Admin Panel.
+        | Admin registration is not available from the website.
+        |
+        */
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::updateOrCreate(
+            [
+                'email' => 'admin@example.com',
+            ],
+            [
+                'first_name' => 'System',
+                'last_name' => 'Admin',
+                'name' => 'System Admin',
+                'password' => Hash::make('Admin@12345'),
+                'role' => 'admin',
+                'email_verified_at' => now(),
+            ]
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Demo User
+        |--------------------------------------------------------------------------
+        |
+        | This account is used for testing the normal User Panel.
+        |
+        */
+
+        User::updateOrCreate(
+            [
+                'email' => 'test@example.com',
+            ],
+            [
+                'first_name' => 'Demo',
+                'last_name' => 'User',
+                'name' => 'Demo User',
+                'password' => Hash::make('User@12345'),
+                'role' => 'user',
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }

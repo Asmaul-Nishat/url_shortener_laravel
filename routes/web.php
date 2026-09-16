@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminLinkController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -27,16 +30,20 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 | Public Create Short URL
 |--------------------------------------------------------------------------
+|
+| Guests can create temporary short URLs.
+| Authenticated users can also use this endpoint.
+|
 */
 
 Route::get('/links/create', [
     ShortUrlController::class,
-    'create'
+    'create',
 ])->name('links.create');
 
 Route::post('/links', [
     ShortUrlController::class,
-    'store'
+    'store',
 ])->name('links.store');
 
 
@@ -44,236 +51,381 @@ Route::post('/links', [
 |--------------------------------------------------------------------------
 | Public Guest QR Code
 |--------------------------------------------------------------------------
-|
-| These routes are for the public landing page.
-| Guest QR codes are stored in the session and are not saved
-| in the authenticated user's QR code database table.
-|
 */
 
 Route::post('/qr-codes/guest/generate', [
     QrCodeController::class,
-    'generateGuest'
+    'generateGuest',
 ])->name('qr-codes.guest.generate');
 
 Route::get('/qr-codes/guest/download', [
     QrCodeController::class,
-    'downloadGuest'
+    'downloadGuest',
 ])->name('qr-codes.guest.download');
 
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Routes
+| Admin Panel
 |--------------------------------------------------------------------------
+|
+| Only authenticated, verified administrators can access these routes.
+|
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/dashboard', [
+            AdminDashboardController::class,
+            'index',
+        ])->name('dashboard');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Users
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/users', [
+            AdminUserController::class,
+            'index',
+        ])->name('users.index');
+
+        Route::get('/users/{user}', [
+            AdminUserController::class,
+            'show',
+        ])->name('users.show');
+
+        Route::get('/users/{user}/edit', [
+            AdminUserController::class,
+            'edit',
+        ])->name('users.edit');
+
+        Route::patch('/users/{user}', [
+            AdminUserController::class,
+            'update',
+        ])->name('users.update');
+
+        Route::patch('/users/{user}/toggle-status', [
+            AdminUserController::class,
+            'toggleStatus',
+        ])->name('users.toggle-status');
+
+        Route::delete('/users/{user}', [
+            AdminUserController::class,
+            'destroy',
+        ])->name('users.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Links
+        |--------------------------------------------------------------------------
+        */
+
+        /*
+        | IMPORTANT:
+        | /create must appear before /{shortUrl}
+        | so "create" is not interpreted as a short URL ID.
+        */
+
+        Route::get('/links', [
+            AdminLinkController::class,
+            'index',
+        ])->name('links.index');
+
+        Route::get('/links/create', [
+            AdminLinkController::class,
+            'create',
+        ])->name('links.create');
+
+        Route::post('/links', [
+            AdminLinkController::class,
+            'store',
+        ])->name('links.store');
+
+        Route::get('/links/{shortUrl}', [
+            AdminLinkController::class,
+            'show',
+        ])->name('links.show');
+
+        Route::get('/links/{shortUrl}/edit', [
+            AdminLinkController::class,
+            'edit',
+        ])->name('links.edit');
+
+        Route::patch('/links/{shortUrl}', [
+            AdminLinkController::class,
+            'update',
+        ])->name('links.update');
+
+        Route::delete('/links/{shortUrl}', [
+            AdminLinkController::class,
+            'destroy',
+        ])->name('links.destroy');
+
+        Route::patch('/links/trash/{id}/restore', [
+            AdminLinkController::class,
+            'restore',
+        ])->name('links.restore');
+
+        Route::delete('/links/trash/{id}/force-delete', [
+            AdminLinkController::class,
+            'forceDelete',
+        ])->name('links.force-delete');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Analytics
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/analytics', [
+            AnalyticsController::class,
+            'index',
+        ])->name('analytics');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Activity Logs
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/activity-logs', [
+            ActivityLogController::class,
+            'index',
+        ])->name('activity-logs');
+
+        Route::get('/activity-logs/export', [
+            ActivityLogController::class,
+            'export',
+        ])->name('activity-logs.export');
+    });
+
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated User Panel
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| These routes are now restricted to users with role = "user".
+|
+| Administrators cannot enter the normal user business panel.
+|
+*/
+
+Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Dashboard
+    | User Dashboard
     |--------------------------------------------------------------------------
     */
 
     Route::get('/dashboard', [
         DashboardController::class,
-        'index'
+        'index',
     ])->name('dashboard');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Links
+    | User Links
     |--------------------------------------------------------------------------
     */
 
     Route::get('/links', [
         ShortUrlController::class,
-        'index'
+        'index',
     ])->name('links.index');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Favorites
-    |--------------------------------------------------------------------------
-    */
 
     Route::get('/links/favorites', [
         ShortUrlController::class,
-        'favorites'
+        'favorites',
     ])->name('links.favorites');
 
     Route::post('/links/{shortUrl}/favorite', [
         ShortUrlController::class,
-        'toggleFavorite'
+        'toggleFavorite',
     ])->name('links.favorite');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Trash
-    |--------------------------------------------------------------------------
-    */
 
     Route::get('/links/trash', [
         ShortUrlController::class,
-        'trash'
+        'trash',
     ])->name('links.trash');
 
     Route::delete('/links/{shortUrl}', [
         ShortUrlController::class,
-        'destroy'
+        'destroy',
     ])->name('links.destroy');
 
     Route::patch('/links/trash/{shortUrl}/restore', [
         ShortUrlController::class,
-        'restore'
+        'restore',
     ])->name('links.restore');
 
     Route::delete('/links/trash/{shortUrl}/force-delete', [
         ShortUrlController::class,
-        'forceDelete'
+        'forceDelete',
     ])->name('links.force-delete');
 
     Route::delete('/links/trash/empty', [
         ShortUrlController::class,
-        'emptyTrash'
+        'emptyTrash',
     ])->name('links.empty-trash');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Analytics
+    | User Analytics
     |--------------------------------------------------------------------------
     */
 
     Route::get('/analytics', [
         AnalyticsController::class,
-        'index'
+        'index',
     ])->name('analytics');
 
 
     /*
     |--------------------------------------------------------------------------
-    | QR Codes
+    | User QR Codes
     |--------------------------------------------------------------------------
     */
 
     Route::get('/qr-codes', [
         QrCodeController::class,
-        'index'
+        'index',
     ])->name('qr-codes');
 
     Route::post('/qr-codes/generate', [
         QrCodeController::class,
-        'generate'
+        'generate',
     ])->name('qr-codes.generate');
 
     Route::get('/qr-codes/{qrCode}/download/png', [
         QrCodeController::class,
-        'downloadPng'
+        'downloadPng',
     ])->name('qr-codes.download.png');
 
     Route::get('/qr-codes/{qrCode}/download/svg', [
         QrCodeController::class,
-        'downloadSvg'
+        'downloadSvg',
     ])->name('qr-codes.download.svg');
 
     Route::delete('/qr-codes/{qrCode}', [
         QrCodeController::class,
-        'destroy'
+        'destroy',
     ])->name('qr-codes.destroy');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Reports
+    | User Reports
     |--------------------------------------------------------------------------
     */
 
     Route::get('/reports', [
         ReportController::class,
-        'index'
+        'index',
     ])->name('reports');
 
     Route::post('/reports/generate', [
         ReportController::class,
-        'generate'
+        'generate',
     ])->name('reports.generate');
 
     Route::get('/reports/{report}/download', [
         ReportController::class,
-        'download'
+        'download',
     ])->name('reports.download');
 
     Route::delete('/reports/{report}', [
         ReportController::class,
-        'destroy'
+        'destroy',
     ])->name('reports.destroy');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Activity Logs
+    | User Activity Logs
     |--------------------------------------------------------------------------
     */
 
     Route::get('/activity-logs', [
         ActivityLogController::class,
-        'index'
+        'index',
     ])->name('activity-logs');
 
     Route::get('/activity-logs/export', [
         ActivityLogController::class,
-        'export'
+        'export',
     ])->name('activity-logs.export');
 
 
     /*
     |--------------------------------------------------------------------------
-    | Settings
+    | User Settings
     |--------------------------------------------------------------------------
     */
 
     Route::get('/settings', [
         SettingsController::class,
-        'index'
+        'index',
     ])->name('settings');
 
     Route::patch('/settings', [
         SettingsController::class,
-        'update'
+        'update',
     ])->name('settings.update');
+});
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Profile
-    |--------------------------------------------------------------------------
-    */
+/*
+|--------------------------------------------------------------------------
+| Profile
+|--------------------------------------------------------------------------
+|
+| Profile is an account-level feature.
+| Both admins and normal users can manage their own profile.
+|
+*/
+
+Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/profile', [
         ProfileController::class,
-        'edit'
+        'edit',
     ])->name('profile.edit');
 
     Route::patch('/profile', [
         ProfileController::class,
-        'update'
+        'update',
     ])->name('profile.update');
 
     Route::delete('/profile', [
         ProfileController::class,
-        'destroy'
+        'destroy',
     ])->name('profile.destroy');
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| Authentication
+| Authentication Routes
 |--------------------------------------------------------------------------
 */
 
@@ -282,13 +434,13 @@ require __DIR__.'/auth.php';
 
 /*
 |--------------------------------------------------------------------------
-| Password Verification
+| Password-Protected Short URL
 |--------------------------------------------------------------------------
 */
 
 Route::post('/password/{shortCode}', [
     RedirectController::class,
-    'verifyPassword'
+    'verifyPassword',
 ])->name('short.password.verify');
 
 
@@ -304,5 +456,5 @@ Route::post('/password/{shortCode}', [
 
 Route::get('/{shortCode}', [
     RedirectController::class,
-    'redirect'
+    'redirect',
 ])->name('short.redirect');

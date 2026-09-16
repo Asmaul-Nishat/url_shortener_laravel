@@ -4,11 +4,18 @@
     $menuGroups = MenuHelper::getMenuGroups();
 
     $currentPath = request()->path();
+
+    $isAdmin = auth()->check() && auth()->user()->isAdmin();
+
+    $dashboardPath = $isAdmin
+        ? '/admin/dashboard'
+        : '/dashboard';
 @endphp
 
 <aside
     id="sidebar"
     class="fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-gray-200 bg-white px-4 text-gray-900 transition-all duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900"
+
     :class="{
         'w-[290px]':
             $store.sidebar.isExpanded ||
@@ -36,7 +43,7 @@
 
         initializeActiveMenus() {
 
-            const currentPath = '{{ $currentPath }}';
+            const currentPath = window.location.pathname;
 
             @foreach ($menuGroups as $groupIndex => $menuGroup)
 
@@ -47,9 +54,7 @@
                         @foreach ($item['subItems'] as $subItem)
 
                             if (
-                                currentPath === '{{ ltrim($subItem['path'], '/') }}'
-                                ||
-                                window.location.pathname === '{{ $subItem['path'] }}'
+                                currentPath === '{{ parse_url($subItem['path'], PHP_URL_PATH) }}'
                             ) {
                                 this.openSubmenus[
                                     '{{ $groupIndex }}-{{ $itemIndex }}'
@@ -87,11 +92,9 @@
 
         isActive(path) {
 
-            return (
-                window.location.pathname === path
-                ||
-                '{{ $currentPath }}' === path.replace(/^\//, '')
-            );
+            const cleanPath = path.split('?')[0];
+
+            return window.location.pathname === cleanPath;
         }
     }"
 
@@ -112,6 +115,7 @@
 
     <div
         class="flex h-[88px] shrink-0 items-center border-b border-gray-100 dark:border-gray-800"
+
         :class="
             (
                 !$store.sidebar.isExpanded &&
@@ -124,7 +128,7 @@
     >
 
         <a
-            href="{{ url('/dashboard') }}"
+            href="{{ $dashboardPath }}"
             class="flex items-center"
         >
 
@@ -139,10 +143,13 @@
                 x-cloak
                 class="whitespace-nowrap text-xl font-bold tracking-tight text-gray-900 dark:text-white"
             >
+
                 <span class="text-brand-600 dark:text-brand-400">
                     URL
                 </span>
+
                 Shortener
+
             </span>
 
 
@@ -185,6 +192,7 @@
 
                         <h2
                             class="mb-3 flex h-5 items-center px-3 text-xs font-semibold uppercase tracking-wider text-gray-400"
+
                             :class="
                                 (
                                     !$store.sidebar.isExpanded &&
@@ -246,13 +254,16 @@
 
                                         <button
                                             type="button"
+
                                             @click="
                                                 toggleSubmenu(
                                                     {{ $groupIndex }},
                                                     {{ $itemIndex }}
                                                 )
                                             "
+
                                             class="menu-item group flex w-full items-center gap-3 px-3 py-2.5"
+
                                             :class="[
                                                 isSubmenuOpen(
                                                     {{ $groupIndex }},
@@ -277,6 +288,7 @@
 
                                             <span
                                                 class="flex h-6 w-6 shrink-0 items-center justify-center"
+
                                                 :class="
                                                     isSubmenuOpen(
                                                         {{ $groupIndex }},
@@ -332,7 +344,9 @@
                                                     $store.sidebar.isMobileOpen
                                                 "
                                                 x-cloak
+
                                                 class="ml-auto h-5 w-5 shrink-0 transition-transform duration-200"
+
                                                 :class="{
                                                     'rotate-180 text-brand-500':
                                                         isSubmenuOpen(
@@ -346,6 +360,7 @@
                                                             {{ $itemIndex }}
                                                         )
                                                 }"
+
                                                 viewBox="0 0 20 20"
                                                 fill="currentColor"
                                             >
@@ -378,6 +393,7 @@
                                                     $store.sidebar.isMobileOpen
                                                 )
                                             "
+
                                             x-collapse
                                         >
 
@@ -387,14 +403,23 @@
 
                                                 @foreach ($item['subItems'] as $subItem)
 
+                                                    @php
+                                                        $subItemPath = parse_url(
+                                                            $subItem['path'],
+                                                            PHP_URL_PATH
+                                                        );
+                                                    @endphp
+
                                                     <li>
 
                                                         <a
                                                             href="{{ $subItem['path'] }}"
+
                                                             class="menu-dropdown-item flex items-center"
+
                                                             :class="
                                                                 isActive(
-                                                                    '{{ $subItem['path'] }}'
+                                                                    '{{ $subItemPath }}'
                                                                 )
                                                                 ? 'menu-dropdown-item-active'
                                                                 : 'menu-dropdown-item-inactive'
@@ -410,14 +435,16 @@
 
                                                             {{-- Submenu Badges --}}
 
-                                                            <span class="ml-auto flex shrink-0 items-center gap-1">
+                                                            <span
+                                                                class="ml-auto flex shrink-0 items-center gap-1"
+                                                            >
 
                                                                 @if (!empty($subItem['new']))
 
                                                                     <span
                                                                         :class="
                                                                             isActive(
-                                                                                '{{ $subItem['path'] }}'
+                                                                                '{{ $subItemPath }}'
                                                                             )
                                                                             ? 'menu-dropdown-badge menu-dropdown-badge-active'
                                                                             : 'menu-dropdown-badge menu-dropdown-badge-inactive'
@@ -434,7 +461,7 @@
                                                                     <span
                                                                         :class="
                                                                             isActive(
-                                                                                '{{ $subItem['path'] }}'
+                                                                                '{{ $subItemPath }}'
                                                                             )
                                                                             ? 'menu-dropdown-badge-pro menu-dropdown-badge-pro-active'
                                                                             : 'menu-dropdown-badge-pro menu-dropdown-badge-pro-inactive'
@@ -466,10 +493,12 @@
 
                                         <a
                                             href="{{ $item['path'] }}"
+
                                             class="menu-item group flex w-full items-center gap-3 px-3 py-2.5"
+
                                             :class="[
                                                 isActive(
-                                                    '{{ $item['path'] }}'
+                                                    '{{ parse_url($item['path'], PHP_URL_PATH) }}'
                                                 )
                                                 ? 'menu-item-active'
                                                 : 'menu-item-inactive',
@@ -490,9 +519,10 @@
 
                                             <span
                                                 class="flex h-6 w-6 shrink-0 items-center justify-center"
+
                                                 :class="
                                                     isActive(
-                                                        '{{ $item['path'] }}'
+                                                        '{{ parse_url($item['path'], PHP_URL_PATH) }}'
                                                     )
                                                     ? 'menu-item-icon-active'
                                                     : 'menu-item-icon-inactive'
