@@ -180,6 +180,8 @@ class AdminLinkController extends Controller
 
     /**
      * Store a new link.
+     *
+     * Admin MUST select an owner when creating a new link.
      */
     public function store(
         Request $request
@@ -338,6 +340,9 @@ class AdminLinkController extends Controller
 
     /**
      * Show edit page.
+     *
+     * The owner is displayed as read-only.
+     * Admin cannot change the owner from this page.
      */
     public function edit(
         int $id
@@ -347,20 +352,10 @@ class AdminLinkController extends Controller
             ->with('user')
             ->findOrFail($id);
 
-        $users = User::query()
-            ->select([
-                'id',
-                'name',
-                'email',
-            ])
-            ->orderBy('name')
-            ->get();
-
         return view(
             'pages.admin.links.edit',
             [
                 'shortUrl' => $shortUrl,
-                'users' => $users,
             ]
         );
     }
@@ -368,6 +363,8 @@ class AdminLinkController extends Controller
     /**
      * Update a link.
      *
+     * IMPORTANT:
+     * Admin does NOT change the link owner.
      * Admin does NOT change the link password.
      */
     public function update(
@@ -378,13 +375,17 @@ class AdminLinkController extends Controller
         $shortUrl = ShortUrl::withTrashed()
             ->findOrFail($id);
 
-        $validated = $request->validate([
-            'user_id' => [
-                'required',
-                'integer',
-                'exists:users,id',
-            ],
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Update Data
+        |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        | user_id is intentionally NOT included here.
+        |
+        */
 
+        $validated = $request->validate([
             'original_url' => [
                 'required',
                 'url',
@@ -397,6 +398,7 @@ class AdminLinkController extends Controller
                 'min:3',
                 'max:100',
                 'alpha_dash',
+
                 Rule::unique(
                     'short_urls',
                     'custom_alias'
@@ -405,14 +407,34 @@ class AdminLinkController extends Controller
                 ),
             ],
 
+            /*
+            |--------------------------------------------------------------------------
+            | Expiration Date
+            |--------------------------------------------------------------------------
+            |
+            | A new expiration date MUST be in the future.
+            |
+            */
+
             'expires_at' => [
                 'nullable',
                 'date',
+                'after:now',
             ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Scheduled Activation
+            |--------------------------------------------------------------------------
+            |
+            | A new scheduled date MUST be in the future.
+            |
+            */
 
             'scheduled_at' => [
                 'nullable',
                 'date',
+                'after:now',
             ],
 
             'status' => [
@@ -432,8 +454,11 @@ class AdminLinkController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Validate Scheduled Time
+        | Validate Scheduled Time Against Expiration Time
         |--------------------------------------------------------------------------
+        |
+        | Scheduled activation must always happen before expiration.
+        |
         */
 
         if (
@@ -467,12 +492,15 @@ class AdminLinkController extends Controller
         |--------------------------------------------------------------------------
         | Update Link
         |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        | user_id is NOT updated.
+        |
+        | The existing owner remains exactly the same.
+        |
         */
 
         $shortUrl->update([
-            'user_id' =>
-                $validated['user_id'],
-
             'original_url' =>
                 $validated['original_url'],
 
@@ -492,11 +520,23 @@ class AdminLinkController extends Controller
                 $request->boolean('is_favorite'),
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
+
         ActivityLogger::log(
             'admin_updated',
             'Admin updated short URL: ' .
             $shortUrl->short_code
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
 
         return redirect()
             ->route(
