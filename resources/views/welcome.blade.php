@@ -10,6 +10,11 @@
         content="width=device-width, initial-scale=1"
     >
 
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
     <title>
         URL Shortener
     </title>
@@ -25,8 +30,13 @@
             box-sizing: border-box;
         }
 
+        [x-cloak] {
+            display: none !important;
+        }
+
         body {
             margin: 0;
+
             font-family:
                 Inter,
                 ui-sans-serif,
@@ -35,12 +45,20 @@
                 BlinkMacSystemFont,
                 "Segoe UI",
                 sans-serif;
+
             color: #111827;
+
             background: #ffffff;
+        }
+
+        button,
+        input {
+            font-family: inherit;
         }
 
         .landing-page {
             min-height: 100vh;
+
             background: #ffffff;
         }
 
@@ -52,11 +70,14 @@
         .landing-nav {
             position: sticky;
             top: 0;
+
             z-index: 50;
 
-            background: rgba(255, 255, 255, 0.94);
+            background:
+                rgba(255, 255, 255, 0.94);
 
-            backdrop-filter: blur(16px);
+            backdrop-filter:
+                blur(16px);
 
             border-bottom:
                 1px solid #e5e7eb;
@@ -64,22 +85,28 @@
 
         .landing-nav-inner {
             max-width: 1200px;
+
             margin: 0 auto;
 
             padding:
                 18px 24px;
 
             display: flex;
+
             align-items: center;
+
             justify-content: space-between;
         }
 
         .brand {
             display: flex;
+
             align-items: center;
+
             gap: 12px;
 
             text-decoration: none;
+
             color: #111827;
         }
 
@@ -90,7 +117,9 @@
             border-radius: 12px;
 
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
             background:
@@ -103,14 +132,17 @@
             color: white;
 
             font-weight: 800;
+
             font-size: 20px;
 
             box-shadow:
-                0 8px 20px rgba(37, 99, 235, 0.22);
+                0 8px 20px
+                rgba(37, 99, 235, 0.22);
         }
 
         .brand-title {
             font-size: 18px;
+
             font-weight: 800;
         }
 
@@ -118,20 +150,25 @@
             margin-top: 2px;
 
             font-size: 12px;
+
             color: #6b7280;
         }
 
         .nav-links {
             display: flex;
+
             align-items: center;
+
             gap: 28px;
         }
 
         .nav-link {
             color: #4b5563;
+
             text-decoration: none;
 
             font-size: 14px;
+
             font-weight: 600;
 
             transition:
@@ -153,11 +190,13 @@
             border-radius: 10px;
 
             background: #111827;
+
             color: white;
         }
 
         .nav-register:hover {
             color: white;
+
             background: #1f2937;
         }
 
@@ -165,6 +204,7 @@
             display: none;
 
             border: 0;
+
             background: transparent;
 
             font-size: 25px;
@@ -179,19 +219,23 @@
 
         .hero-gradient {
             position: relative;
+
             overflow: hidden;
 
             background:
+
                 radial-gradient(
                     circle at 10% 20%,
                     rgba(37, 99, 235, 0.10),
                     transparent 30%
                 ),
+
                 radial-gradient(
                     circle at 90% 10%,
                     rgba(124, 58, 237, 0.12),
                     transparent 30%
                 ),
+
                 linear-gradient(
                     180deg,
                     #f8fbff 0%,
@@ -214,6 +258,7 @@
             display: inline-flex;
 
             align-items: center;
+
             gap: 8px;
 
             padding:
@@ -226,6 +271,7 @@
             color: #2563eb;
 
             font-size: 13px;
+
             font-weight: 700;
 
             border:
@@ -260,6 +306,7 @@
                 );
 
             -webkit-background-clip: text;
+
             background-clip: text;
 
             color: transparent;
@@ -272,6 +319,7 @@
                 24px auto 0;
 
             font-size: 18px;
+
             line-height: 1.7;
 
             color: #6b7280;
@@ -298,7 +346,8 @@
                 1px solid #e5e7eb;
 
             box-shadow:
-                0 25px 70px rgba(15, 23, 42, 0.10);
+                0 25px 70px
+                rgba(15, 23, 42, 0.10);
         }
 
         .generator-inner {
@@ -346,6 +395,7 @@
 
         .url-icon {
             color: #6b7280;
+
             font-size: 18px;
         }
 
@@ -355,6 +405,7 @@
             min-width: 0;
 
             border: 0;
+
             outline: 0;
 
             background: transparent;
@@ -395,7 +446,8 @@
 
             transition:
                 transform 0.2s ease,
-                box-shadow 0.2s ease;
+                box-shadow 0.2s ease,
+                opacity 0.2s ease;
         }
 
         .primary-generator-button {
@@ -425,7 +477,17 @@
 
         .primary-generator-button:hover,
         .qr-generator-button:hover {
-            transform: translateY(-2px);
+            transform:
+                translateY(-2px);
+        }
+
+        .primary-generator-button:disabled,
+        .qr-generator-button:disabled {
+            opacity: 0.65;
+
+            cursor: not-allowed;
+
+            transform: none;
         }
 
         .generator-note {
@@ -466,15 +528,45 @@
             text-align: left;
         }
 
+        .landing-error {
+            max-width: 900px;
+
+            margin:
+                20px auto 0;
+
+            padding:
+                13px 16px;
+
+            border-radius: 12px;
+
+            background: #fef2f2;
+
+            border:
+                1px solid #fecaca;
+
+            color: #b91c1c;
+
+            font-size: 14px;
+
+            text-align: left;
+
+            display: none;
+        }
+
 
         /* =========================================================
-           RESULT SECTION
+           AJAX RESULT
            ========================================================= */
+
+        #ajax-result {
+            display: none;
+        }
 
         .result-section {
             max-width: 900px;
 
-            margin: 35px auto 0;
+            margin:
+                35px auto 0;
 
             text-align: left;
         }
@@ -511,12 +603,17 @@
 
         .success-icon {
             width: 42px;
+
             height: 42px;
+
+            flex-shrink: 0;
 
             border-radius: 50%;
 
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
             background: #dcfce7;
@@ -524,12 +621,15 @@
             color: #16a34a;
 
             font-size: 20px;
+
             font-weight: 800;
         }
 
         .result-title {
             font-size: 17px;
+
             font-weight: 800;
+
             color: #111827;
         }
 
@@ -539,6 +639,16 @@
             font-size: 13px;
 
             color: #6b7280;
+        }
+
+        .result-label {
+            margin-bottom: 8px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            color: #374151;
         }
 
         .short-url-box {
@@ -562,6 +672,7 @@
             min-width: 0;
 
             border: 0;
+
             outline: 0;
 
             background: transparent;
@@ -572,6 +683,7 @@
             color: #2563eb;
 
             font-size: 15px;
+
             font-weight: 650;
         }
 
@@ -583,6 +695,8 @@
             padding:
                 0 17px;
 
+            min-height: 42px;
+
             background: #2563eb;
 
             color: white;
@@ -590,6 +704,10 @@
             font-weight: 700;
 
             cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background: #1d4ed8;
         }
 
         .qr-result-box {
@@ -607,6 +725,7 @@
 
         .qr-result-title {
             font-size: 15px;
+
             font-weight: 800;
 
             color: #111827;
@@ -618,6 +737,8 @@
             color: #6b7280;
 
             font-size: 13px;
+
+            line-height: 1.6;
         }
 
         .download-qr-button {
@@ -639,6 +760,36 @@
             font-size: 13px;
 
             font-weight: 700;
+        }
+
+        .download-qr-button:hover {
+            background: #1f2937;
+        }
+
+        .clear-result-button {
+            margin-top: 18px;
+
+            padding:
+                9px 14px;
+
+            border:
+                1px solid #d1d5db;
+
+            border-radius: 9px;
+
+            background: white;
+
+            color: #4b5563;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+        .clear-result-button:hover {
+            background: #f9fafb;
         }
 
 
@@ -682,7 +833,8 @@
         .section-heading {
             max-width: 700px;
 
-            margin: 0 auto 50px;
+            margin:
+                0 auto 50px;
 
             text-align: center;
         }
@@ -747,7 +899,8 @@
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform:
+                translateY(-5px);
 
             box-shadow:
                 0 20px 45px
@@ -756,10 +909,13 @@
 
         .feature-icon {
             width: 48px;
+
             height: 48px;
 
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
             border-radius: 13px;
@@ -957,11 +1113,13 @@
 
         .step-number {
             width: 42px;
+
             height: 42px;
 
             display: flex;
 
             align-items: center;
+
             justify-content: center;
 
             border-radius: 50%;
@@ -1226,10 +1384,13 @@
                     How It Works
                 </a>
 
+
                 @auth
 
                     <a
-                        href="{{ route('dashboard') }}"
+                        href="{{ auth()->user()->isAdmin()
+                            ? route('admin.dashboard')
+                            : route('dashboard') }}"
                         class="nav-link"
                     >
                         Dashboard
@@ -1293,10 +1454,13 @@
                     How It Works
                 </a>
 
+
                 @auth
 
                     <a
-                        href="{{ route('dashboard') }}"
+                        href="{{ auth()->user()->isAdmin()
+                            ? route('admin.dashboard')
+                            : route('dashboard') }}"
                         class="nav-link"
                     >
                         Dashboard
@@ -1327,6 +1491,7 @@
     </nav>
 
 
+
     {{-- =========================================================
          HERO
          ========================================================= --}}
@@ -1343,7 +1508,10 @@
             <h1 class="hero-title">
 
                 Turn Long URLs Into
-                <span>Short Links</span>
+
+                <span>
+                    Short Links
+                </span>
 
             </h1>
 
@@ -1357,6 +1525,7 @@
             </p>
 
 
+
             {{-- =====================================================
                  URL GENERATOR
                  ===================================================== --}}
@@ -1365,14 +1534,19 @@
 
                 <div class="generator-inner">
 
-                    {{-- Short URL Form --}}
+
+                    {{-- =================================================
+                         SHORT URL FORM
+                         ================================================= --}}
 
                     <form
+                        id="short-url-form"
                         method="POST"
                         action="{{ route('links.store') }}"
                     >
 
                         @csrf
+
 
                         <div class="url-input-wrapper">
 
@@ -1380,9 +1554,11 @@
                                 🔗
                             </span>
 
+
                             <input
                                 type="url"
                                 name="original_url"
+                                id="landing-original-url"
                                 required
                                 value="{{ old('original_url') }}"
                                 placeholder="Paste your long URL here..."
@@ -1392,26 +1568,22 @@
                         </div>
 
 
+
                         <div class="generator-buttons">
 
                             <button
                                 type="submit"
+                                id="shorten-button"
                                 class="primary-generator-button"
                             >
                                 Shorten URL
                             </button>
 
 
-                            {{-- QR Form --}}
-
                             <button
                                 type="button"
+                                id="qr-button"
                                 class="qr-generator-button"
-                                @click="
-                                    document
-                                        .getElementById('guest-qr-form')
-                                        .submit()
-                                "
                             >
                                 Generate QR Code
                             </button>
@@ -1421,7 +1593,10 @@
                     </form>
 
 
-                    {{-- Separate QR Form --}}
+
+                    {{-- =================================================
+                         SEPARATE QR FORM
+                         ================================================= --}}
 
                     <form
                         id="guest-qr-form"
@@ -1441,6 +1616,7 @@
                     </form>
 
 
+
                     <p class="generator-note">
 
                         No registration required for basic URL shortening
@@ -1453,8 +1629,9 @@
             </div>
 
 
+
             {{-- =====================================================
-                 VALIDATION ERRORS
+                 SERVER-SIDE VALIDATION ERRORS
                  ===================================================== --}}
 
             @if($errors->any())
@@ -1478,8 +1655,9 @@
             @endif
 
 
+
             {{-- =====================================================
-                 SUCCESS MESSAGE
+                 SERVER-SIDE SUCCESS
                  ===================================================== --}}
 
             @if(session('success'))
@@ -1493,8 +1671,30 @@
             @endif
 
 
+
             {{-- =====================================================
-                 GENERATED RESULT
+                 AJAX ERROR
+                 ===================================================== --}}
+
+            <div
+                id="ajax-error"
+                class="landing-error"
+            ></div>
+
+
+
+            {{-- =====================================================
+                 AJAX RESULT
+                 ===================================================== --}}
+
+            <div
+                id="ajax-result"
+            ></div>
+
+
+
+            {{-- =====================================================
+                 OLD SESSION RESULT
                  ===================================================== --}}
 
             @if(
@@ -1528,9 +1728,8 @@
                         </div>
 
 
-                        {{-- =================================================
-                             SHORT URL RESULT
-                             ================================================= --}}
+
+                        {{-- SHORT URL RESULT --}}
 
                         @if(
                             session('guest_short_url') ||
@@ -1539,14 +1738,15 @@
 
                             <div>
 
-                                <div class="mb-2 text-sm font-semibold text-gray-700">
+                                <div class="result-label">
                                     Your Short URL
                                 </div>
+
 
                                 <div class="short-url-box">
 
                                     <input
-                                        id="generated-short-url"
+                                        id="generated-session-short-url"
                                         type="text"
                                         readonly
                                         value="{{ session('guest_short_url') ?? session('short_url') }}"
@@ -1557,37 +1757,16 @@
                                     <button
                                         type="button"
                                         class="copy-button"
-                                        x-data="{ copied: false }"
-                                        @click="
-                                            navigator.clipboard
-                                                .writeText(
-                                                    document
-                                                        .getElementById(
-                                                            'generated-short-url'
-                                                        )
-                                                        .value
-                                                )
-                                                .then(() => {
-                                                    copied = true;
-
-                                                    setTimeout(
-                                                        () => copied = false,
-                                                        2000
-                                                    );
-                                                });
+                                        onclick="
+                                            copyText(
+                                                document.getElementById(
+                                                    'generated-session-short-url'
+                                                ).value,
+                                                this
+                                            )
                                         "
                                     >
-
-                                        <span
-                                            x-text="
-                                                copied
-                                                    ? 'Copied!'
-                                                    : 'Copy'
-                                            "
-                                        >
-                                            Copy
-                                        </span>
-
+                                        Copy
                                     </button>
 
                                 </div>
@@ -1597,9 +1776,8 @@
                         @endif
 
 
-                        {{-- =================================================
-                             QR RESULT
-                             ================================================= --}}
+
+                        {{-- QR RESULT --}}
 
                         @if(session('guest_qr'))
 
@@ -1610,9 +1788,7 @@
                                 </div>
 
                                 <div class="qr-result-description">
-
                                     Your QR code contains the original URL.
-
                                 </div>
 
 
@@ -1632,6 +1808,7 @@
                 </div>
 
             @endif
+
 
 
             {{-- =====================================================
@@ -1663,6 +1840,7 @@
     </section>
 
 
+
     {{-- =========================================================
          FEATURES
          ========================================================= --}}
@@ -1692,7 +1870,9 @@
         </div>
 
 
+
         <div class="features-grid">
+
 
             <div class="feature-card">
 
@@ -1712,6 +1892,7 @@
                 </div>
 
             </div>
+
 
 
             <div class="feature-card">
@@ -1734,6 +1915,7 @@
             </div>
 
 
+
             <div class="feature-card">
 
                 <div class="feature-icon">
@@ -1752,6 +1934,7 @@
                 </div>
 
             </div>
+
 
 
             <div class="feature-card">
@@ -1774,6 +1957,7 @@
             </div>
 
 
+
             <div class="feature-card">
 
                 <div class="feature-icon">
@@ -1792,6 +1976,7 @@
                 </div>
 
             </div>
+
 
 
             <div class="feature-card">
@@ -1818,6 +2003,7 @@
     </section>
 
 
+
     {{-- =========================================================
          ANALYTICS
          ========================================================= --}}
@@ -1825,6 +2011,7 @@
     <section class="analytics-section">
 
         <div class="analytics-container">
+
 
             <div class="analytics-copy">
 
@@ -1846,6 +2033,7 @@
             </div>
 
 
+
             <div class="analytics-card">
 
                 <div class="analytics-card-header">
@@ -1864,6 +2052,7 @@
                 <div class="analytics-number">
                     12,480
                 </div>
+
 
                 <div class="analytics-growth">
                     ↑ 18.6% compared with previous period
@@ -1916,6 +2105,7 @@
     </section>
 
 
+
     {{-- =========================================================
          HOW IT WORKS
          ========================================================= --}}
@@ -1938,7 +2128,9 @@
         </div>
 
 
+
         <div class="steps-grid">
+
 
             <div class="step-card">
 
@@ -1960,6 +2152,7 @@
             </div>
 
 
+
             <div class="step-card">
 
                 <div class="step-number">
@@ -1978,6 +2171,7 @@
                 </div>
 
             </div>
+
 
 
             <div class="step-card">
@@ -2004,6 +2198,7 @@
     </section>
 
 
+
     {{-- =========================================================
          CTA
          ========================================================= --}}
@@ -2026,7 +2221,9 @@
         @auth
 
             <a
-                href="{{ route('dashboard') }}"
+                href="{{ auth()->user()->isAdmin()
+                    ? route('admin.dashboard')
+                    : route('dashboard') }}"
                 class="cta-button"
             >
                 Go to Dashboard
@@ -2044,6 +2241,7 @@
         @endauth
 
     </section>
+
 
 
     {{-- =========================================================
@@ -2069,55 +2267,839 @@
 </div>
 
 
+
 <script>
 
     /*
     |--------------------------------------------------------------------------
-    | Copy URL
+    | GLOBAL VARIABLES
     |--------------------------------------------------------------------------
-    |
-    | Alpine handles the actual copy button.
-    |
     */
 
-    document.addEventListener(
-        'DOMContentLoaded',
-        function () {
+    const csrfToken =
+        document
+            .querySelector(
+                'meta[name="csrf-token"]'
+            )
+            .getAttribute('content');
 
-            const urlInput =
-                document.querySelector(
-                    'input[name="original_url"]'
+
+    const shortUrlForm =
+        document.getElementById(
+            'short-url-form'
+        );
+
+
+    const originalUrlInput =
+        document.getElementById(
+            'landing-original-url'
+        );
+
+
+    const shortenButton =
+        document.getElementById(
+            'shorten-button'
+        );
+
+
+    const qrButton =
+        document.getElementById(
+            'qr-button'
+        );
+
+
+    const qrForm =
+        document.getElementById(
+            'guest-qr-form'
+        );
+
+
+    const qrUrlInput =
+        document.getElementById(
+            'guest-qr-url'
+        );
+
+
+    const ajaxResult =
+        document.getElementById(
+            'ajax-result'
+        );
+
+
+    const ajaxError =
+        document.getElementById(
+            'ajax-error'
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ESCAPE HTML
+    |--------------------------------------------------------------------------
+    */
+
+    function escapeHtml(value) {
+
+        const div =
+            document.createElement(
+                'div'
+            );
+
+        div.textContent =
+            value;
+
+        return div.innerHTML;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW ERROR
+    |--------------------------------------------------------------------------
+    */
+
+    function showAjaxError(message) {
+
+        ajaxError.textContent =
+            message;
+
+        ajaxError.style.display =
+            'block';
+
+        ajaxError.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+        });
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HIDE ERROR
+    |--------------------------------------------------------------------------
+    */
+
+    function hideAjaxError() {
+
+        ajaxError.textContent =
+            '';
+
+        ajaxError.style.display =
+            'none';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLEAR RESULT
+    |--------------------------------------------------------------------------
+    */
+
+    function clearAjaxResult() {
+
+        ajaxResult.innerHTML =
+            '';
+
+        ajaxResult.style.display =
+            'none';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | COPY TEXT
+    |--------------------------------------------------------------------------
+    */
+
+    async function copyText(
+        text,
+        button
+    ) {
+
+        try {
+
+            await navigator
+                .clipboard
+                .writeText(text);
+
+            const oldText =
+                button.textContent;
+
+            button.textContent =
+                'Copied!';
+
+            setTimeout(
+                function () {
+
+                    button.textContent =
+                        oldText;
+
+                },
+                2000
+            );
+
+        } catch (error) {
+
+            const temporaryInput =
+                document.createElement(
+                    'textarea'
                 );
 
-            const qrUrlInput =
-                document.getElementById(
-                    'guest-qr-url'
+            temporaryInput.value =
+                text;
+
+            document.body.appendChild(
+                temporaryInput
+            );
+
+            temporaryInput.select();
+
+            document.execCommand(
+                'copy'
+            );
+
+            temporaryInput.remove();
+
+            button.textContent =
+                'Copied!';
+
+            setTimeout(
+                function () {
+
+                    button.textContent =
+                        'Copy';
+
+                },
+                2000
+            );
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW SHORT URL RESULT
+    |--------------------------------------------------------------------------
+    */
+
+    function showShortUrlResult(
+        shortUrl
+    ) {
+
+        ajaxResult.innerHTML = `
+
+            <div class="result-section">
+
+                <div class="result-card">
+
+                    <div class="result-header">
+
+                        <div class="success-icon">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <div class="result-title">
+                                Your result is ready
+                            </div>
+
+                            <div class="result-subtitle">
+                                Your short URL was created successfully.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="result-label">
+                            Your Short URL
+                        </div>
+
+
+                        <div class="short-url-box">
+
+                            <input
+                                id="ajax-generated-short-url"
+                                type="text"
+                                readonly
+                                value="${escapeHtml(shortUrl)}"
+                                class="short-url-input"
+                            >
+
+
+                            <button
+                                type="button"
+                                class="copy-button"
+                                id="ajax-copy-button"
+                            >
+                                Copy
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="clear-result-button"
+                        id="ajax-clear-button"
+                    >
+                        Clear result
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        ajaxResult.style.display =
+            'block';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | COPY BUTTON
+        |--------------------------------------------------------------------------
+        */
+
+        const copyButton =
+            document.getElementById(
+                'ajax-copy-button'
+            );
+
+
+        copyButton.addEventListener(
+            'click',
+            function () {
+
+                copyText(
+                    shortUrl,
+                    copyButton
                 );
 
-            if (
-                urlInput &&
-                qrUrlInput
-            ) {
+            }
+        );
 
-                urlInput.addEventListener(
-                    'input',
-                    function () {
 
-                        qrUrlInput.value =
-                            urlInput.value;
+        /*
+        |--------------------------------------------------------------------------
+        | CLEAR BUTTON
+        |--------------------------------------------------------------------------
+        */
 
+        document
+            .getElementById(
+                'ajax-clear-button'
+            )
+            .addEventListener(
+                'click',
+                clearAjaxResult
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SCROLL TO RESULT
+        |--------------------------------------------------------------------------
+        */
+
+        ajaxResult.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW QR RESULT
+    |--------------------------------------------------------------------------
+    */
+
+    function showQrResult(
+        downloadUrl
+    ) {
+
+        ajaxResult.innerHTML = `
+
+            <div class="result-section">
+
+                <div class="result-card">
+
+                    <div class="result-header">
+
+                        <div class="success-icon">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <div class="result-title">
+                                QR Code is ready
+                            </div>
+
+                            <div class="result-subtitle">
+                                Your QR code was generated successfully.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="qr-result-box">
+
+                        <div class="qr-result-title">
+                            QR Code Ready
+                        </div>
+
+                        <div class="qr-result-description">
+
+                            Your QR code contains the original URL.
+                            Click the button below to download it.
+
+                        </div>
+
+
+                        <a
+                            href="${escapeHtml(downloadUrl)}"
+                            class="download-qr-button"
+                        >
+                            Download QR Code
+                        </a>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="clear-result-button"
+                        id="ajax-clear-qr-button"
+                    >
+                        Clear result
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        ajaxResult.style.display =
+            'block';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CLEAR QR RESULT
+        |--------------------------------------------------------------------------
+        */
+
+        document
+            .getElementById(
+                'ajax-clear-qr-button'
+            )
+            .addEventListener(
+                'click',
+                clearAjaxResult
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SCROLL TO RESULT
+        |--------------------------------------------------------------------------
+        */
+
+        ajaxResult.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHORTEN URL - AJAX
+    |--------------------------------------------------------------------------
+    */
+
+    if (shortUrlForm) {
+
+        shortUrlForm.addEventListener(
+            'submit',
+            async function (event) {
+
+                event.preventDefault();
+
+                hideAjaxError();
+
+
+                const originalUrl =
+                    originalUrlInput
+                        .value
+                        .trim();
+
+
+                if (!originalUrl) {
+
+                    showAjaxError(
+                        'Please enter a URL.'
+                    );
+
+                    originalUrlInput.focus();
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Loading
+                |--------------------------------------------------------------------------
+                */
+
+                shortenButton.disabled =
+                    true;
+
+                shortenButton.textContent =
+                    'Creating...';
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            shortUrlForm.action,
+                            {
+                                method: 'POST',
+
+                                headers: {
+
+                                    'Content-Type':
+                                        'application/json',
+
+                                    'Accept':
+                                        'application/json',
+
+                                    'X-CSRF-TOKEN':
+                                        csrfToken,
+
+                                    'X-Requested-With':
+                                        'XMLHttpRequest'
+
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        original_url:
+                                            originalUrl
+                                    })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | ERROR
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!response.ok) {
+
+                        if (
+                            data.errors
+                            &&
+                            data.errors.original_url
+                        ) {
+
+                            showAjaxError(
+                                data.errors.original_url[0]
+                            );
+
+                        } else {
+
+                            showAjaxError(
+                                data.message
+                                ||
+                                'Unable to create the short URL.'
+                            );
+                        }
+
+                        return;
                     }
-                );
 
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SUCCESS
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        data.success
+                        &&
+                        data.short_url
+                    ) {
+
+                        showShortUrlResult(
+                            data.short_url
+                        );
+
+                    } else {
+
+                        showAjaxError(
+                            'Unable to create the short URL.'
+                        );
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        'Short URL AJAX error:',
+                        error
+                    );
+
+                    showAjaxError(
+                        'Something went wrong. Please try again.'
+                    );
+
+                } finally {
+
+                    shortenButton.disabled =
+                        false;
+
+                    shortenButton.textContent =
+                        'Shorten URL';
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QR CODE - AJAX
+    |--------------------------------------------------------------------------
+    */
+
+    if (qrButton) {
+
+        qrButton.addEventListener(
+            'click',
+            async function () {
+
+                hideAjaxError();
+
+
+                const originalUrl =
+                    originalUrlInput
+                        .value
+                        .trim();
+
+
+                if (!originalUrl) {
+
+                    showAjaxError(
+                        'Please enter a URL.'
+                    );
+
+                    originalUrlInput.focus();
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Keep Hidden QR Input Updated
+                |--------------------------------------------------------------------------
+                */
 
                 qrUrlInput.value =
-                    urlInput.value;
-            }
+                    originalUrl;
 
-        }
-    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Loading
+                |--------------------------------------------------------------------------
+                */
+
+                qrButton.disabled =
+                    true;
+
+                qrButton.textContent =
+                    'Creating QR...';
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            qrForm.action,
+                            {
+                                method: 'POST',
+
+                                headers: {
+
+                                    'Content-Type':
+                                        'application/x-www-form-urlencoded',
+
+                                    'Accept':
+                                        'application/json',
+
+                                    'X-CSRF-TOKEN':
+                                        csrfToken,
+
+                                    'X-Requested-With':
+                                        'XMLHttpRequest'
+
+                                },
+
+                                body:
+                                    new URLSearchParams({
+                                        _token:
+                                            csrfToken,
+
+                                        original_url:
+                                            originalUrl
+                                    })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | ERROR
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!response.ok) {
+
+                        if (
+                            data.errors
+                            &&
+                            data.errors.original_url
+                        ) {
+
+                            showAjaxError(
+                                data.errors.original_url[0]
+                            );
+
+                        } else {
+
+                            showAjaxError(
+                                data.message
+                                ||
+                                'Unable to generate the QR code.'
+                            );
+                        }
+
+                        return;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SUCCESS
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        data.success
+                        &&
+                        data.download_url
+                    ) {
+
+                        showQrResult(
+                            data.download_url
+                        );
+
+                    } else {
+
+                        showAjaxError(
+                            'Unable to generate the QR code.'
+                        );
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        'QR AJAX error:',
+                        error
+                    );
+
+                    showAjaxError(
+                        'Something went wrong while generating the QR code.'
+                    );
+
+                } finally {
+
+                    qrButton.disabled =
+                        false;
+
+                    qrButton.textContent =
+                        'Generate QR Code';
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | KEEP QR URL SYNCHRONIZED
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        originalUrlInput
+        &&
+        qrUrlInput
+    ) {
+
+        originalUrlInput.addEventListener(
+            'input',
+            function () {
+
+                qrUrlInput.value =
+                    originalUrlInput.value;
+
+            }
+        );
+
+
+        qrUrlInput.value =
+            originalUrlInput.value;
+    }
 
 </script>
+
 
 </body>
 

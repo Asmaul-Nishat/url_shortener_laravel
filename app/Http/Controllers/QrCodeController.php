@@ -12,6 +12,8 @@ use Endroid\QrCode\QrCode as EndroidQrCode;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\SvgWriter;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -58,8 +60,10 @@ class QrCodeController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function generate(Request $request)
-    {
+    public function generate(
+        Request $request
+    ): RedirectResponse {
+
         $validated = $request->validate([
             'short_url_id' => [
                 'required',
@@ -119,7 +123,7 @@ class QrCodeController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Make sure the selected short URL belongs to current user
+        | Make Sure URL Belongs To Current User
         |--------------------------------------------------------------------------
         */
 
@@ -155,7 +159,7 @@ class QrCodeController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Create QR Code Database Record
+        | Create QR Code Record
         |--------------------------------------------------------------------------
         */
 
@@ -203,7 +207,8 @@ class QrCodeController extends Controller
 
     public function generateGuest(
         Request $request
-    ) {
+    ): RedirectResponse|JsonResponse {
+
         $validated = $request->validate([
             'original_url' => [
                 'required',
@@ -224,13 +229,10 @@ class QrCodeController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Store actual QR data
+        | Store Temporary QR Data
         |--------------------------------------------------------------------------
         |
-        | This is NOT the UI result.
-        |
-        | It is kept temporarily so the download button can
-        | request the generated QR image.
+        | The actual QR image is generated when the user clicks Download.
         |
         */
 
@@ -254,13 +256,35 @@ class QrCodeController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Flash only the UI notification
+        | AJAX Response
         |--------------------------------------------------------------------------
         |
-        | This disappears after the next request.
-        | Therefore refreshing the landing page will not
-        | show the QR result again.
+        | IMPORTANT:
+        | Do not redirect when this request comes from the homepage AJAX
+        | generator. Return JSON instead so the page does not reload.
         |
+        */
+
+        if ($request->expectsJson()) {
+
+            return response()->json([
+                'success' => true,
+
+                'message' =>
+                    'QR code generated successfully.',
+
+                'download_url' =>
+                    route(
+                        'qr-codes.guest.download'
+                    ),
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Normal Browser Request
+        |--------------------------------------------------------------------------
         */
 
         return redirect()
@@ -284,21 +308,17 @@ class QrCodeController extends Controller
 
     public function downloadGuest()
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Get temporary QR data
-        |--------------------------------------------------------------------------
-        */
-
         $guestQr = session(
             'guest_qr_data'
         );
 
 
         if (
-            !is_array($guestQr) ||
+            !is_array($guestQr)
+            ||
             empty($guestQr['data'])
         ) {
+
             abort(
                 404,
                 'Guest QR code not found.'
@@ -353,16 +373,18 @@ class QrCodeController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $writer = new PngWriter();
+        $writer =
+            new PngWriter();
 
-        $result = $writer->write(
-            $qrCode
-        );
+        $result =
+            $writer->write(
+                $qrCode
+            );
 
 
         /*
         |--------------------------------------------------------------------------
-        | Remove temporary QR data
+        | Remove Temporary QR Data
         |--------------------------------------------------------------------------
         */
 
@@ -400,9 +422,11 @@ class QrCodeController extends Controller
     public function downloadPng(
         QrCode $qrCode
     ) {
+
         $this->authorizeQrCode(
             $qrCode
         );
+
 
         $shortUrl =
             $qrCode->shortUrl;
@@ -423,7 +447,8 @@ class QrCodeController extends Controller
 
 
         if (
-            $qrCode->logo_path &&
+            $qrCode->logo_path
+            &&
             Storage::disk('public')->exists(
                 $qrCode->logo_path
             )
@@ -446,10 +471,11 @@ class QrCodeController extends Controller
         }
 
 
-        $result = $writer->write(
-            $builder,
-            $logo
-        );
+        $result =
+            $writer->write(
+                $builder,
+                $logo
+            );
 
 
         return response(
@@ -477,9 +503,11 @@ class QrCodeController extends Controller
     public function downloadSvg(
         QrCode $qrCode
     ) {
+
         $this->authorizeQrCode(
             $qrCode
         );
+
 
         $shortUrl =
             $qrCode->shortUrl;
@@ -526,14 +554,16 @@ class QrCodeController extends Controller
 
     public function destroy(
         QrCode $qrCode
-    ) {
+    ): RedirectResponse {
+
         $this->authorizeQrCode(
             $qrCode
         );
 
 
         if (
-            $qrCode->logo_path &&
+            $qrCode->logo_path
+            &&
             Storage::disk('public')->exists(
                 $qrCode->logo_path
             )
@@ -618,15 +648,27 @@ class QrCodeController extends Controller
 
         return new Color(
             hexdec(
-                substr($hex, 0, 2)
+                substr(
+                    $hex,
+                    0,
+                    2
+                )
             ),
 
             hexdec(
-                substr($hex, 2, 2)
+                substr(
+                    $hex,
+                    2,
+                    2
+                )
             ),
 
             hexdec(
-                substr($hex, 4, 2)
+                substr(
+                    $hex,
+                    4,
+                    2
+                )
             )
         );
     }
