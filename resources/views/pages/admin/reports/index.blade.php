@@ -269,10 +269,7 @@
                         class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                     >
 
-                        <option
-                            value=""
-                            data-user-id=""
-                        >
+                        <option value="">
                             All Short Links
                         </option>
 
@@ -280,7 +277,6 @@
 
                             <option
                                 value="{{ $shortUrl->id }}"
-                                data-user-id="{{ $shortUrl->user_id }}"
                                 {{ (string) old(
                                     'short_url_id',
                                     request('short_url_id')
@@ -304,10 +300,6 @@
                         @endforeach
 
                     </select>
-
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Select a user first to show only that user's short links.
-                    </p>
 
                 </div>
 
@@ -435,6 +427,7 @@
     </div>
 
 
+
     {{-- ========================================================= --}}
     {{-- VIEW ALL BUTTON --}}
     {{-- ========================================================= --}}
@@ -494,8 +487,6 @@
 
                 <div class="flex flex-wrap gap-3">
 
-                    {{-- DOWNLOAD PDF --}}
-
                     <a
                         href="{{ route(
                             'admin.reports.download-filtered',
@@ -511,8 +502,6 @@
                         Download PDF
                     </a>
 
-
-                    {{-- DOWNLOAD CSV --}}
 
                     <a
                         href="{{ route(
@@ -534,13 +523,11 @@
             </div>
 
 
-            {{-- ================================================= --}}
             {{-- TABLE --}}
-            {{-- ================================================= --}}
 
             <div class="overflow-x-auto">
 
-                <table class="min-w-[1350px] w-full">
+                <table class="min-w-[1300px] w-full">
 
                     <thead>
 
@@ -552,10 +539,6 @@
 
                             <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                 Original URL
-                            </th>
-
-                            <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                Total Clicks
                             </th>
 
                             <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -598,11 +581,7 @@
                                             ) }}"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            title="{{ url(
-                                                $click->shortUrl->custom_alias
-                                                ?: $click->shortUrl->short_code
-                                            ) }}"
-                                            class="block max-w-[180px] truncate whitespace-nowrap text-sm font-medium text-brand-500 hover:text-brand-600"
+                                            class="break-all text-sm font-medium text-brand-500 hover:text-brand-600"
                                         >
                                             /{{ $click->shortUrl->custom_alias ?: $click->shortUrl->short_code }}
                                         </a>
@@ -628,14 +607,9 @@
                                             href="{{ $click->shortUrl->original_url }}"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            title="{{ $click->shortUrl->original_url }}"
-                                            class="block max-w-[320px] truncate text-sm text-gray-600 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400"
+                                            class="block max-w-[350px] break-all text-sm text-gray-600 hover:text-brand-500 dark:text-gray-400"
                                         >
-                                            {{ \Illuminate\Support\Str::limit(
-                                                $click->shortUrl->original_url,
-                                                85,
-                                                '...'
-                                            ) }}
+                                            {{ $click->shortUrl->original_url }}
                                         </a>
 
                                     @else
@@ -649,37 +623,11 @@
                                 </td>
 
 
-                                {{-- TOTAL CLICKS --}}
+                                {{-- IP --}}
 
                                 <td class="px-6 py-4">
 
-                                    @if($click->shortUrl)
-
-                                        <span class="inline-flex min-w-[45px] items-center justify-center rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
-                                            {{ number_format(
-                                                $click->shortUrl->click_count ?? 0
-                                            ) }}
-                                        </span>
-
-                                    @else
-
-                                        <span class="text-sm text-gray-400">
-                                            —
-                                        </span>
-
-                                    @endif
-
-                                </td>
-
-
-                                {{-- IP ADDRESS --}}
-
-                                <td class="px-6 py-4">
-
-                                    <span
-                                        class="whitespace-nowrap font-mono text-sm text-gray-600 dark:text-gray-400"
-                                        title="{{ $click->ip_address ?: 'N/A' }}"
-                                    >
+                                    <span class="font-mono text-sm text-gray-600 dark:text-gray-400">
                                         {{ $click->ip_address ?: '—' }}
                                     </span>
 
@@ -690,26 +638,12 @@
 
                                 <td class="px-6 py-4">
 
-                                    @if($click->user_agent)
-
-                                        <span
-                                            class="block max-w-[300px] truncate text-sm text-gray-600 dark:text-gray-400"
-                                            title="{{ $click->user_agent }}"
-                                        >
-                                            {{ \Illuminate\Support\Str::limit(
-                                                $click->user_agent,
-                                                55,
-                                                '...'
-                                            ) }}
-                                        </span>
-
-                                    @else
-
-                                        <span class="text-sm text-gray-400">
-                                            —
-                                        </span>
-
-                                    @endif
+                                    <p
+                                        class="max-w-[320px] break-words text-sm leading-6 text-gray-600 dark:text-gray-400"
+                                        title="{{ $click->user_agent }}"
+                                    >
+                                        {{ $click->user_agent ?: '—' }}
+                                    </p>
 
                                 </td>
 
@@ -720,36 +654,12 @@
 
                                     @if($click->referer)
 
-                                        @if(filter_var($click->referer, FILTER_VALIDATE_URL))
-
-                                            <a
-                                                href="{{ $click->referer }}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                title="{{ $click->referer }}"
-                                                class="block max-w-[260px] truncate text-sm text-gray-600 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400"
-                                            >
-                                                {{ \Illuminate\Support\Str::limit(
-                                                    $click->referer,
-                                                    55,
-                                                    '...'
-                                                ) }}
-                                            </a>
-
-                                        @else
-
-                                            <span
-                                                class="block max-w-[260px] truncate text-sm text-gray-600 dark:text-gray-400"
-                                                title="{{ $click->referer }}"
-                                            >
-                                                {{ \Illuminate\Support\Str::limit(
-                                                    $click->referer,
-                                                    55,
-                                                    '...'
-                                                ) }}
-                                            </span>
-
-                                        @endif
+                                        <p
+                                            class="max-w-[280px] break-all text-sm text-gray-600 dark:text-gray-400"
+                                            title="{{ $click->referer }}"
+                                        >
+                                            {{ $click->referer }}
+                                        </p>
 
                                     @else
 
@@ -797,7 +707,7 @@
                             <tr>
 
                                 <td
-                                    colspan="7"
+                                    colspan="6"
                                     class="px-6 py-12 text-center"
                                 >
 
@@ -818,9 +728,7 @@
             </div>
 
 
-            {{-- ================================================= --}}
             {{-- SHOW LESS --}}
-            {{-- ================================================= --}}
 
             <div class="flex justify-center border-t border-gray-200 px-6 py-5 dark:border-gray-800">
 
@@ -839,173 +747,6 @@
         </div>
 
     @endif
-
-
-    {{-- ========================================================= --}}
-    {{-- CLEAN FILTER QUERY FROM BROWSER URL --}}
-    {{-- ========================================================= --}}
-
-    @if(
-        request()->hasAny([
-            'report_type',
-            'date_range',
-            'user_id',
-            'short_url_id',
-            'show_all'
-        ])
-    )
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-
-                const cleanUrl =
-                    window.location.origin +
-                    window.location.pathname;
-
-                window.history.replaceState(
-                    {},
-                    document.title,
-                    cleanUrl
-                );
-
-            });
-        </script>
-
-    @endif
-
-
-    {{-- ========================================================= --}}
-    {{-- USER → SHORT LINK FILTER --}}
-    {{-- ========================================================= --}}
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            const userSelect = document.getElementById('user_id');
-            const shortUrlSelect = document.getElementById('short_url_id');
-
-            if (!userSelect || !shortUrlSelect) {
-                return;
-            }
-
-            const allShortUrlOptions = Array.from(
-                shortUrlSelect.options
-            );
-
-            function filterShortUrls() {
-
-                const selectedUserId = userSelect.value;
-
-                const currentShortUrlId =
-                    shortUrlSelect.value;
-
-                let currentShortUrlStillValid = false;
-
-                allShortUrlOptions.forEach(function (option) {
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | "All Short Links" option
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (option.value === '') {
-
-                        option.hidden = false;
-
-                        return;
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | All Users selected
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (selectedUserId === '') {
-
-                        option.hidden = false;
-
-                        if (
-                            option.value === currentShortUrlId
-                        ) {
-                            currentShortUrlStillValid = true;
-                        }
-
-                        return;
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Specific User selected
-                    |--------------------------------------------------------------------------
-                    */
-
-                    const optionUserId =
-                        option.dataset.userId;
-
-                    if (
-                        optionUserId === selectedUserId
-                    ) {
-
-                        option.hidden = false;
-
-                        if (
-                            option.value === currentShortUrlId
-                        ) {
-                            currentShortUrlStillValid = true;
-                        }
-
-                    } else {
-
-                        option.hidden = true;
-
-                    }
-
-                });
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Reset Short Link when it doesn't belong
-                | to the selected user.
-                |--------------------------------------------------------------------------
-                */
-
-                if (!currentShortUrlStillValid) {
-
-                    shortUrlSelect.value = '';
-
-                }
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | User Changed
-            |--------------------------------------------------------------------------
-            */
-
-            userSelect.addEventListener(
-                'change',
-                function () {
-
-                    filterShortUrls();
-
-                }
-            );
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Initial Page Load
-            |--------------------------------------------------------------------------
-            */
-
-            filterShortUrls();
-
-        });
-    </script>
 
 </div>
 
