@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AnonymousGeneration;
 use App\Models\QrCode;
 use App\Models\ShortUrl;
 use Endroid\QrCode\Color\Color;
@@ -252,6 +253,20 @@ class QrCodeController extends Controller
                     '#FFFFFF',
             ]
         );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Store Anonymous QR Generation
+        |--------------------------------------------------------------------------
+        |
+        | This records that an anonymous visitor generated a QR code.
+        |
+        */
+
+        AnonymousGeneration::create([
+            'type' => 'qr_code',
+        ]);
 
 
         /*

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ActivityLogger;
+use App\Models\AnonymousGeneration;
 use App\Models\ShortUrl;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -113,6 +114,21 @@ class ShortUrlController extends Controller
 
             /*
             |--------------------------------------------------------------------------
+            | Store Anonymous Short URL Generation
+            |--------------------------------------------------------------------------
+            |
+            | This permanently records that an anonymous visitor
+            | successfully generated a short URL.
+            |
+            */
+
+            AnonymousGeneration::create([
+                'type' => 'short_url',
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
             | AJAX / Fetch Request
             |--------------------------------------------------------------------------
             */
@@ -121,6 +137,7 @@ class ShortUrlController extends Controller
 
                 return response()->json([
                     'success' => true,
+
                     'message' =>
                         'Short URL created successfully.',
 
@@ -258,8 +275,10 @@ class ShortUrlController extends Controller
 
                     return response()->json([
                         'success' => false,
+
                         'message' =>
                             'Scheduled activation must be before the expiration date.',
+
                         'errors' => [
                             'scheduled_at' => [
                                 'Scheduled activation must be before the expiration date.'
