@@ -6,7 +6,7 @@
 
     {{-- Page Header --}}
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
+<!-- 
         <div>
             <div class="mb-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <a
@@ -28,7 +28,7 @@
                 <span>/</span>
 
                 <span>Create Link</span>
-            </div>
+            </div> -->
 
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
                 Create Link

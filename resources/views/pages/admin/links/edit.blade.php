@@ -42,7 +42,6 @@
 
     </div>
 
-
     <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
         Edit Link
     </h1>
@@ -229,7 +228,7 @@
             </h2>
 
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Configure expiration, scheduling and password protection.
+                Configure expiration, scheduling, status and favorite settings.
             </p>
 
         </div>
@@ -287,29 +286,54 @@
             </div>
 
 
-            {{-- Password --}}
-            <div>
+            {{-- Password Protection Information --}}
+            <div class="rounded-lg border border-warning-200 bg-warning-50 px-4 py-4 dark:border-warning-500/30 dark:bg-warning-500/10">
 
-                <label
-                    for="password"
-                    class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                    New Password
-                </label>
+                <div class="flex items-start gap-3">
 
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    minlength="4"
-                    maxlength="255"
-                    placeholder="Enter a new password"
-                    class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:text-white/90"
-                >
+                    <div class="mt-0.5 shrink-0">
+                        <svg
+                            class="h-5 w-5 text-warning-600 dark:text-warning-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-7a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2zm10-11V7a4 4 0 00-8 0v1h8z"
+                            />
+                        </svg>
+                    </div>
 
-                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Leave empty to keep the existing password.
-                </p>
+                    <div>
+
+                        <p class="text-sm font-medium text-warning-800 dark:text-warning-300">
+                            Password Protected
+                        </p>
+
+                        <p class="mt-1 text-xs text-warning-700 dark:text-warning-400">
+                            The link password is private and cannot be viewed or changed by an administrator.
+                        </p>
+
+                        @if($shortUrl->isPasswordProtected())
+
+                            <p class="mt-2 text-xs font-medium text-warning-800 dark:text-warning-300">
+                                This link currently has password protection enabled.
+                            </p>
+
+                        @else
+
+                            <p class="mt-2 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                This link currently does not have password protection.
+                            </p>
+
+                        @endif
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -339,13 +363,24 @@
                     </option>
 
                     <option
-                        value="inactive"
-                        @selected(old('status', $shortUrl->status) === 'inactive')
+                        value="disabled"
+                        @selected(old('status', $shortUrl->status) === 'disabled')
                     >
-                        Inactive
+                        Disabled
+                    </option>
+
+                    <option
+                        value="expired"
+                        @selected(old('status', $shortUrl->status) === 'expired')
+                    >
+                        Expired
                     </option>
 
                 </select>
+
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Disabled links cannot be used until they are activated again.
+                </p>
 
             </div>
 
@@ -398,4 +433,5 @@
 </form>
 
 </div>
+
 @endsection
