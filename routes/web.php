@@ -123,6 +123,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | All Links
         */
+
         Route::get('/links', [
             AdminLinkController::class,
             'index',
@@ -132,6 +133,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | Create Link
         */
+
         Route::get('/links/create', [
             AdminLinkController::class,
             'create',
@@ -146,6 +148,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | Favorite / Unfavorite
         */
+
         Route::patch('/links/{id}/favorite', [
             AdminLinkController::class,
             'toggleFavorite',
@@ -155,6 +158,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | Trash - Restore
         */
+
         Route::patch('/links/trash/{id}/restore', [
             AdminLinkController::class,
             'restore',
@@ -164,6 +168,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | Trash - Permanent Delete
         */
+
         Route::delete('/links/trash/{id}/force-delete', [
             AdminLinkController::class,
             'forceDelete',
@@ -173,6 +178,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | View Link
         */
+
         Route::get('/links/{id}', [
             AdminLinkController::class,
             'show',
@@ -182,6 +188,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | Edit Link
         */
+
         Route::get('/links/{id}/edit', [
             AdminLinkController::class,
             'edit',
@@ -191,6 +198,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | Update Link
         */
+
         Route::patch('/links/{id}', [
             AdminLinkController::class,
             'update',
@@ -200,6 +208,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         /*
         | Delete Link
         */
+
         Route::delete('/links/{id}', [
             AdminLinkController::class,
             'destroy',
@@ -225,11 +234,20 @@ Route::middleware(['auth', 'verified', 'admin'])
         */
 
         /*
-        | Generate Report
+        | Generate Report Page
         |
         | URL:
         | /admin/reports
+        |
+        | This page contains:
+        | - Report Type
+        | - Date Range
+        | - User
+        | - Short Link
+        | - Format
+        | - Generate Report
         */
+
         Route::get('/reports', [
             AdminReportController::class,
             'index',
@@ -242,6 +260,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         | URL:
         | /admin/reports/generate
         */
+
         Route::post('/reports/generate', [
             AdminReportController::class,
             'generate',
@@ -254,12 +273,9 @@ Route::middleware(['auth', 'verified', 'admin'])
         | URL:
         | /admin/reports/download-filtered
         |
-        | This route is used by the PDF and CSV buttons
-        | on the Generate Report page.
-        |
-        | IMPORTANT:
-        | Keep this BEFORE /reports/{report}/download.
+        | Used by the Generate Report page.
         */
+
         Route::get('/reports/download-filtered', [
             AdminReportController::class,
             'downloadFiltered',
@@ -267,14 +283,18 @@ Route::middleware(['auth', 'verified', 'admin'])
 
 
         /*
-        | All Reports
+        | All Generated Reports
         |
         | URL:
         | /admin/reports/all
         |
         | IMPORTANT:
-        | Keep this BEFORE /reports/{report}/download.
+        | This is a separate page from /admin/reports.
+        |
+        | /admin/reports       = Generate Report page
+        | /admin/reports/all   = Generated Reports page
         */
+
         Route::get('/reports/all', [
             AdminReportController::class,
             'all',
@@ -282,11 +302,12 @@ Route::middleware(['auth', 'verified', 'admin'])
 
 
         /*
-        | Download Existing Report
+        | Download Existing Generated Report
         |
         | URL:
         | /admin/reports/{report}/download
         */
+
         Route::get('/reports/{report}/download', [
             AdminReportController::class,
             'download',
@@ -294,11 +315,12 @@ Route::middleware(['auth', 'verified', 'admin'])
 
 
         /*
-        | Delete Report
+        | Delete Existing Generated Report
         |
         | URL:
         | /admin/reports/{report}
         */
+
         Route::delete('/reports/{report}', [
             AdminReportController::class,
             'destroy',
@@ -334,7 +356,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Dashboard
+    | User Dashboard
     |--------------------------------------------------------------------------
     */
 
@@ -346,7 +368,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Links
+    | User Links
     |--------------------------------------------------------------------------
     */
 
@@ -393,7 +415,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Analytics
+    | User Analytics
     |--------------------------------------------------------------------------
     */
 
@@ -405,7 +427,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | QR Codes
+    | User QR Codes
     |--------------------------------------------------------------------------
     */
 
@@ -464,7 +486,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Activity Logs
+    | User Activity Logs
     |--------------------------------------------------------------------------
     */
 
@@ -481,7 +503,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Settings
+    | User Settings
     |--------------------------------------------------------------------------
     */
 
@@ -549,6 +571,11 @@ Route::post('/password/{shortCode}', [
 |--------------------------------------------------------------------------
 | Short URL Redirect
 |--------------------------------------------------------------------------
+|
+| This MUST remain at the very bottom because it matches:
+|
+| /anything
+|
 */
 
 Route::get('/{shortCode}', [

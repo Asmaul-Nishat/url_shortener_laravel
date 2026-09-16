@@ -1,494 +1,755 @@
 <!DOCTYPE html>
-<html lang="en">
 
+<html>
 <head>
-
     <meta charset="UTF-8">
 
-    <title>
-        {{ $report_name }}
-    </title>
+<title>{{ $report_name }}</title>
 
-    <style>
+<style>
+    @page {
+        size: A4 landscape;
+        margin: 12px 12px 14px 12px;
+    }
 
-        @page {
-            size: A4 landscape;
-            margin: 20px 18px 20px 18px;
-        }
+    * {
+        box-sizing: border-box;
+    }
 
-        * {
-            box-sizing: border-box;
-        }
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+    }
 
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 9px;
-            color: #1f2937;
-            margin: 0;
-            padding: 0;
-        }
+    body {
+        font-family: DejaVu Sans, sans-serif;
+        font-size: 7px;
+        color: #333333;
+        background: #ffffff;
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Report Header
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Report Title
+    |--------------------------------------------------------------------------
+    */
 
-        h1 {
-            font-size: 18px;
-            margin: 0 0 12px 0;
-            color: #111827;
-        }
+    .report-title {
+        margin: 5px 3px 6px 3px;
+        font-size: 17px;
+        font-weight: bold;
+        line-height: 1.2;
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Report Information
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Report Meta Information
+    |--------------------------------------------------------------------------
+    */
 
-        .meta {
-            width: 100%;
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            background: #f9fafb;
-        }
+    .meta {
+        margin: 0 0 6px 0;
+    }
 
-        .meta table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .meta-table {
+        width: 98%;
+        margin: 5px auto;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
 
-        .meta td {
-            border: none;
-            padding: 3px 5px;
-            vertical-align: top;
-            font-size: 9px;
-        }
+    .meta-table td {
+        border: none;
+        padding: 2px 0;
+        font-size: 7px;
+        line-height: 1.3;
+        vertical-align: top;
+    }
 
-        .meta-label {
-            width: 13%;
-            font-weight: bold;
-            color: #374151;
-        }
+    .meta-left {
+        width: 50%;
+    }
 
-        .meta-value {
-            width: 37%;
-            color: #111827;
-        }
+    .meta-right {
+        width: 50%;
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Click Details Table
-        |--------------------------------------------------------------------------
-        */
+    .meta-label {
+        font-weight: bold;
+    }
 
-        .click-table {
-            width: 100%;
-            table-layout: fixed;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Section Title
+    |--------------------------------------------------------------------------
+    */
 
-        .click-table th,
-        .click-table td {
-            border: 1px solid #9ca3af;
-            padding: 5px;
-            vertical-align: top;
-            text-align: left;
-            font-size: 7.5px;
+    .section-title {
+        width: 98%;
+        margin: 6px auto 5px auto;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 1.2;
+    }
 
-            /*
-            | Important for long URLs / browser strings
-            */
+    /*
+    |--------------------------------------------------------------------------
+    | Main Analytics Table
+    |--------------------------------------------------------------------------
+    */
 
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            word-break: break-word;
-        }
+    .analytics-table {
+        width: 98%;
+        margin: 5px auto;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
 
-        .click-table th {
-            background: #e5e7eb;
-            color: #111827;
-            font-weight: bold;
-            font-size: 8px;
-        }
+    .analytics-table thead {
+        display: table-header-group;
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Column Widths
-        |--------------------------------------------------------------------------
-        |
-        | Total = 100%
-        |
-        */
+    .analytics-table tr {
+        page-break-inside: avoid;
+    }
 
-        .col-short-url {
-            width: 12%;
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Table Cells
+    |--------------------------------------------------------------------------
+    */
 
-        .col-original-url {
-            width: 25%;
-        }
+    .analytics-table th,
+    .analytics-table td {
+        border: 1px solid #cfcfcf;
+        padding: 3px 4px;
+        vertical-align: top;
+    }
 
-        .col-total-clicks {
-            width: 8%;
-            text-align: center !important;
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Table Header
+    |--------------------------------------------------------------------------
+    */
 
-        .col-ip {
-            width: 9%;
-        }
-
-        .col-user-agent {
-            width: 23%;
-        }
-
-        .col-referer {
-            width: 13%;
-        }
-
-        .col-clicked-at {
-            width: 10%;
-        }
+    .analytics-table th {
+        background: #f1f3f5;
+        color: #222222;
+        font-size: 6.7px;
+        font-weight: bold;
+        text-align: left;
 
         /*
-        |--------------------------------------------------------------------------
-        | Total Clicks Cell
-        |--------------------------------------------------------------------------
-        */
+         * Keep every header on one line.
+         */
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow: hidden;
+    }
 
-        .total-clicks-cell {
-            text-align: center !important;
-            font-weight: bold;
-            white-space: nowrap;
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Table Body
+    |--------------------------------------------------------------------------
+    */
+
+    .analytics-table td {
+        font-size: 6.4px;
+        line-height: 1.25;
+        text-align: left;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Column Widths
+    |--------------------------------------------------------------------------
+    |
+    | Total = 100%
+    |
+    */
+
+    .analytics-table th:nth-child(1),
+    .analytics-table td:nth-child(1) {
+        width: 12%;
+    }
+
+    .analytics-table th:nth-child(2),
+    .analytics-table td:nth-child(2) {
+        width: 25%;
+    }
+
+    .analytics-table th:nth-child(3),
+    .analytics-table td:nth-child(3) {
+        width: 7%;
+    }
+
+    .analytics-table th:nth-child(4),
+    .analytics-table td:nth-child(4) {
+        width: 9%;
+    }
+
+    .analytics-table th:nth-child(5),
+    .analytics-table td:nth-child(5) {
+        width: 23%;
+    }
+
+    .analytics-table th:nth-child(6),
+    .analytics-table td:nth-child(6) {
+        width: 10%;
+    }
+
+    .analytics-table th:nth-child(7),
+    .analytics-table td:nth-child(7) {
+        width: 14%;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Short URL
+    |--------------------------------------------------------------------------
+    */
+
+    .short-url {
+        font-family: DejaVu Sans, sans-serif;
+        font-size: 6.4px;
+        line-height: 1.2;
 
         /*
-        |--------------------------------------------------------------------------
-        | Empty State
-        |--------------------------------------------------------------------------
-        */
+         * Short URL stays on one line.
+         */
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow: hidden;
+    }
 
-        .no-records {
-            text-align: center !important;
-            padding: 15px !important;
-            font-size: 9px !important;
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Original URL
+    |--------------------------------------------------------------------------
+    */
 
-        /*
-        |--------------------------------------------------------------------------
-        | URL Styling
-        |--------------------------------------------------------------------------
-        */
-
-        .url {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            word-break: break-all;
-        }
+    .original-url {
+        font-size: 6.3px;
+        line-height: 1.25;
 
         /*
-        |--------------------------------------------------------------------------
-        | Footer
-        |--------------------------------------------------------------------------
-        */
+         * Long URLs are allowed to wrap.
+         */
+        white-space: normal;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+    }
 
-        .footer {
-            margin-top: 12px;
-            font-size: 7px;
-            color: #6b7280;
-            text-align: right;
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Total Clicks
+    |--------------------------------------------------------------------------
+    */
 
-    </style>
+    .total-clicks {
+        text-align: center;
+        font-size: 7px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | IP Address
+    |--------------------------------------------------------------------------
+    */
+
+    .ip-address {
+        font-family: DejaVu Sans Mono, monospace;
+        font-size: 6.2px;
+        line-height: 1.2;
+
+        /*
+         * Keep IP address on one line.
+         */
+        white-space: nowrap;
+        word-break: keep-all;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Agent
+    |--------------------------------------------------------------------------
+    */
+
+    .user-agent {
+        font-size: 5.8px;
+        line-height: 1.2;
+
+        /*
+         * User Agent can wrap because it is usually very long.
+         */
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Referer
+    |--------------------------------------------------------------------------
+    */
+
+    .referer {
+        font-size: 5.8px;
+        line-height: 1.2;
+
+        white-space: normal;
+        word-break: break-all;
+        overflow-wrap: break-word;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clicked At
+    |--------------------------------------------------------------------------
+    */
+
+    .clicked-at {
+        font-family: DejaVu Sans Mono, monospace;
+        font-size: 5.9px;
+        line-height: 1.2;
+
+        /*
+         * Keep the complete date and time together.
+         */
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow: hidden;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Empty State
+    |--------------------------------------------------------------------------
+    */
+
+    .empty {
+        text-align: center !important;
+        padding: 10px !important;
+        font-size: 7px !important;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Alternate Rows
+    |--------------------------------------------------------------------------
+    */
+
+    .row-alt {
+        background: #fafafa;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Summary
+    |--------------------------------------------------------------------------
+    */
+
+    .summary {
+        margin-top: 6px;
+        font-size: 7px;
+    }
+</style>
+
 
 </head>
 
 <body>
 
-    {{-- =========================================================
-         REPORT TITLE
-    ========================================================== --}}
 
-    <h1>
-        {{ $report_name }}
-    </h1>
+{{-- Report Title --}}
+
+<h1 class="report-title">
+    Click Analytics Report
+</h1>
 
 
-    {{-- =========================================================
-         REPORT INFORMATION
-    ========================================================== --}}
+{{-- Report Information --}}
 
-    <div class="meta">
+<div class="meta">
 
-        <table>
+    <table class="meta-table">
 
-            <tr>
+        <tr>
 
-                <td class="meta-label">
+            <td class="meta-left">
+                <span class="meta-label">
                     Report Type:
-                </td>
+                </span>
 
-                <td class="meta-value">
-                    {{ $report_type }}
-                </td>
+                {{ $report_type }}
+            </td>
 
-                <td class="meta-label">
+            <td class="meta-right">
+                <span class="meta-label">
                     Total Clicks:
-                </td>
+                </span>
 
-                <td class="meta-value">
-                    {{ number_format($total_clicks) }}
-                </td>
+                {{ $total_clicks }}
+            </td>
 
-            </tr>
+        </tr>
 
 
-            <tr>
+        <tr>
 
-                <td class="meta-label">
+            <td class="meta-left">
+                <span class="meta-label">
                     Date Range:
-                </td>
+                </span>
 
-                <td class="meta-value">
-                    {{ $date_range }}
-                </td>
+                {{ $date_range }}
+            </td>
 
-                <td class="meta-label">
+            <td class="meta-right">
+                <span class="meta-label">
                     Period:
-                </td>
+                </span>
 
-                <td class="meta-value">
-                    {{ $start_date->format('M d, Y') }}
-                    -
-                    {{ $end_date->format('M d, Y') }}
-                </td>
+                {{ $start_date->format('M d, Y') }}
+                -
+                {{ $end_date->format('M d, Y') }}
+            </td>
 
-            </tr>
+        </tr>
 
 
-            <tr>
+        <tr>
 
-                <td class="meta-label">
+            <td class="meta-left">
+                <span class="meta-label">
                     User:
-                </td>
+                </span>
 
-                <td class="meta-value">
+                {{ $selected_user?->name ?? 'All Users' }}
+            </td>
 
-                    {{ $selected_user?->name ?? 'All Users' }}
-
-                    @if ($selected_user)
-                        ({{ $selected_user->email }})
-                    @endif
-
-                </td>
-
-                <td class="meta-label">
+            <td class="meta-right">
+                <span class="meta-label">
                     Short Link:
-                </td>
+                </span>
 
-                <td class="meta-value">
+                {{ $short_url?->short_url ?? 'All Short Links' }}
+            </td>
 
-                    @if ($short_url)
-
-                        {{ url(
-                            $short_url->custom_alias
-                                ?: $short_url->short_code
-                        ) }}
-
-                    @else
-
-                        All Short Links
-
-                    @endif
-
-                </td>
-
-            </tr>
-
-        </table>
-
-    </div>
-
-
-    {{-- =========================================================
-         CLICK DETAILS
-    ========================================================== --}}
-
-    <table class="click-table">
-
-        <thead>
-
-            <tr>
-
-                <th class="col-short-url">
-                    Short URL
-                </th>
-
-                <th class="col-original-url">
-                    Original URL
-                </th>
-
-                <th class="col-total-clicks">
-                    Total Clicks
-                </th>
-
-                <th class="col-ip">
-                    IP Address
-                </th>
-
-                <th class="col-user-agent">
-                    User Agent
-                </th>
-
-                <th class="col-referer">
-                    Referer
-                </th>
-
-                <th class="col-clicked-at">
-                    Clicked At
-                </th>
-
-            </tr>
-
-        </thead>
-
-
-        <tbody>
-
-            @forelse ($clicks as $click)
-
-                @php
-                    $shortUrl = $click->shortUrl;
-
-                    $shortUrlText = $shortUrl
-                        ? url(
-                            $shortUrl->custom_alias
-                                ?: $shortUrl->short_code
-                        )
-                        : '-';
-
-                    $originalUrl = $shortUrl
-                        ? $shortUrl->original_url
-                        : '-';
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Total clicks for this short URL
-                    |--------------------------------------------------------------------------
-                    */
-
-                    $shortUrlTotalClicks = $shortUrl
-                        ? $shortUrl->clicks()->count()
-                        : 0;
-                @endphp
-
-
-                <tr>
-
-                    {{-- Short URL --}}
-
-                    <td class="url">
-
-                        {{ $shortUrlText }}
-
-                    </td>
-
-
-                    {{-- Original URL --}}
-
-                    <td class="url">
-
-                        {{ $originalUrl }}
-
-                    </td>
-
-
-                    {{-- Total Clicks --}}
-
-                    <td class="total-clicks-cell">
-
-                        {{ number_format($shortUrlTotalClicks) }}
-
-                    </td>
-
-
-                    {{-- IP Address --}}
-
-                    <td>
-
-                        {{ $click->ip_address ?? '-' }}
-
-                    </td>
-
-
-                    {{-- User Agent --}}
-
-                    <td>
-
-                        {{ $click->user_agent ?? '-' }}
-
-                    </td>
-
-
-                    {{-- Referer --}}
-
-                    <td class="url">
-
-                        {{ $click->referer ?? '-' }}
-
-                    </td>
-
-
-                    {{-- Clicked At --}}
-
-                    <td>
-
-                        {{ $click->clicked_at
-                            ? $click->clicked_at->format(
-                                'Y-m-d H:i:s'
-                            )
-                            : '-'
-                        }}
-
-                    </td>
-
-                </tr>
-
-            @empty
-
-                <tr>
-
-                    <td
-                        colspan="7"
-                        class="no-records"
-                    >
-
-                        No click records found for the selected filters.
-
-                    </td>
-
-                </tr>
-
-            @endforelse
-
-        </tbody>
+        </tr>
 
     </table>
 
+</div>
 
-    {{-- =========================================================
-         FOOTER
-    ========================================================== --}}
 
-    <div class="footer">
+{{-- Click Details --}}
 
-        Generated on
-        {{ now()->format('M d, Y H:i:s') }}
+<div class="section-title">
+    Click Details
+</div>
 
-    </div>
+
+{{-- Analytics Table --}}
+
+<table class="analytics-table">
+
+    <thead>
+
+        <tr>
+
+            <th>
+                Short URL
+            </th>
+
+            <th>
+                Original URL
+            </th>
+
+            <th>
+                Total Clicks
+            </th>
+
+            <th>
+                IP Address
+            </th>
+
+            <th>
+                User Agent
+            </th>
+
+            <th>
+                Referer
+            </th>
+
+            <th>
+                Clicked At
+            </th>
+
+        </tr>
+
+    </thead>
+
+
+    <tbody>
+
+        @forelse($clicks as $index => $click)
+
+            @php
+
+                /*
+                |--------------------------------------------------------------------------
+                | Short URL
+                |--------------------------------------------------------------------------
+                */
+
+                $shortUrlValue =
+                    $click->shortUrl?->short_url
+                    ?? '—';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Original URL
+                |--------------------------------------------------------------------------
+                */
+
+                $originalUrl =
+                    $click->shortUrl?->original_url
+                    ?? '—';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Original URL Display
+                |--------------------------------------------------------------------------
+                |
+                | Very long URLs are shortened for PDF display.
+                | The database value is NOT changed.
+                |
+                */
+
+                $displayOriginalUrl =
+                    $originalUrl;
+
+                if (
+                    strlen($displayOriginalUrl) > 220
+                ) {
+
+                    $questionPosition =
+                        strpos(
+                            $displayOriginalUrl,
+                            '?'
+                        );
+
+                    if (
+                        $questionPosition !== false
+                    ) {
+
+                        $displayOriginalUrl =
+                            substr(
+                                $displayOriginalUrl,
+                                0,
+                                $questionPosition
+                            ) .
+                            '?...';
+
+                    } else {
+
+                        $displayOriginalUrl =
+                            substr(
+                                $displayOriginalUrl,
+                                0,
+                                220
+                            ) .
+                            '...';
+                    }
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Total Clicks For This Short URL
+                |--------------------------------------------------------------------------
+                */
+
+                $rowTotalClicks = 0;
+
+                if ($click->shortUrl) {
+
+                    $rowTotalClicks =
+                        $click->shortUrl
+                            ->clicks()
+                            ->count();
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | IP Address
+                |--------------------------------------------------------------------------
+                */
+
+                $ipAddress =
+                    $click->ip_address
+                    ?? '—';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | User Agent
+                |--------------------------------------------------------------------------
+                */
+
+                $userAgent =
+                    $click->user_agent
+                    ?? '—';
+
+                if (
+                    strlen($userAgent) > 160
+                ) {
+
+                    $userAgent =
+                        substr(
+                            $userAgent,
+                            0,
+                            160
+                        ) .
+                        '...';
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Referer
+                |--------------------------------------------------------------------------
+                */
+
+                $referer =
+                    $click->referer
+                    ?? '—';
+
+                if (
+                    strlen($referer) > 80
+                ) {
+
+                    $referer =
+                        substr(
+                            $referer,
+                            0,
+                            80
+                        ) .
+                        '...';
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Clicked At
+                |--------------------------------------------------------------------------
+                */
+
+                $clickedAt =
+                    $click->clicked_at
+                    ? $click->clicked_at
+                        ->format(
+                            'Y-m-d H:i:s'
+                        )
+                    : '—';
+
+            @endphp
+
+
+            <tr
+                class="{{ $index % 2 === 1 ? 'row-alt' : '' }}"
+            >
+
+                {{-- Short URL --}}
+
+                <td>
+                    <div class="short-url">
+                        {{ $shortUrlValue }}
+                    </div>
+                </td>
+
+
+                {{-- Original URL --}}
+
+                <td>
+                    <div class="original-url">
+                        {{ $displayOriginalUrl }}
+                    </div>
+                </td>
+
+
+                {{-- Total Clicks --}}
+
+                <td>
+                    <div class="total-clicks">
+                        {{ $rowTotalClicks }}
+                    </div>
+                </td>
+
+
+                {{-- IP Address --}}
+
+                <td>
+                    <div class="ip-address">
+                        {{ $ipAddress }}
+                    </div>
+                </td>
+
+
+                {{-- User Agent --}}
+
+                <td>
+                    <div class="user-agent">
+                        {{ $userAgent }}
+                    </div>
+                </td>
+
+
+                {{-- Referer --}}
+
+                <td>
+                    <div class="referer">
+                        {{ $referer }}
+                    </div>
+                </td>
+
+
+                {{-- Clicked At --}}
+
+                <td>
+                    <div class="clicked-at">
+                        {{ $clickedAt }}
+                    </div>
+                </td>
+
+            </tr>
+
+
+        @empty
+
+            <tr>
+
+                <td
+                    colspan="7"
+                    class="empty"
+                >
+                    No click data found for this period.
+                </td>
+
+            </tr>
+
+        @endforelse
+
+    </tbody>
+
+</table>
 
 </body>
-
 </html>

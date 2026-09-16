@@ -7,7 +7,6 @@ use App\Models\ShortUrl;
 use App\Models\UrlClick;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +16,7 @@ use Illuminate\View\View;
 class AdminReportController extends Controller
 {
     /**
-     * Display the admin reports page.
+     * Display the admin report generation page.
      */
     public function index(Request $request): View
     {
@@ -33,9 +32,7 @@ class AdminReportController extends Controller
 
         $userId = $request->input('user_id');
 
-        $shortUrlId = $request->input(
-            'short_url_id'
-        );
+        $shortUrlId = $request->input('short_url_id');
 
         /*
         |--------------------------------------------------------------------------
@@ -59,27 +56,30 @@ class AdminReportController extends Controller
         |--------------------------------------------------------------------------
         | Short URLs
         |--------------------------------------------------------------------------
-        |
-        | Load all links because the Blade dropdown filters them
-        | dynamically according to the selected user.
-        |
         */
 
-        $shortUrls = ShortUrl::with('user')
-            ->orderByDesc('id')
-            ->get();
+        if ($userId) {
+
+            $shortUrls = ShortUrl::with('user')
+                ->where('user_id', $userId)
+                ->orderByDesc('id')
+                ->get();
+
+        } else {
+
+            $shortUrls = ShortUrl::with('user')
+                ->orderByDesc('id')
+                ->get();
+        }
 
         /*
         |--------------------------------------------------------------------------
         | Validate Selected Short URL
         |--------------------------------------------------------------------------
-        |
-        | If a user is selected, the selected short URL must belong
-        | to that user.
-        |
         */
 
         if ($userId && $shortUrlId) {
+
             $shortUrlBelongsToUser = ShortUrl::where(
                 'id',
                 $shortUrlId
@@ -118,6 +118,7 @@ class AdminReportController extends Controller
         */
 
         if ($userId) {
+
             $clickQuery->whereHas(
                 'shortUrl',
                 function ($query) use ($userId) {
@@ -136,6 +137,7 @@ class AdminReportController extends Controller
         */
 
         if ($shortUrlId) {
+
             $clickQuery->where(
                 'short_url_id',
                 $shortUrlId
@@ -152,7 +154,7 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Show All
+        | Clicks
         |--------------------------------------------------------------------------
         */
 
@@ -161,10 +163,13 @@ class AdminReportController extends Controller
         );
 
         if ($showAll) {
+
             $clicks = $clickQuery
                 ->latest('clicked_at')
                 ->get();
+
         } else {
+
             $clicks = $clickQuery
                 ->latest('clicked_at')
                 ->limit(10)
@@ -209,7 +214,7 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Newly Generated Report
+        | Generated Report ID
         |--------------------------------------------------------------------------
         */
 
@@ -247,12 +252,14 @@ class AdminReportController extends Controller
         );
     }
 
+
     /**
-     * Generate a report.
+     * Generate and save a report.
      */
     public function generate(
         Request $request
     ): RedirectResponse {
+
         /*
         |--------------------------------------------------------------------------
         | Validation
@@ -291,7 +298,7 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Verify User + Short Link Relationship
+        | Validate User / Short URL Relationship
         |--------------------------------------------------------------------------
         */
 
@@ -299,6 +306,7 @@ class AdminReportController extends Controller
             !empty($validated['user_id']) &&
             !empty($validated['short_url_id'])
         ) {
+
             $shortUrlBelongsToUser = ShortUrl::where(
                 'id',
                 $validated['short_url_id']
@@ -310,6 +318,7 @@ class AdminReportController extends Controller
                 ->exists();
 
             if (!$shortUrlBelongsToUser) {
+
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -352,6 +361,7 @@ class AdminReportController extends Controller
         */
 
         if (!empty($validated['user_id'])) {
+
             $clickQuery->whereHas(
                 'shortUrl',
                 function ($query) use ($validated) {
@@ -370,6 +380,7 @@ class AdminReportController extends Controller
         */
 
         if (!empty($validated['short_url_id'])) {
+
             $clickQuery->where(
                 'short_url_id',
                 $validated['short_url_id']
@@ -449,11 +460,12 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Generate File
+        | Generate CSV
         |--------------------------------------------------------------------------
         */
 
         if ($validated['format'] === 'CSV') {
+
             $csvContent = $this->createCsv(
                 $clicks
             );
@@ -462,55 +474,31 @@ class AdminReportController extends Controller
                 $filePath,
                 $csvContent
             );
+
         } else {
+
             /*
             |--------------------------------------------------------------------------
-            | Generate REAL PDF using Blade PDF view
+            | Generate PDF
             |--------------------------------------------------------------------------
             */
 
-            $pdf = Pdf::loadView(
-                'pages.admin.reports.pdf',
-                [
-                    'report_name' =>
-                        $reportName,
-
-                    'report_type' =>
-                        $validated['report_type'],
-
-                    'date_range' =>
-                        $validated['date_range'],
-
-                    'start_date' =>
-                        $startDate,
-
-                    'end_date' =>
-                        $endDate,
-
-                    'selected_user' =>
-                        $selectedUser,
-
-                    'short_url' =>
-                        $selectedShortUrl,
-
-                    'total_clicks' =>
-                        $clicks->count(),
-
-                    'clicks' =>
-                        $clicks,
-                ]
+            $pdf = $this->buildPdf(
+                reportName: $reportName,
+                reportType: $validated['report_type'],
+                dateRange: $validated['date_range'],
+                startDate: $startDate,
+                endDate: $endDate,
+                selectedUser: $selectedUser,
+                selectedShortUrl: $selectedShortUrl,
+                clicks: $clicks
             );
 
             /*
             |--------------------------------------------------------------------------
-            | Landscape A4
+            | Store PDF
             |--------------------------------------------------------------------------
             */
-
-            $pdf->setPaper(
-                'a4',
-                'landscape'
-            );
 
             Storage::disk('local')->put(
                 $filePath,
@@ -520,7 +508,7 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Save Report Database Record
+        | Save Report
         |--------------------------------------------------------------------------
         */
 
@@ -559,7 +547,7 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Redirect Back to Reports
+        | Redirect
         |--------------------------------------------------------------------------
         */
 
@@ -595,12 +583,14 @@ class AdminReportController extends Controller
             );
     }
 
+
     /**
-     * Download filtered report.
+     * Download a filtered report directly.
      */
     public function downloadFiltered(
         Request $request
     ) {
+
         $format = strtoupper(
             $request->input(
                 'format',
@@ -623,11 +613,12 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Verify User + Short URL Relationship
+        | Validate User / Short URL Relationship
         |--------------------------------------------------------------------------
         */
 
         if ($userId && $shortUrlId) {
+
             $shortUrlBelongsToUser = ShortUrl::where(
                 'id',
                 $shortUrlId
@@ -677,6 +668,7 @@ class AdminReportController extends Controller
         */
 
         if ($userId) {
+
             $clickQuery->whereHas(
                 'shortUrl',
                 function ($query) use ($userId) {
@@ -695,6 +687,7 @@ class AdminReportController extends Controller
         */
 
         if ($shortUrlId) {
+
             $clickQuery->where(
                 'short_url_id',
                 $shortUrlId
@@ -713,11 +706,12 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | CSV Download
+        | CSV
         |--------------------------------------------------------------------------
         */
 
         if ($format === 'CSV') {
+
             $fileName =
                 'click-details-' .
                 now()->format(
@@ -727,6 +721,7 @@ class AdminReportController extends Controller
 
             return response()->streamDownload(
                 function () use ($clicks) {
+
                     echo $this->createCsv(
                         $clicks
                     );
@@ -762,40 +757,19 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Generate REAL PDF
+        | Generate PDF
         |--------------------------------------------------------------------------
         */
 
-        $pdf = Pdf::loadView(
-            'pages.admin.reports.pdf',
-            [
-                'report_name' =>
-                    'Click Analytics Report',
-
-                'report_type' =>
-                    'click_analytics',
-
-                'date_range' =>
-                    $dateRange,
-
-                'start_date' =>
-                    $startDate,
-
-                'end_date' =>
-                    $endDate,
-
-                'selected_user' =>
-                    $selectedUser,
-
-                'short_url' =>
-                    $selectedShortUrl,
-
-                'total_clicks' =>
-                    $clicks->count(),
-
-                'clicks' =>
-                    $clicks,
-            ]
+        $pdf = $this->buildPdf(
+            reportName: 'Click Analytics Report',
+            reportType: 'click_analytics',
+            dateRange: $dateRange,
+            startDate: $startDate,
+            endDate: $endDate,
+            selectedUser: $selectedUser,
+            selectedShortUrl: $selectedShortUrl,
+            clicks: $clicks
         );
 
         /*
@@ -811,7 +785,7 @@ class AdminReportController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Download PDF
+        | Download
         |--------------------------------------------------------------------------
         */
 
@@ -822,8 +796,11 @@ class AdminReportController extends Controller
             ) .
             '.pdf';
 
+        $pdfContent =
+            $pdf->output();
+
         return response(
-            $pdf->output(),
+            $pdfContent,
             200,
             [
                 'Content-Type' =>
@@ -833,80 +810,466 @@ class AdminReportController extends Controller
                     'attachment; filename="' .
                     $fileName .
                     '"',
+
+                'Content-Length' =>
+                    strlen($pdfContent),
+
+                'Cache-Control' =>
+                    'private, no-store, no-cache, must-revalidate',
+
+                'Pragma' =>
+                    'no-cache',
+
+                'Expires' =>
+                    '0',
             ]
         );
     }
 
+
     /**
-     * Show all click details.
+     * Display all previously generated reports.
      */
     public function all(
         Request $request
     ): View {
-        $request->merge([
-            'show_all' => 1,
-        ]);
 
-        return $this->index(
-            $request
+        $reports = Report::with([
+            'user',
+            'shortUrl',
+        ])
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view(
+            'pages.admin.reports.all',
+            compact('reports')
         );
     }
 
+
     /**
-     * Download saved report.
+     * Download a previously generated report.
+     *
+     * IMPORTANT:
+     *
+     * PDF reports are regenerated from the CURRENT
+     * pages.admin.reports.pdf Blade file.
+     *
+     * This fixes the problem where old generated PDFs
+     * had an older/messy layout.
      */
     public function download(
         Report $report
     ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | CSV
+        |--------------------------------------------------------------------------
+        |
+        | CSV is downloaded from its existing stored file.
+        |
+        */
+
         if (
-            !$report->file_path ||
-            !Storage::disk('local')->exists(
-                $report->file_path
-            )
+            strtoupper($report->format) === 'CSV'
         ) {
-            return back()->with(
-                'error',
-                'The report file could not be found.'
+
+            if (
+                !$report->file_path ||
+                !Storage::disk('local')->exists(
+                    $report->file_path
+                )
+            ) {
+
+                return back()->with(
+                    'error',
+                    'The report file could not be found.'
+                );
+            }
+
+            $fullPath =
+                Storage::disk('local')->path(
+                    $report->file_path
+                );
+
+            return response()->download(
+                $fullPath,
+                basename($fullPath),
+                [
+                    'Content-Type' =>
+                        'text/csv; charset=UTF-8',
+
+                    'Cache-Control' =>
+                        'private, no-store, no-cache, must-revalidate',
+
+                    'Pragma' =>
+                        'no-cache',
+                ]
             );
         }
 
-        $fullPath =
-            Storage::disk('local')->path(
-                $report->file_path
+
+        /*
+        |--------------------------------------------------------------------------
+        | PDF
+        |--------------------------------------------------------------------------
+        |
+        | We DO NOT download the old stored PDF.
+        |
+        | We rebuild the PDF from the current database/report
+        | information and the CURRENT pdf.blade.php.
+        |
+        */
+
+        if (
+            strtoupper($report->format) === 'PDF'
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Report Dates
+            |--------------------------------------------------------------------------
+            */
+
+            $startDate = $report->start_date
+                ? now()->parse(
+                    $report->start_date
+                )
+                : now()->startOfDay();
+
+            $endDate = $report->end_date
+                ? now()->parse(
+                    $report->end_date
+                )
+                : now()->endOfDay();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Selected User
+            |--------------------------------------------------------------------------
+            |
+            | IMPORTANT:
+            |
+            | We use the report relationship.
+            |
+            */
+
+            $selectedUser =
+                $report->user;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Selected Short URL
+            |--------------------------------------------------------------------------
+            */
+
+            $selectedShortUrl =
+                $report->shortUrl;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Rebuild Click Query
+            |--------------------------------------------------------------------------
+            */
+
+            $clickQuery = UrlClick::with(
+                'shortUrl.user'
+            )->whereBetween(
+                'clicked_at',
+                [
+                    $startDate->copy()->startOfDay(),
+                    $endDate->copy()->endOfDay(),
+                ]
             );
 
-        return response()->download(
-            $fullPath,
-            basename($fullPath)
+
+            /*
+            |--------------------------------------------------------------------------
+            | User Filter
+            |--------------------------------------------------------------------------
+            */
+
+            if ($selectedUser) {
+
+                $clickQuery->whereHas(
+                    'shortUrl',
+                    function ($query) use ($selectedUser) {
+
+                        $query->where(
+                            'user_id',
+                            $selectedUser->id
+                        );
+                    }
+                );
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Short URL Filter
+            |--------------------------------------------------------------------------
+            */
+
+            if ($selectedShortUrl) {
+
+                $clickQuery->where(
+                    'short_url_id',
+                    $selectedShortUrl->id
+                );
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Get Current Click Data
+            |--------------------------------------------------------------------------
+            */
+
+            $clicks = $clickQuery
+                ->latest('clicked_at')
+                ->get();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Total Clicks
+            |--------------------------------------------------------------------------
+            */
+
+            $totalClicks =
+                $clicks->count();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Build PDF From CURRENT Blade
+            |--------------------------------------------------------------------------
+            */
+
+            $pdf = $this->buildPdf(
+                reportName: $report->name,
+                reportType: $report->type,
+                dateRange: $report->date_range,
+                startDate: $startDate,
+                endDate: $endDate,
+                selectedUser: $selectedUser,
+                selectedShortUrl: $selectedShortUrl,
+                clicks: $clicks
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Landscape A4
+            |--------------------------------------------------------------------------
+            */
+
+            $pdf->setPaper(
+                'a4',
+                'landscape'
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Generate Fresh PDF
+            |--------------------------------------------------------------------------
+            */
+
+            $pdfContent =
+                $pdf->output();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Download Fresh PDF
+            |--------------------------------------------------------------------------
+            */
+
+            $fileName =
+                pathinfo(
+                    $report->file_path
+                    ?? 'click_analytics_report.pdf',
+                    PATHINFO_FILENAME
+                ) .
+                '.pdf';
+
+
+            return response(
+                $pdfContent,
+                200,
+                [
+                    'Content-Type' =>
+                        'application/pdf',
+
+                    'Content-Disposition' =>
+                        'attachment; filename="' .
+                        $fileName .
+                        '"',
+
+                    'Content-Length' =>
+                        strlen($pdfContent),
+
+                    'Cache-Control' =>
+                        'private, no-store, no-cache, must-revalidate',
+
+                    'Pragma' =>
+                        'no-cache',
+
+                    'Expires' =>
+                        '0',
+                ]
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Unsupported Format
+        |--------------------------------------------------------------------------
+        */
+
+        return back()->with(
+            'error',
+            'Unsupported report format.'
         );
     }
 
+
     /**
-     * Delete report.
+     * Delete a generated report.
      */
     public function destroy(
         Report $report
     ): RedirectResponse {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Stored File
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $report->file_path &&
             Storage::disk('local')->exists(
                 $report->file_path
             )
         ) {
+
             Storage::disk('local')->delete(
                 $report->file_path
             );
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Database Record
+        |--------------------------------------------------------------------------
+        */
+
         $report->delete();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
+
         return redirect()
-            ->route('admin.reports')
+            ->route(
+                'admin.reports.all'
+            )
             ->with(
                 'success',
                 'Report deleted successfully.'
             );
     }
+
+
+    /**
+     * Build a PDF using the current PDF Blade template.
+     */
+    private function buildPdf(
+        string $reportName,
+        string $reportType,
+        string $dateRange,
+        $startDate,
+        $endDate,
+        ?User $selectedUser,
+        ?ShortUrl $selectedShortUrl,
+        $clicks
+    ) {
+
+        return Pdf::loadView(
+            'pages.admin.reports.pdf',
+            [
+                'report_name' =>
+                    $reportName,
+
+                'report_type' =>
+                    $reportType,
+
+                'date_range' =>
+                    $dateRange,
+
+                'start_date' =>
+                    $startDate,
+
+                'end_date' =>
+                    $endDate,
+
+                /*
+                |--------------------------------------------------------------------------
+                | IMPORTANT
+                |--------------------------------------------------------------------------
+                |
+                | pdf.blade.php expects:
+                |
+                | $selected_user
+                |
+                */
+
+                'selected_user' =>
+                    $selectedUser,
+
+                /*
+                |--------------------------------------------------------------------------
+                | Selected Short URL
+                |--------------------------------------------------------------------------
+                */
+
+                'short_url' =>
+                    $selectedShortUrl,
+
+                /*
+                |--------------------------------------------------------------------------
+                | Total Clicks
+                |--------------------------------------------------------------------------
+                */
+
+                'total_clicks' =>
+                    $clicks->count(),
+
+                /*
+                |--------------------------------------------------------------------------
+                | Click Records
+                |--------------------------------------------------------------------------
+                */
+
+                'clicks' =>
+                    $clicks,
+            ]
+        );
+    }
+
 
     /**
      * Get report date range.
@@ -914,9 +1277,11 @@ class AdminReportController extends Controller
     private function getDateRange(
         string $dateRange
     ): array {
+
         $now = now();
 
         switch ($dateRange) {
+
             case 'Today':
 
                 $startDate =
@@ -928,6 +1293,7 @@ class AdminReportController extends Controller
                         ->endOfDay();
 
                 break;
+
 
             case 'Yesterday':
 
@@ -943,6 +1309,7 @@ class AdminReportController extends Controller
 
                 break;
 
+
             case 'Last 30 Days':
 
                 $startDate =
@@ -955,6 +1322,7 @@ class AdminReportController extends Controller
                         ->endOfDay();
 
                 break;
+
 
             case 'Last 90 Days':
 
@@ -969,6 +1337,7 @@ class AdminReportController extends Controller
 
                 break;
 
+
             case 'This Month':
 
                 $startDate =
@@ -981,6 +1350,7 @@ class AdminReportController extends Controller
                         ->endOfDay();
 
                 break;
+
 
             case 'Last Month':
 
@@ -998,6 +1368,7 @@ class AdminReportController extends Controller
 
                 break;
 
+
             case 'This Year':
 
                 $startDate =
@@ -1007,9 +1378,11 @@ class AdminReportController extends Controller
 
                 $endDate =
                     $now->copy()
+                        ->endOfYear()
                         ->endOfDay();
 
                 break;
+
 
             case 'Last 7 Days':
 
@@ -1033,12 +1406,14 @@ class AdminReportController extends Controller
         ];
     }
 
+
     /**
-     * Create CSV.
+     * Create CSV content.
      */
     private function createCsv(
         $clicks
     ): string {
+
         $handle = fopen(
             'php://temp',
             'r+'
@@ -1054,6 +1429,7 @@ class AdminReportController extends Controller
             $handle,
             "\xEF\xBB\xBF"
         );
+
 
         /*
         |--------------------------------------------------------------------------
@@ -1073,6 +1449,7 @@ class AdminReportController extends Controller
             ]
         );
 
+
         /*
         |--------------------------------------------------------------------------
         | Rows
@@ -1080,12 +1457,14 @@ class AdminReportController extends Controller
         */
 
         foreach ($clicks as $click) {
+
             $shortUrl =
                 $click->shortUrl;
 
             $shortUrlValue = '';
 
             if ($shortUrl) {
+
                 $shortUrlValue =
                     $shortUrl->short_url;
             }
@@ -1093,6 +1472,7 @@ class AdminReportController extends Controller
             $originalUrl = '';
 
             if ($shortUrl) {
+
                 $originalUrl =
                     $shortUrl->original_url;
             }
@@ -1122,6 +1502,13 @@ class AdminReportController extends Controller
                 ]
             );
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return CSV
+        |--------------------------------------------------------------------------
+        */
 
         rewind($handle);
 
