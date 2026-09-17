@@ -14,9 +14,6 @@ use Illuminate\View\View;
 
 class AdminLinkController extends Controller
 {
-    /**
-     * Display all links, favorite links, or trashed links.
-     */
     public function index(Request $request): View
     {
         $isTrash = $request->boolean('trash');
@@ -29,47 +26,20 @@ class AdminLinkController extends Controller
             $query = ShortUrl::with('user');
 
             if ($isFavorite) {
-                $query->where(
-                    'is_favorite',
-                    true
-                );
+                $query->where('is_favorite', true);
             }
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Search
-        |--------------------------------------------------------------------------
-        */
 
         if ($request->filled('search')) {
             $search = $request->input('search');
 
             $query->where(function ($query) use ($search) {
                 $query
-                    ->where(
-                        'short_code',
-                        'like',
-                        "%{$search}%"
-                    )
-                    ->orWhere(
-                        'custom_alias',
-                        'like',
-                        "%{$search}%"
-                    )
-                    ->orWhere(
-                        'original_url',
-                        'like',
-                        "%{$search}%"
-                    );
+                    ->where('short_code', 'like', "%{$search}%")
+                    ->orWhere('custom_alias', 'like', "%{$search}%")
+                    ->orWhere('original_url', 'like', "%{$search}%");
             });
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filter by User
-        |--------------------------------------------------------------------------
-        */
 
         if ($request->filled('user_id')) {
             $query->where(
@@ -78,15 +48,8 @@ class AdminLinkController extends Controller
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Filter by Status
-        |--------------------------------------------------------------------------
-        */
-
         if (
-            $request->filled('status')
-            &&
+            $request->filled('status') &&
             !$isTrash
         ) {
             $query->where(
@@ -95,22 +58,10 @@ class AdminLinkController extends Controller
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Pagination
-        |--------------------------------------------------------------------------
-        */
-
         $links = $query
             ->latest()
             ->paginate(10)
             ->withQueryString();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Users
-        |--------------------------------------------------------------------------
-        */
 
         $users = User::query()
             ->select([
@@ -132,12 +83,7 @@ class AdminLinkController extends Controller
         );
     }
 
-    /**
-     * Display one link.
-     *
-     * withTrashed() is important because Admin can view
-     * links that are currently in Trash.
-     */
+
     public function show(int $id): View
     {
         $shortUrl = ShortUrl::withTrashed()
@@ -156,9 +102,7 @@ class AdminLinkController extends Controller
         );
     }
 
-    /**
-     * Show create link page.
-     */
+
     public function create(): View
     {
         $users = User::query()
@@ -167,6 +111,7 @@ class AdminLinkController extends Controller
                 'name',
                 'email',
             ])
+            ->where('status', 'active')
             ->orderBy('name')
             ->get();
 
@@ -178,15 +123,9 @@ class AdminLinkController extends Controller
         );
     }
 
-    /**
-     * Store a new link.
-     *
-     * Admin MUST select an owner when creating a new link.
-     */
-    public function store(
-        Request $request
-    ): RedirectResponse {
 
+    public function store(Request $request): RedirectResponse
+    {
         $validated = $request->validate([
             'user_id' => [
                 'required',
@@ -221,6 +160,12 @@ class AdminLinkController extends Controller
                 'after:now',
             ],
 
+            'password' => [
+                'nullable',
+                'string',
+                'min:4',
+            ],
+
             'status' => [
                 'required',
                 Rule::in([
@@ -236,15 +181,9 @@ class AdminLinkController extends Controller
             ],
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validate Scheduled Time
-        |--------------------------------------------------------------------------
-        */
 
         if (
-            !empty($validated['scheduled_at'])
-            &&
+            !empty($validated['scheduled_at']) &&
             !empty($validated['expires_at'])
         ) {
             $scheduledAt = \Carbon\Carbon::parse(
@@ -255,11 +194,7 @@ class AdminLinkController extends Controller
                 $validated['expires_at']
             );
 
-            if (
-                $scheduledAt->greaterThanOrEqualTo(
-                    $expiresAt
-                )
-            ) {
+            if ($scheduledAt->greaterThanOrEqualTo($expiresAt)) {
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -269,11 +204,6 @@ class AdminLinkController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Generate Unique Short Code
-        |--------------------------------------------------------------------------
-        */
 
         do {
             $shortCode = Str::lower(
@@ -286,30 +216,26 @@ class AdminLinkController extends Controller
             )->exists()
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Create Link
-        |--------------------------------------------------------------------------
-        */
 
         $shortUrl = ShortUrl::create([
-            'user_id' =>
-                $validated['user_id'],
+            'user_id' => $validated['user_id'],
 
-            'original_url' =>
-                $validated['original_url'],
+            'original_url' => $validated['original_url'],
 
-            'short_code' =>
-                $shortCode,
+            'short_code' => $shortCode,
 
             'custom_alias' =>
                 $validated['custom_alias'] ?? null,
 
-            'click_count' =>
-                0,
+            'click_count' => 0,
 
             'expires_at' =>
                 $validated['expires_at'] ?? null,
+
+            'password' =>
+                !empty($validated['password'])
+                    ? bcrypt($validated['password'])
+                    : null,
 
             'scheduled_at' =>
                 $validated['scheduled_at'] ?? null,
@@ -321,11 +247,13 @@ class AdminLinkController extends Controller
                 $request->boolean('is_favorite'),
         ]);
 
+
         ActivityLogger::log(
             'admin_created',
             'Admin created short URL: ' .
             $shortUrl->short_code
         );
+
 
         return redirect()
             ->route(
@@ -338,16 +266,51 @@ class AdminLinkController extends Controller
             );
     }
 
-    /**
-     * Show edit page.
-     *
-     * The owner is displayed as read-only.
-     * Admin cannot change the owner from this page.
-     */
-    public function edit(
-        int $id
-    ): View {
 
+    /*
+    |--------------------------------------------------------------------------
+    | Favorite / Undo Favorite
+    |--------------------------------------------------------------------------
+    */
+
+    public function toggleFavorite(int $id): RedirectResponse
+    {
+        $shortUrl = ShortUrl::findOrFail($id);
+
+        $shortUrl->update([
+            'is_favorite' => !$shortUrl->is_favorite,
+        ]);
+
+        if ($shortUrl->is_favorite) {
+
+            ActivityLogger::log(
+                'admin_favorited',
+                'Admin favorited short URL: ' .
+                $shortUrl->short_code
+            );
+
+            return back()->with(
+                'success',
+                'Link added to favorites.'
+            );
+        }
+
+
+        ActivityLogger::log(
+            'admin_unfavorited',
+            'Admin removed short URL from favorites: ' .
+            $shortUrl->short_code
+        );
+
+        return back()->with(
+            'success',
+            'Link removed from favorites.'
+        );
+    }
+
+
+    public function edit(int $id): View
+    {
         $shortUrl = ShortUrl::withTrashed()
             ->with('user')
             ->findOrFail($id);
@@ -360,13 +323,7 @@ class AdminLinkController extends Controller
         );
     }
 
-    /**
-     * Update a link.
-     *
-     * IMPORTANT:
-     * Admin does NOT change the link owner.
-     * Admin does NOT change the link password.
-     */
+
     public function update(
         Request $request,
         int $id
@@ -375,15 +332,6 @@ class AdminLinkController extends Controller
         $shortUrl = ShortUrl::withTrashed()
             ->findOrFail($id);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validate Update Data
-        |--------------------------------------------------------------------------
-        |
-        | IMPORTANT:
-        | user_id is intentionally NOT included here.
-        |
-        */
 
         $validated = $request->validate([
             'original_url' => [
@@ -402,34 +350,14 @@ class AdminLinkController extends Controller
                 Rule::unique(
                     'short_urls',
                     'custom_alias'
-                )->ignore(
-                    $shortUrl->id
-                ),
+                )->ignore($shortUrl->id),
             ],
-
-            /*
-            |--------------------------------------------------------------------------
-            | Expiration Date
-            |--------------------------------------------------------------------------
-            |
-            | A new expiration date MUST be in the future.
-            |
-            */
 
             'expires_at' => [
                 'nullable',
                 'date',
                 'after:now',
             ],
-
-            /*
-            |--------------------------------------------------------------------------
-            | Scheduled Activation
-            |--------------------------------------------------------------------------
-            |
-            | A new scheduled date MUST be in the future.
-            |
-            */
 
             'scheduled_at' => [
                 'nullable',
@@ -452,18 +380,9 @@ class AdminLinkController extends Controller
             ],
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validate Scheduled Time Against Expiration Time
-        |--------------------------------------------------------------------------
-        |
-        | Scheduled activation must always happen before expiration.
-        |
-        */
 
         if (
-            !empty($validated['scheduled_at'])
-            &&
+            !empty($validated['scheduled_at']) &&
             !empty($validated['expires_at'])
         ) {
             $scheduledAt = \Carbon\Carbon::parse(
@@ -474,11 +393,7 @@ class AdminLinkController extends Controller
                 $validated['expires_at']
             );
 
-            if (
-                $scheduledAt->greaterThanOrEqualTo(
-                    $expiresAt
-                )
-            ) {
+            if ($scheduledAt->greaterThanOrEqualTo($expiresAt)) {
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -488,17 +403,6 @@ class AdminLinkController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Update Link
-        |--------------------------------------------------------------------------
-        |
-        | IMPORTANT:
-        | user_id is NOT updated.
-        |
-        | The existing owner remains exactly the same.
-        |
-        */
 
         $shortUrl->update([
             'original_url' =>
@@ -520,11 +424,6 @@ class AdminLinkController extends Controller
                 $request->boolean('is_favorite'),
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Activity Log
-        |--------------------------------------------------------------------------
-        */
 
         ActivityLogger::log(
             'admin_updated',
@@ -532,11 +431,6 @@ class AdminLinkController extends Controller
             $shortUrl->short_code
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Redirect
-        |--------------------------------------------------------------------------
-        */
 
         return redirect()
             ->route(
@@ -549,19 +443,15 @@ class AdminLinkController extends Controller
             );
     }
 
-    /**
-     * Move link to Trash.
-     */
-    public function destroy(
-        int $id
-    ): RedirectResponse {
 
+    public function destroy(int $id): RedirectResponse
+    {
         $shortUrl = ShortUrl::findOrFail($id);
 
-        $shortCode =
-            $shortUrl->short_code;
+        $shortCode = $shortUrl->short_code;
 
         $shortUrl->delete();
+
 
         ActivityLogger::log(
             'admin_deleted',
@@ -569,36 +459,32 @@ class AdminLinkController extends Controller
             $shortCode
         );
 
+
         return redirect()
-            ->route(
-                'admin.links.index'
-            )
+            ->route('admin.links.index')
             ->with(
                 'success',
                 'Link moved to trash successfully.'
             );
     }
 
-    /**
-     * Restore a trashed link.
-     */
-    public function restore(
-        int $id
-    ): RedirectResponse {
 
+    public function restore(int $id): RedirectResponse
+    {
         $shortUrl = ShortUrl::onlyTrashed()
             ->findOrFail($id);
 
-        $shortCode =
-            $shortUrl->short_code;
+        $shortCode = $shortUrl->short_code;
 
         $shortUrl->restore();
+
 
         ActivityLogger::log(
             'admin_restored',
             'Admin restored short URL: ' .
             $shortCode
         );
+
 
         return redirect()
             ->route(
@@ -613,32 +499,20 @@ class AdminLinkController extends Controller
             );
     }
 
-    /**
-     * Permanently delete a trashed link.
-     */
-    public function forceDelete(
-        int $id
-    ): RedirectResponse {
 
+    public function forceDelete(int $id): RedirectResponse
+    {
         $shortUrl = ShortUrl::onlyTrashed()
             ->with('qrCodes')
             ->findOrFail($id);
 
-        $shortCode =
-            $shortUrl->short_code;
+        $shortCode = $shortUrl->short_code;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Delete QR logos
-        |--------------------------------------------------------------------------
-        */
 
-        foreach (
-            $shortUrl->qrCodes as $qrCode
-        ) {
+        foreach ($shortUrl->qrCodes as $qrCode) {
+
             if (
-                $qrCode->logo_path
-                &&
+                $qrCode->logo_path &&
                 Storage::disk('public')->exists(
                     $qrCode->logo_path
                 )
@@ -647,29 +521,21 @@ class AdminLinkController extends Controller
                     $qrCode->logo_path
                 );
             }
+
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Delete QR records
-        |--------------------------------------------------------------------------
-        */
 
         $shortUrl->qrCodes()->delete();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Permanently Delete Link
-        |--------------------------------------------------------------------------
-        */
-
         $shortUrl->forceDelete();
+
 
         ActivityLogger::log(
             'admin_force_deleted',
             'Admin permanently deleted short URL: ' .
             $shortCode
         );
+
 
         return redirect()
             ->route(

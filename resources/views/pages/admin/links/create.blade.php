@@ -4,32 +4,178 @@
 
 <div class="mx-auto max-w-7xl">
 
+    {{-- ============================= --}}
+    {{-- Notification Alerts --}}
+    {{-- ============================= --}}
+
+    {{-- Success Notification --}}
+    @if(session('success'))
+        <div
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 5000)"
+            class="fixed right-6 top-6 z-[9999] w-full max-w-4xl"
+        >
+            <div
+                class="relative overflow-hidden rounded-2xl border-2 border-green-300 bg-green-50 shadow-2xl dark:border-green-500/40 dark:bg-green-500/10"
+            >
+
+                {{-- Progress Bar --}}
+                <div
+                    class="absolute left-0 top-0 h-2 w-full bg-green-500"
+                    style="animation: notification-progress 5s linear forwards;"
+                ></div>
+
+                <div class="flex min-h-[240px] items-center gap-5 px-8 py-10">
+
+                    {{-- Icon --}}
+                    <div
+                        class="flex h-[82px] w-[82px] shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-500/20"
+                    >
+                        <svg
+                            class="h-11 w-11 text-green-600 dark:text-green-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2.5"
+                                d="M5 13l4 4L19 7"
+                            />
+                        </svg>
+                    </div>
+
+                    {{-- Message --}}
+                    <div class="min-w-0 flex-1">
+
+                        <h3 class="text-3xl font-bold text-green-800 dark:text-green-300">
+                            Success
+                        </h3>
+
+                        <p class="mt-2 text-2xl font-medium leading-relaxed text-green-700 dark:text-green-400">
+                            {{ session('success') }}
+                        </p>
+
+                    </div>
+
+                    {{-- Close Button --}}
+                    <button
+                        type="button"
+                        @click="show = false"
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-green-600 transition hover:bg-green-100 hover:text-green-800 dark:text-green-400 dark:hover:bg-green-500/20 dark:hover:text-green-300"
+                    >
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    @endif
+
+
+    {{-- Error Notification --}}
+    @if($errors->any())
+        <div
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 7000)"
+            class="fixed right-6 top-6 z-[9999] w-full max-w-4xl"
+        >
+            <div
+                class="relative overflow-hidden rounded-2xl border-2 border-red-300 bg-red-50 shadow-2xl dark:border-red-500/40 dark:bg-red-500/10"
+            >
+
+                {{-- Progress Bar --}}
+                <div
+                    class="absolute left-0 top-0 h-2 w-full bg-red-500"
+                    style="animation: notification-progress 7s linear forwards;"
+                ></div>
+
+                <div class="flex min-h-[240px] items-center gap-5 px-8 py-10">
+
+                    {{-- Icon --}}
+                    <div
+                        class="flex h-[82px] w-[82px] shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/20"
+                    >
+                        <svg
+                            class="h-11 w-11 text-red-600 dark:text-red-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2.5"
+                                d="M12 9v4m0 4h.01M10.29 3.86l-7.82 14a2 2 0 001.74 3h15.58a2 2 0 001.74-3l-7.82-14a2 2 0 00-3.42 0z"
+                            />
+                        </svg>
+                    </div>
+
+                    {{-- Message --}}
+                    <div class="min-w-0 flex-1">
+
+                        <h3 class="text-3xl font-bold text-red-800 dark:text-red-300">
+                            Please Fix the Following Errors
+                        </h3>
+
+                        <ul class="mt-3 list-disc space-y-1 pl-5 text-xl font-medium leading-relaxed text-red-700 dark:text-red-400">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+
+                    </div>
+
+                    {{-- Close Button --}}
+                    <button
+                        type="button"
+                        @click="show = false"
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-red-600 transition hover:bg-red-100 hover:text-red-800 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-300"
+                    >
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    @endif
+
+
     {{-- Page Header --}}
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-<!-- 
+
         <div>
-            <div class="mb-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <a
-                    href="{{ route('admin.dashboard') }}"
-                    class="hover:text-brand-500"
-                >
-                    Admin Dashboard
-                </a>
-
-                <span>/</span>
-
-                <a
-                    href="{{ route('admin.links.index') }}"
-                    class="hover:text-brand-500"
-                >
-                    Links
-                </a>
-
-                <span>/</span>
-
-                <span>Create Link</span>
-            </div> -->
-
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
                 Create Link
             </h1>
@@ -49,30 +195,6 @@
         </div>
 
     </div>
-
-
-    {{-- Success Message --}}
-    @if(session('success'))
-        <div class="mb-6 rounded-lg border border-success-200 bg-success-50 px-4 py-3 text-sm text-success-700 dark:border-success-500/30 dark:bg-success-500/10 dark:text-success-400">
-            {{ session('success') }}
-        </div>
-    @endif
-
-
-    {{-- Validation Errors --}}
-    @if($errors->any())
-        <div class="mb-6 rounded-lg border border-error-200 bg-error-50 px-4 py-3 dark:border-error-500/30 dark:bg-error-500/10">
-            <p class="mb-2 text-sm font-semibold text-error-700 dark:text-error-400">
-                Please fix the following errors:
-            </p>
-
-            <ul class="list-disc space-y-1 pl-5 text-sm text-error-600 dark:text-error-400">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
 
 
     {{-- Form --}}
@@ -441,5 +563,19 @@
     </form>
 
 </div>
+
+
+{{-- Notification Progress Animation --}}
+<style>
+    @keyframes notification-progress {
+        from {
+            width: 100%;
+        }
+
+        to {
+            width: 0%;
+        }
+    }
+</style>
 
 @endsection
