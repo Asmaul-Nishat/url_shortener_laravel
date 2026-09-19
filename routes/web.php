@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminLinkController;
 use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\DashboardController;
@@ -238,14 +239,6 @@ Route::middleware(['auth', 'verified', 'admin'])
         |
         | URL:
         | /admin/reports
-        |
-        | This page contains:
-        | - Report Type
-        | - Date Range
-        | - User
-        | - Short Link
-        | - Format
-        | - Generate Report
         */
 
         Route::get('/reports', [
@@ -272,8 +265,6 @@ Route::middleware(['auth', 'verified', 'admin'])
         |
         | URL:
         | /admin/reports/download-filtered
-        |
-        | Used by the Generate Report page.
         */
 
         Route::get('/reports/download-filtered', [
@@ -287,12 +278,6 @@ Route::middleware(['auth', 'verified', 'admin'])
         |
         | URL:
         | /admin/reports/all
-        |
-        | IMPORTANT:
-        | This is a separate page from /admin/reports.
-        |
-        | /admin/reports       = Generate Report page
-        | /admin/reports/all   = Generated Reports page
         */
 
         Route::get('/reports/all', [
@@ -342,6 +327,31 @@ Route::middleware(['auth', 'verified', 'admin'])
             ActivityLogController::class,
             'export',
         ])->name('activity-logs.export');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Settings
+        |--------------------------------------------------------------------------
+        |
+        | URL:
+        | /admin/settings
+        |
+        | Route names:
+        | admin.settings
+        | admin.settings.update
+        |
+        */
+
+        Route::get('/settings', [
+            AdminSettingsController::class,
+            'index',
+        ])->name('settings');
+
+        Route::patch('/settings', [
+            AdminSettingsController::class,
+            'update',
+        ])->name('settings.update');
 
     });
 
@@ -505,6 +515,10 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     | User Settings
     |--------------------------------------------------------------------------
+    |
+    | URL:
+    | /settings
+    |
     */
 
     Route::get('/settings', [
@@ -572,8 +586,10 @@ Route::post('/password/{shortCode}', [
 | Short URL Redirect
 |--------------------------------------------------------------------------
 |
-| This MUST remain at the very bottom because it matches:
+| IMPORTANT:
+| This MUST remain at the very bottom.
 |
+| It matches:
 | /anything
 |
 */
