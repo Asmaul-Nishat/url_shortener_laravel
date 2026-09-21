@@ -307,7 +307,9 @@
             font-size: 12px;
         }
 
-        /* Password row */
+        /* =========================================================
+           PASSWORD FIELD
+           ========================================================= */
 
         .password-header {
             display: flex;
@@ -330,6 +332,53 @@
         .forgot-link:hover {
             color: #4338ca;
             text-decoration: underline;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-input {
+            padding-right: 52px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 13px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-50%);
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            transition:
+                color 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: #4f46e5;
+            background: #f3f4f6;
+        }
+
+        .password-toggle:focus {
+            outline: none;
+            color: #4f46e5;
+            box-shadow:
+                0 0 0 3px rgba(79, 70, 229, 0.10);
+        }
+
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
         }
 
         /* Remember */
@@ -702,12 +751,15 @@
             @endif
 
 
-            <!-- Login Form -->
+            <!-- =====================================================
+                 LOGIN FORM
+                 ===================================================== -->
 
             <form
                 method="POST"
                 action="{{ route('login') }}"
                 class="login-form"
+                autocomplete="on"
             >
 
                 @csrf
@@ -734,6 +786,7 @@
                         required
                         autofocus
                         autocomplete="username"
+                        inputmode="email"
                     >
 
                     @if ($errors->get('email'))
@@ -774,15 +827,58 @@
                     </div>
 
 
-                    <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        class="form-input"
-                        placeholder="Enter your password"
-                        required
-                        autocomplete="current-password"
-                    >
+                    <div class="password-input-wrapper">
+
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            class="form-input password-input"
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                        >
+
+
+                        <!-- Password Visibility Button -->
+
+                        <button
+                            type="button"
+                            id="password-toggle"
+                            class="password-toggle"
+                            aria-label="Show password"
+                            aria-pressed="false"
+                            title="Show password"
+                        >
+
+                            <svg
+                                id="eye-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                aria-hidden="true"
+                            >
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M2.25 12s3.75-6 9.75-6 9.75 6 9.75 6-3.75 6-9.75 6-9.75-6-9.75-6Z"
+                                />
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                />
+
+                            </svg>
+
+                        </button>
+
+                    </div>
+
 
                     @if ($errors->get('password'))
 
@@ -795,7 +891,9 @@
                 </div>
 
 
-                <!-- Remember Me -->
+                <!-- =================================================
+                     REMEMBER ME
+                     ================================================= -->
 
                 <div class="remember-row">
 
@@ -803,7 +901,10 @@
                         id="remember_me"
                         type="checkbox"
                         name="remember"
+                        value="1"
                         class="remember-checkbox"
+                        autocomplete="off"
+                        {{ old('remember') ? 'checked' : '' }}
                     >
 
                     <label
@@ -867,6 +968,126 @@
     </section>
 
 </div>
+
+
+<!-- =============================================================
+     PASSWORD SHOW / HIDE
+     ============================================================= -->
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const passwordInput =
+            document.getElementById('password');
+
+        const passwordToggle =
+            document.getElementById('password-toggle');
+
+        const eyeIcon =
+            document.getElementById('eye-icon');
+
+
+        if (
+            !passwordInput ||
+            !passwordToggle ||
+            !eyeIcon
+        ) {
+            return;
+        }
+
+
+        passwordToggle.addEventListener('click', function () {
+
+            const isPassword =
+                passwordInput.type === 'password';
+
+
+            passwordInput.type =
+                isPassword
+                    ? 'text'
+                    : 'password';
+
+
+            passwordToggle.setAttribute(
+                'aria-label',
+                isPassword
+                    ? 'Hide password'
+                    : 'Show password'
+            );
+
+
+            passwordToggle.setAttribute(
+                'title',
+                isPassword
+                    ? 'Hide password'
+                    : 'Show password'
+            );
+
+
+            passwordToggle.setAttribute(
+                'aria-pressed',
+                isPassword
+                    ? 'true'
+                    : 'false'
+            );
+
+
+            if (isPassword) {
+
+                /* Eye-off icon */
+
+                eyeIcon.innerHTML = `
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M3 3l18 18"
+                    />
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M10.58 10.58a2 2 0 0 0 2.83 2.83"
+                    />
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9.88 5.09A10.8 10.8 0 0 1 12 4.5c6 0 9.75 6 9.75 6a18.9 18.9 0 0 1-3.1 3.86"
+                    />
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M6.23 6.23C3.78 7.83 2.25 10.5 2.25 10.5s3.75 6 9.75 6c1.5 0 2.85-.34 4.04-.86"
+                    />
+                `;
+
+            } else {
+
+                /* Normal eye icon */
+
+                eyeIcon.innerHTML = `
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M2.25 12s3.75-6 9.75-6 9.75 6 9.75 6-3.75 6-9.75 6-9.75-6-9.75-6Z"
+                    />
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                    />
+                `;
+
+            }
+
+        });
+
+    });
+
+</script>
 
 </body>
 
