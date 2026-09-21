@@ -121,19 +121,10 @@ Route::middleware(['auth', 'verified', 'admin'])
         |--------------------------------------------------------------------------
         */
 
-        /*
-        | All Links
-        */
-
         Route::get('/links', [
             AdminLinkController::class,
             'index',
         ])->name('links.index');
-
-
-        /*
-        | Create Link
-        */
 
         Route::get('/links/create', [
             AdminLinkController::class,
@@ -145,70 +136,35 @@ Route::middleware(['auth', 'verified', 'admin'])
             'store',
         ])->name('links.store');
 
-
-        /*
-        | Favorite / Unfavorite
-        */
-
         Route::patch('/links/{id}/favorite', [
             AdminLinkController::class,
             'toggleFavorite',
         ])->name('links.favorite');
-
-
-        /*
-        | Trash - Restore
-        */
 
         Route::patch('/links/trash/{id}/restore', [
             AdminLinkController::class,
             'restore',
         ])->name('links.restore');
 
-
-        /*
-        | Trash - Permanent Delete
-        */
-
         Route::delete('/links/trash/{id}/force-delete', [
             AdminLinkController::class,
             'forceDelete',
         ])->name('links.force-delete');
-
-
-        /*
-        | View Link
-        */
 
         Route::get('/links/{id}', [
             AdminLinkController::class,
             'show',
         ])->name('links.show');
 
-
-        /*
-        | Edit Link
-        */
-
         Route::get('/links/{id}/edit', [
             AdminLinkController::class,
             'edit',
         ])->name('links.edit');
 
-
-        /*
-        | Update Link
-        */
-
         Route::patch('/links/{id}', [
             AdminLinkController::class,
             'update',
         ])->name('links.update');
-
-
-        /*
-        | Delete Link
-        */
 
         Route::delete('/links/{id}', [
             AdminLinkController::class,
@@ -232,22 +188,6 @@ Route::middleware(['auth', 'verified', 'admin'])
         |--------------------------------------------------------------------------
         | Admin QR Codes
         |--------------------------------------------------------------------------
-        |
-        | Admin can:
-        | - View all QR codes
-        | - Create a QR code
-        | - Generate a QR code
-        | - Download PNG
-        | - Download SVG
-        | - Delete QR codes
-        |
-        */
-
-        /*
-        | All QR Codes
-        |
-        | URL:
-        | /admin/qr-codes
         */
 
         Route::get('/qr-codes', [
@@ -255,65 +195,25 @@ Route::middleware(['auth', 'verified', 'admin'])
             'adminIndex',
         ])->name('qr-codes.index');
 
-
-        /*
-        | Create QR
-        |
-        | URL:
-        | /admin/qr-codes/create
-        */
-
         Route::get('/qr-codes/create', [
             QrCodeController::class,
             'adminCreate',
         ])->name('qr-codes.create');
-
-
-        /*
-        | Generate QR
-        |
-        | URL:
-        | /admin/qr-codes/generate
-        */
 
         Route::post('/qr-codes/generate', [
             QrCodeController::class,
             'adminGenerate',
         ])->name('qr-codes.generate');
 
-
-        /*
-        | Download PNG
-        |
-        | URL:
-        | /admin/qr-codes/{qrCode}/download/png
-        */
-
         Route::get('/qr-codes/{qrCode}/download/png', [
             QrCodeController::class,
             'adminDownloadPng',
         ])->name('qr-codes.download.png');
 
-
-        /*
-        | Download SVG
-        |
-        | URL:
-        | /admin/qr-codes/{qrCode}/download/svg
-        */
-
         Route::get('/qr-codes/{qrCode}/download/svg', [
             QrCodeController::class,
             'adminDownloadSvg',
         ])->name('qr-codes.download.svg');
-
-
-        /*
-        | Delete QR Code
-        |
-        | URL:
-        | /admin/qr-codes/{qrCode}
-        */
 
         Route::delete('/qr-codes/{qrCode}', [
             QrCodeController::class,
@@ -327,77 +227,30 @@ Route::middleware(['auth', 'verified', 'admin'])
         |--------------------------------------------------------------------------
         */
 
-        /*
-        | Generate Report Page
-        |
-        | URL:
-        | /admin/reports
-        */
-
         Route::get('/reports', [
             AdminReportController::class,
             'index',
         ])->name('reports');
-
-
-        /*
-        | Generate Report
-        |
-        | URL:
-        | /admin/reports/generate
-        */
 
         Route::post('/reports/generate', [
             AdminReportController::class,
             'generate',
         ])->name('reports.generate');
 
-
-        /*
-        | Download Filtered Report
-        |
-        | URL:
-        | /admin/reports/download-filtered
-        */
-
         Route::get('/reports/download-filtered', [
             AdminReportController::class,
             'downloadFiltered',
         ])->name('reports.download-filtered');
-
-
-        /*
-        | All Generated Reports
-        |
-        | URL:
-        | /admin/reports/all
-        */
 
         Route::get('/reports/all', [
             AdminReportController::class,
             'all',
         ])->name('reports.all');
 
-
-        /*
-        | Download Existing Generated Report
-        |
-        | URL:
-        | /admin/reports/{report}/download
-        */
-
         Route::get('/reports/{report}/download', [
             AdminReportController::class,
             'download',
         ])->name('reports.download');
-
-
-        /*
-        | Delete Existing Generated Report
-        |
-        | URL:
-        | /admin/reports/{report}
-        */
 
         Route::delete('/reports/{report}', [
             AdminReportController::class,
@@ -447,7 +300,11 @@ Route::middleware(['auth', 'verified', 'admin'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified', 'user'])->group(function () {
+Route::middleware([
+    'auth',
+    'verified',
+    'user',
+])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -524,27 +381,100 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     | User QR Codes
     |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    |
+    | /qr-codes        = All QR Codes
+    | /qr-codes/create = Create QR
+    |
+    */
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | All QR Codes
+    |--------------------------------------------------------------------------
+    |
+    | URL:
+    | /qr-codes
+    |
+    | Controller:
+    | QrCodeController@all
+    |
+    | View:
+    | pages/qr-codes/all.blade.php
+    |
     */
 
     Route::get('/qr-codes', [
         QrCodeController::class,
-        'index',
+        'all',
     ])->name('qr-codes');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create QR
+    |--------------------------------------------------------------------------
+    |
+    | URL:
+    | /qr-codes/create
+    |
+    | Controller:
+    | QrCodeController@index
+    |
+    | View:
+    | pages/qr-codes/index.blade.php
+    |
+    */
+
+    Route::get('/qr-codes/create', [
+        QrCodeController::class,
+        'index',
+    ])->name('qr-codes.create');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate QR
+    |--------------------------------------------------------------------------
+    */
 
     Route::post('/qr-codes/generate', [
         QrCodeController::class,
         'generate',
     ])->name('qr-codes.generate');
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Download PNG
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/qr-codes/{qrCode}/download/png', [
         QrCodeController::class,
         'downloadPng',
     ])->name('qr-codes.download.png');
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Download SVG
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/qr-codes/{qrCode}/download/svg', [
         QrCodeController::class,
         'downloadSvg',
     ])->name('qr-codes.download.svg');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete QR Code
+    |--------------------------------------------------------------------------
+    */
 
     Route::delete('/qr-codes/{qrCode}', [
         QrCodeController::class,
@@ -621,7 +551,10 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware([
+    'auth',
+    'verified',
+])->group(function () {
 
     Route::get('/profile', [
         ProfileController::class,
@@ -668,10 +601,7 @@ Route::post('/password/{shortCode}', [
 |--------------------------------------------------------------------------
 |
 | IMPORTANT:
-| This MUST remain at the very bottom.
-|
-| It matches:
-| /anything
+| This must remain at the very bottom.
 |
 */
 

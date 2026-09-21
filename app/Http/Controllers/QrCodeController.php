@@ -22,30 +22,89 @@ class QrCodeController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | USER QR CODES
+    | USER QR CODES - CREATE QR PAGE
     |--------------------------------------------------------------------------
+    |
+    | URL:
+    | /qr-codes/create
+    |
+    | View:
+    | resources/views/pages/qr-codes/index.blade.php
+    |
     */
 
     public function index()
     {
         $qrCodes = QrCode::with('shortUrl')
-            ->where('user_id', Auth::id())
+            ->where(
+                'user_id',
+                Auth::id()
+            )
             ->latest()
             ->paginate(10);
 
-        $shortUrls = ShortUrl::where('user_id', Auth::id())
+
+        $shortUrls = ShortUrl::where(
+            'user_id',
+            Auth::id()
+        )
             ->latest()
             ->get();
 
+
         return view(
             'pages.qr-codes.index',
-            compact('qrCodes', 'shortUrls')
+            compact(
+                'qrCodes',
+                'shortUrls'
+            )
         );
     }
 
 
-    public function generate(Request $request)
+    /*
+    |--------------------------------------------------------------------------
+    | USER QR CODES - ALL QR CODES PAGE
+    |--------------------------------------------------------------------------
+    |
+    | URL:
+    | /qr-codes
+    |
+    | View:
+    | resources/views/pages/qr-codes/all.blade.php
+    |
+    */
+
+    public function all()
     {
+        $qrCodes = QrCode::with('shortUrl')
+            ->where(
+                'user_id',
+                Auth::id()
+            )
+            ->latest()
+            ->paginate(10);
+
+
+        return view(
+            'pages.qr-codes.all',
+            compact(
+                'qrCodes'
+            )
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | GENERATE AUTHENTICATED USER QR CODE
+    |--------------------------------------------------------------------------
+    */
+
+    public function generate(
+        Request $request
+    ) {
+
         $validated = $request->validate([
             'short_url_id' => [
                 'required',
@@ -79,6 +138,12 @@ class QrCodeController extends Controller
         ]);
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Make sure selected Short URL belongs to current user
+        |--------------------------------------------------------------------------
+        */
+
         $shortUrl = ShortUrl::where(
             'id',
             $validated['short_url_id']
@@ -90,43 +155,73 @@ class QrCodeController extends Controller
             ->firstOrFail();
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Store Logo
+        |--------------------------------------------------------------------------
+        */
+
         $logoPath = null;
 
 
-        if ($request->hasFile('logo')) {
+        if (
+            $request->hasFile('logo')
+        ) {
 
-            $logoPath = $request->file('logo')->store(
-                'qr-logos',
-                'public'
-            );
+            $logoPath = $request
+                ->file('logo')
+                ->store(
+                    'qr-logos',
+                    'public'
+                );
 
         }
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Create QR Code
+        |--------------------------------------------------------------------------
+        */
+
         $qrCode = QrCode::create([
-            'user_id' => Auth::id(),
-            'short_url_id' => $shortUrl->id,
-            'size' => $validated['size'],
-            'foreground_color' => $validated['foreground_color'],
-            'background_color' => $validated['background_color'],
-            'logo_path' => $logoPath,
+            'user_id' =>
+                Auth::id(),
+
+            'short_url_id' =>
+                $shortUrl->id,
+
+            'size' =>
+                $validated['size'],
+
+            'foreground_color' =>
+                $validated['foreground_color'],
+
+            'background_color' =>
+                $validated['background_color'],
+
+            'logo_path' =>
+                $logoPath,
         ]);
 
 
         /*
         |--------------------------------------------------------------------------
-        | Redirect to User QR Index
+        | Redirect back to Create QR page
         |--------------------------------------------------------------------------
         |
-        | The User QR index route is named "qr-codes".
+        | The generated QR is displayed on:
+        |
+        | /qr-codes/create?qr=ID
         |
         */
 
         return redirect()
             ->route(
-                'qr-codes',
+                'qr-codes.create',
                 [
-                    'qr' => $qrCode->id,
+                    'qr' =>
+                        $qrCode->id,
                 ]
             )
             ->with(
@@ -142,15 +237,22 @@ class QrCodeController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function generateGuest(Request $request)
-    {
-        $settings = SystemSetting::current();
+    public function generateGuest(
+        Request $request
+    ) {
+
+        $settings =
+            SystemSetting::current();
 
 
-        if (!$settings->allow_guest_qr_codes) {
+        if (
+            !$settings->allow_guest_qr_codes
+        ) {
 
             return redirect()
-                ->route('links.create')
+                ->route(
+                    'links.create'
+                )
                 ->with(
                     'error',
                     'Guest QR code generation is disabled.'
@@ -187,22 +289,36 @@ class QrCodeController extends Controller
 
         session([
             'guest_qr' => [
-                'original_url' => $validated['original_url'],
-                'size' => $validated['size'] ?? 300,
-                'foreground_color' => $validated['foreground_color'] ?? '#111827',
-                'background_color' => $validated['background_color'] ?? '#ffffff',
+
+                'original_url' =>
+                    $validated['original_url'],
+
+                'size' =>
+                    $validated['size']
+                    ?? 300,
+
+                'foreground_color' =>
+                    $validated['foreground_color']
+                    ?? '#111827',
+
+                'background_color' =>
+                    $validated['background_color']
+                    ?? '#ffffff',
             ],
         ]);
 
 
         return redirect()
-            ->route('qr-codes.guest.download');
+            ->route(
+                'qr-codes.guest.download'
+            );
     }
 
 
     public function downloadGuest()
     {
-        $settings = SystemSetting::current();
+        $settings =
+            SystemSetting::current();
 
 
         abort_unless(
@@ -211,7 +327,8 @@ class QrCodeController extends Controller
         );
 
 
-        $guestQr = session('guest_qr');
+        $guestQr =
+            session('guest_qr');
 
 
         abort_unless(
@@ -220,27 +337,46 @@ class QrCodeController extends Controller
         );
 
 
-        $qrCode = new EndroidQrCode(
-            data: $guestQr['original_url'],
-            encoding: new Encoding('UTF-8'),
-            errorCorrectionLevel: ErrorCorrectionLevel::High,
-            size: $guestQr['size'],
-            margin: 10,
-            roundBlockSizeMode: RoundBlockSizeMode::Margin,
-            foregroundColor: $this->hexToColor(
-                $guestQr['foreground_color']
-            ),
-            backgroundColor: $this->hexToColor(
-                $guestQr['background_color']
-            )
-        );
+        $qrCode =
+            new EndroidQrCode(
+                data:
+                    $guestQr['original_url'],
+
+                encoding:
+                    new Encoding('UTF-8'),
+
+                errorCorrectionLevel:
+                    ErrorCorrectionLevel::High,
+
+                size:
+                    $guestQr['size'],
+
+                margin:
+                    10,
+
+                roundBlockSizeMode:
+                    RoundBlockSizeMode::Margin,
+
+                foregroundColor:
+                    $this->hexToColor(
+                        $guestQr['foreground_color']
+                    ),
+
+                backgroundColor:
+                    $this->hexToColor(
+                        $guestQr['background_color']
+                    )
+            );
 
 
-        $writer = new PngWriter();
+        $writer =
+            new PngWriter();
 
-        $result = $writer->write(
-            $qrCode
-        );
+
+        $result =
+            $writer->write(
+                $qrCode
+            );
 
 
         session()->forget(
@@ -252,7 +388,8 @@ class QrCodeController extends Controller
             $result->getString(),
             200,
             [
-                'Content-Type' => 'image/png',
+                'Content-Type' =>
+                    'image/png',
 
                 'Content-Disposition' =>
                     'attachment; filename="guest-qr-code.png"',
@@ -280,31 +417,47 @@ class QrCodeController extends Controller
         return view(
             'pages.admin.qr-codes.index',
             [
-                'qrCodes' => $qrCodes,
+                'qrCodes' =>
+                    $qrCodes,
             ]
         );
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN CREATE QR
+    |--------------------------------------------------------------------------
+    */
+
     public function adminCreate()
     {
-        $shortUrls = ShortUrl::with('user')
-            ->latest()
-            ->get();
+        $shortUrls =
+            ShortUrl::with('user')
+                ->latest()
+                ->get();
 
 
-        $generatedQr = null;
+        $generatedQr =
+            null;
 
 
-        if (session()->has('admin_generated_qr_id')) {
+        if (
+            session()->has(
+                'admin_generated_qr_id'
+            )
+        ) {
 
-            $generatedQr = QrCode::with([
-                'shortUrl',
-                'shortUrl.user',
-            ])
-                ->find(
-                    session('admin_generated_qr_id')
-                );
+            $generatedQr =
+                QrCode::with([
+                    'shortUrl',
+                    'shortUrl.user',
+                ])
+                    ->find(
+                        session(
+                            'admin_generated_qr_id'
+                        )
+                    );
 
         }
 
@@ -312,16 +465,26 @@ class QrCodeController extends Controller
         return view(
             'pages.admin.qr-codes.create',
             [
-                'shortUrls' => $shortUrls,
+                'shortUrls' =>
+                    $shortUrls,
 
-                'generatedQr' => $generatedQr,
+                'generatedQr' =>
+                    $generatedQr,
             ]
         );
     }
 
 
-    public function adminGenerate(Request $request)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN GENERATE QR
+    |--------------------------------------------------------------------------
+    */
+
+    public function adminGenerate(
+        Request $request
+    ) {
+
         $validated = $request->validate([
             'short_url_id' => [
                 'required',
@@ -355,46 +518,56 @@ class QrCodeController extends Controller
         ]);
 
 
-        $shortUrl = ShortUrl::findOrFail(
-            $validated['short_url_id']
-        );
-
-
-        $logoPath = null;
-
-
-        if ($request->hasFile('logo')) {
-
-            $logoPath = $request->file('logo')->store(
-                'qr-logos',
-                'public'
+        $shortUrl =
+            ShortUrl::findOrFail(
+                $validated['short_url_id']
             );
+
+
+        $logoPath =
+            null;
+
+
+        if (
+            $request->hasFile('logo')
+        ) {
+
+            $logoPath =
+                $request
+                    ->file('logo')
+                    ->store(
+                        'qr-logos',
+                        'public'
+                    );
 
         }
 
 
-        $qrCode = QrCode::create([
-            'user_id' => $shortUrl->user_id,
-            'short_url_id' => $shortUrl->id,
-            'size' => $validated['size'],
-            'foreground_color' => $validated['foreground_color'],
-            'background_color' => $validated['background_color'],
-            'logo_path' => $logoPath,
-        ]);
+        $qrCode =
+            QrCode::create([
+                'user_id' =>
+                    $shortUrl->user_id,
 
+                'short_url_id' =>
+                    $shortUrl->id,
 
-        /*
-        |--------------------------------------------------------------------------
-        | Store Generated QR ID
-        |--------------------------------------------------------------------------
-        |
-        | adminCreate() reads this session value and sends the
-        | generated QR to the Admin Create QR Blade.
-        |
-        */
+                'size' =>
+                    $validated['size'],
+
+                'foreground_color' =>
+                    $validated['foreground_color'],
+
+                'background_color' =>
+                    $validated['background_color'],
+
+                'logo_path' =>
+                    $logoPath,
+            ]);
+
 
         session([
-            'admin_generated_qr_id' => $qrCode->id,
+            'admin_generated_qr_id' =>
+                $qrCode->id,
         ]);
 
 
@@ -409,14 +582,23 @@ class QrCodeController extends Controller
     }
 
 
-    public function adminDownloadPng(QrCode $qrCode)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN DOWNLOAD PNG
+    |--------------------------------------------------------------------------
+    */
+
+    public function adminDownloadPng(
+        QrCode $qrCode
+    ) {
+
         $this->authorizeAdminQrCode(
             $qrCode
         );
 
 
-        $shortUrl = $qrCode->shortUrl;
+        $shortUrl =
+            $qrCode->shortUrl;
 
 
         abort_unless(
@@ -425,16 +607,19 @@ class QrCodeController extends Controller
         );
 
 
-        $qr = $this->buildQrCode(
-            $qrCode,
-            $shortUrl->short_url
-        );
+        $qr =
+            $this->buildQrCode(
+                $qrCode,
+                $shortUrl->short_url
+            );
 
 
-        $writer = new PngWriter();
+        $writer =
+            new PngWriter();
 
 
-        $logo = null;
+        $logo =
+            null;
 
 
         if (
@@ -444,32 +629,38 @@ class QrCodeController extends Controller
             )
         ) {
 
-            $logo = new Logo(
-                path: Storage::disk('public')->path(
-                    $qrCode->logo_path
-                ),
+            $logo =
+                new Logo(
+                    path:
+                        Storage::disk('public')->path(
+                            $qrCode->logo_path
+                        ),
 
-                resizeToWidth: (int) (
-                    $qrCode->size * 0.18
-                ),
+                    resizeToWidth:
+                        (int) (
+                            $qrCode->size * 0.18
+                        ),
 
-                punchoutBackground: true
-            );
+                    punchoutBackground:
+                        true
+                );
 
         }
 
 
-        $result = $writer->write(
-            $qr,
-            $logo
-        );
+        $result =
+            $writer->write(
+                $qr,
+                $logo
+            );
 
 
         return response(
             $result->getString(),
             200,
             [
-                'Content-Type' => 'image/png',
+                'Content-Type' =>
+                    'image/png',
 
                 'Content-Disposition' =>
                     'attachment; filename="qr-code-' .
@@ -480,14 +671,23 @@ class QrCodeController extends Controller
     }
 
 
-    public function adminDownloadSvg(QrCode $qrCode)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN DOWNLOAD SVG
+    |--------------------------------------------------------------------------
+    */
+
+    public function adminDownloadSvg(
+        QrCode $qrCode
+    ) {
+
         $this->authorizeAdminQrCode(
             $qrCode
         );
 
 
-        $shortUrl = $qrCode->shortUrl;
+        $shortUrl =
+            $qrCode->shortUrl;
 
 
         abort_unless(
@@ -496,25 +696,29 @@ class QrCodeController extends Controller
         );
 
 
-        $qr = $this->buildQrCode(
-            $qrCode,
-            $shortUrl->short_url
-        );
+        $qr =
+            $this->buildQrCode(
+                $qrCode,
+                $shortUrl->short_url
+            );
 
 
-        $writer = new SvgWriter();
+        $writer =
+            new SvgWriter();
 
 
-        $result = $writer->write(
-            $qr
-        );
+        $result =
+            $writer->write(
+                $qr
+            );
 
 
         return response(
             $result->getString(),
             200,
             [
-                'Content-Type' => 'image/svg+xml',
+                'Content-Type' =>
+                    'image/svg+xml',
 
                 'Content-Disposition' =>
                     'attachment; filename="qr-code-' .
@@ -525,8 +729,16 @@ class QrCodeController extends Controller
     }
 
 
-    public function adminDestroy(QrCode $qrCode)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN DELETE QR CODE
+    |--------------------------------------------------------------------------
+    */
+
+    public function adminDestroy(
+        QrCode $qrCode
+    ) {
+
         $this->authorizeAdminQrCode(
             $qrCode
         );
@@ -537,15 +749,10 @@ class QrCodeController extends Controller
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Remove generated-preview session if it points
-        | to the deleted QR code.
-        |--------------------------------------------------------------------------
-        */
-
         if (
-            (int) session('admin_generated_qr_id') ===
+            (int) session(
+                'admin_generated_qr_id'
+            ) ===
             (int) $qrCode->id
         ) {
 
@@ -569,18 +776,21 @@ class QrCodeController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | USER DOWNLOAD
+    | USER DOWNLOAD PNG
     |--------------------------------------------------------------------------
     */
 
-    public function downloadPng(QrCode $qrCode)
-    {
+    public function downloadPng(
+        QrCode $qrCode
+    ) {
+
         $this->authorizeQrCode(
             $qrCode
         );
 
 
-        $shortUrl = $qrCode->shortUrl;
+        $shortUrl =
+            $qrCode->shortUrl;
 
 
         abort_unless(
@@ -589,16 +799,19 @@ class QrCodeController extends Controller
         );
 
 
-        $qr = $this->buildQrCode(
-            $qrCode,
-            $shortUrl->short_url
-        );
+        $qr =
+            $this->buildQrCode(
+                $qrCode,
+                $shortUrl->short_url
+            );
 
 
-        $writer = new PngWriter();
+        $writer =
+            new PngWriter();
 
 
-        $logo = null;
+        $logo =
+            null;
 
 
         if (
@@ -608,32 +821,38 @@ class QrCodeController extends Controller
             )
         ) {
 
-            $logo = new Logo(
-                path: Storage::disk('public')->path(
-                    $qrCode->logo_path
-                ),
+            $logo =
+                new Logo(
+                    path:
+                        Storage::disk('public')->path(
+                            $qrCode->logo_path
+                        ),
 
-                resizeToWidth: (int) (
-                    $qrCode->size * 0.18
-                ),
+                    resizeToWidth:
+                        (int) (
+                            $qrCode->size * 0.18
+                        ),
 
-                punchoutBackground: true
-            );
+                    punchoutBackground:
+                        true
+                );
 
         }
 
 
-        $result = $writer->write(
-            $qr,
-            $logo
-        );
+        $result =
+            $writer->write(
+                $qr,
+                $logo
+            );
 
 
         return response(
             $result->getString(),
             200,
             [
-                'Content-Type' => 'image/png',
+                'Content-Type' =>
+                    'image/png',
 
                 'Content-Disposition' =>
                     'attachment; filename="qr-code-' .
@@ -644,14 +863,23 @@ class QrCodeController extends Controller
     }
 
 
-    public function downloadSvg(QrCode $qrCode)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | USER DOWNLOAD SVG
+    |--------------------------------------------------------------------------
+    */
+
+    public function downloadSvg(
+        QrCode $qrCode
+    ) {
+
         $this->authorizeQrCode(
             $qrCode
         );
 
 
-        $shortUrl = $qrCode->shortUrl;
+        $shortUrl =
+            $qrCode->shortUrl;
 
 
         abort_unless(
@@ -660,25 +888,29 @@ class QrCodeController extends Controller
         );
 
 
-        $qr = $this->buildQrCode(
-            $qrCode,
-            $shortUrl->short_url
-        );
+        $qr =
+            $this->buildQrCode(
+                $qrCode,
+                $shortUrl->short_url
+            );
 
 
-        $writer = new SvgWriter();
+        $writer =
+            new SvgWriter();
 
 
-        $result = $writer->write(
-            $qr
-        );
+        $result =
+            $writer->write(
+                $qr
+            );
 
 
         return response(
             $result->getString(),
             200,
             [
-                'Content-Type' => 'image/svg+xml',
+                'Content-Type' =>
+                    'image/svg+xml',
 
                 'Content-Disposition' =>
                     'attachment; filename="qr-code-' .
@@ -689,8 +921,16 @@ class QrCodeController extends Controller
     }
 
 
-    public function destroy(QrCode $qrCode)
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | USER DELETE QR CODE
+    |--------------------------------------------------------------------------
+    */
+
+    public function destroy(
+        QrCode $qrCode
+    ) {
+
         $this->authorizeQrCode(
             $qrCode
         );
@@ -724,7 +964,8 @@ class QrCodeController extends Controller
     ): EndroidQrCode {
 
         return new EndroidQrCode(
-            data: $data,
+            data:
+                $data,
 
             encoding:
                 new Encoding('UTF-8'),
@@ -754,14 +995,21 @@ class QrCodeController extends Controller
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | HEX COLOR
+    |--------------------------------------------------------------------------
+    */
+
     private function hexToColor(
         string $hex
     ): Color {
 
-        $hex = ltrim(
-            $hex,
-            '#'
-        );
+        $hex =
+            ltrim(
+                $hex,
+                '#'
+            );
 
 
         return new Color(
@@ -794,7 +1042,7 @@ class QrCodeController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | AUTHORIZATION
+    | USER AUTHORIZATION
     |--------------------------------------------------------------------------
     */
 
@@ -804,19 +1052,8 @@ class QrCodeController extends Controller
 
         abort_unless(
             Auth::check() &&
-            $qrCode->user_id === Auth::id(),
-            403
-        );
-    }
-
-
-    private function authorizeAdminQrCode(
-        QrCode $qrCode
-    ): void {
-
-        abort_unless(
-            Auth::check() &&
-            Auth::user()->role === 'admin',
+            $qrCode->user_id ===
+                Auth::id(),
             403
         );
     }
@@ -824,7 +1061,26 @@ class QrCodeController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | DELETE
+    | ADMIN AUTHORIZATION
+    |--------------------------------------------------------------------------
+    */
+
+    private function authorizeAdminQrCode(
+        QrCode $qrCode
+    ): void {
+
+        abort_unless(
+            Auth::check() &&
+            Auth::user()->role ===
+                'admin',
+            403
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DELETE QR CODE
     |--------------------------------------------------------------------------
     */
 

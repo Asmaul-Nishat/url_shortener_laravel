@@ -4,7 +4,6 @@
 
 <div class="mx-auto max-w-7xl">
 
-
 {{-- Alerts --}}
 @if(session('success'))
 
@@ -73,6 +72,7 @@
 {{-- QR Codes Card --}}
 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
 
+
     {{-- Card Header --}}
     <div class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
 
@@ -83,7 +83,7 @@
             </h2>
 
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                All QR codes generated from your short links.
+                QR codes generated from your short links.
             </p>
 
         </div>
@@ -148,6 +148,7 @@
 
                     <tr class="transition hover:bg-gray-50 dark:hover:bg-white/[0.02]">
 
+
                         {{-- QR Preview --}}
                         <td class="px-6 py-4">
 
@@ -155,47 +156,150 @@
 
                                 <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-900">
 
-                                    @php
+                                    @if($qrCode->shortUrl)
 
-                                        $previewQr = new \Endroid\QrCode\QrCode(
-                                            data: $qrCode->shortUrl->short_url,
-                                            encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
-                                            errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::High,
-                                            size: 120,
-                                            margin: 8,
-                                            roundBlockSizeMode: \Endroid\QrCode\RoundBlockSizeMode::Margin,
-                                            foregroundColor: new \Endroid\QrCode\Color\Color(
-                                                hexdec(substr(ltrim($qrCode->foreground_color, '#'), 0, 2)),
-                                                hexdec(substr(ltrim($qrCode->foreground_color, '#'), 2, 2)),
-                                                hexdec(substr(ltrim($qrCode->foreground_color, '#'), 4, 2))
-                                            ),
-                                            backgroundColor: new \Endroid\QrCode\Color\Color(
-                                                hexdec(substr(ltrim($qrCode->background_color, '#'), 0, 2)),
-                                                hexdec(substr(ltrim($qrCode->background_color, '#'), 2, 2)),
-                                                hexdec(substr(ltrim($qrCode->background_color, '#'), 4, 2))
-                                            )
-                                        );
+                                        @php
 
-                                        $previewWriter = new \Endroid\QrCode\Writer\PngWriter();
+                                            $previewQr =
+                                                new \Endroid\QrCode\QrCode(
+                                                    data:
+                                                        $qrCode
+                                                            ->shortUrl
+                                                            ->short_url,
 
-                                        $previewResult = $previewWriter->write(
-                                            $previewQr
-                                        );
+                                                    encoding:
+                                                        new \Endroid\QrCode\Encoding\Encoding(
+                                                            'UTF-8'
+                                                        ),
 
-                                        $previewQrImage =
-                                            'data:image/png;base64,' .
-                                            base64_encode(
-                                                $previewResult->getString()
-                                            );
+                                                    errorCorrectionLevel:
+                                                        \Endroid\QrCode\ErrorCorrectionLevel::High,
 
-                                    @endphp
+                                                    size:
+                                                        120,
+
+                                                    margin:
+                                                        8,
+
+                                                    roundBlockSizeMode:
+                                                        \Endroid\QrCode\RoundBlockSizeMode::Margin,
+
+                                                    foregroundColor:
+                                                        new \Endroid\QrCode\Color\Color(
+                                                            hexdec(
+                                                                substr(
+                                                                    ltrim(
+                                                                        $qrCode->foreground_color,
+                                                                        '#'
+                                                                    ),
+                                                                    0,
+                                                                    2
+                                                                )
+                                                            ),
+
+                                                            hexdec(
+                                                                substr(
+                                                                    ltrim(
+                                                                        $qrCode->foreground_color,
+                                                                        '#'
+                                                                    ),
+                                                                    2,
+                                                                    2
+                                                                )
+                                                            ),
+
+                                                            hexdec(
+                                                                substr(
+                                                                    ltrim(
+                                                                        $qrCode->foreground_color,
+                                                                        '#'
+                                                                    ),
+                                                                    4,
+                                                                    2
+                                                                )
+                                                            )
+                                                        ),
+
+                                                    backgroundColor:
+                                                        new \Endroid\QrCode\Color\Color(
+                                                            hexdec(
+                                                                substr(
+                                                                    ltrim(
+                                                                        $qrCode->background_color,
+                                                                        '#'
+                                                                    ),
+                                                                    0,
+                                                                    2
+                                                                )
+                                                            ),
+
+                                                            hexdec(
+                                                                substr(
+                                                                    ltrim(
+                                                                        $qrCode->background_color,
+                                                                        '#'
+                                                                    ),
+                                                                    2,
+                                                                    2
+                                                                )
+                                                            ),
+
+                                                            hexdec(
+                                                                substr(
+                                                                    ltrim(
+                                                                        $qrCode->background_color,
+                                                                        '#'
+                                                                    ),
+                                                                    4,
+                                                                    2
+                                                                )
+                                                            )
+                                                        )
+                                                );
 
 
-                                    <img
-                                        src="{{ $previewQrImage }}"
-                                        alt="QR Code"
-                                        class="h-full w-full object-contain"
-                                    >
+                                            $previewWriter =
+                                                new \Endroid\QrCode\Writer\PngWriter();
+
+
+                                            $previewResult =
+                                                $previewWriter->write(
+                                                    $previewQr
+                                                );
+
+
+                                            $previewQrImage =
+                                                'data:image/png;base64,' .
+                                                base64_encode(
+                                                    $previewResult->getString()
+                                                );
+
+                                        @endphp
+
+
+                                        <img
+                                            src="{{ $previewQrImage }}"
+                                            alt="QR Code"
+                                            class="h-full w-full object-contain"
+                                        >
+
+                                    @else
+
+                                        <svg
+                                            class="h-7 w-7 text-gray-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="1.5"
+                                                d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"
+                                            />
+                                        </svg>
+
+                                    @endif
 
                                 </div>
 
@@ -324,26 +428,20 @@
 
                             <div class="flex items-center justify-end gap-2">
 
-                                @if($qrCode->shortUrl)
-
-                                    <a
-                                        href="{{ route('qr-codes.download.png', $qrCode) }}"
-                                        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-3 py-2 text-xs font-medium text-white transition hover:bg-brand-600"
-                                        title="Download PNG"
-                                    >
-                                        PNG
-                                    </a>
+                                <a
+                                    href="{{ route('qr-codes.download.png', $qrCode) }}"
+                                    class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-3 py-2 text-xs font-medium text-white transition hover:bg-brand-600"
+                                >
+                                    PNG
+                                </a>
 
 
-                                    <a
-                                        href="{{ route('qr-codes.download.svg', $qrCode) }}"
-                                        class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
-                                        title="Download SVG"
-                                    >
-                                        SVG
-                                    </a>
-
-                                @endif
+                                <a
+                                    href="{{ route('qr-codes.download.svg', $qrCode) }}"
+                                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                >
+                                    SVG
+                                </a>
 
 
                                 <form
@@ -359,7 +457,6 @@
                                     <button
                                         type="submit"
                                         class="inline-flex items-center justify-center rounded-lg border border-error-200 bg-error-50 px-3 py-2 text-xs font-medium text-error-600 transition hover:bg-error-100 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400"
-                                        title="Delete QR Code"
                                     >
                                         Delete
                                     </button>
@@ -416,23 +513,7 @@
                                     href="{{ route('qr-codes.create') }}"
                                     class="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600"
                                 >
-
-                                    <svg
-                                        class="h-5 w-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M12 4v16m8-8H4"
-                                        />
-                                    </svg>
-
                                     Create QR Code
-
                                 </a>
 
                             </div>
@@ -461,47 +542,134 @@
 
                     <div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-900">
 
-                        @php
+                        @if($qrCode->shortUrl)
 
-                            $mobilePreviewQr = new \Endroid\QrCode\QrCode(
-                                data: $qrCode->shortUrl->short_url,
-                                encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
-                                errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::High,
-                                size: 140,
-                                margin: 8,
-                                roundBlockSizeMode: \Endroid\QrCode\RoundBlockSizeMode::Margin,
-                                foregroundColor: new \Endroid\QrCode\Color\Color(
-                                    hexdec(substr(ltrim($qrCode->foreground_color, '#'), 0, 2)),
-                                    hexdec(substr(ltrim($qrCode->foreground_color, '#'), 2, 2)),
-                                    hexdec(substr(ltrim($qrCode->foreground_color, '#'), 4, 2))
-                                ),
-                                backgroundColor: new \Endroid\QrCode\Color\Color(
-                                    hexdec(substr(ltrim($qrCode->background_color, '#'), 0, 2)),
-                                    hexdec(substr(ltrim($qrCode->background_color, '#'), 2, 2)),
-                                    hexdec(substr(ltrim($qrCode->background_color, '#'), 4, 2))
-                                )
-                            );
+                            @php
 
-                            $mobileWriter = new \Endroid\QrCode\Writer\PngWriter();
+                                $mobileQr =
+                                    new \Endroid\QrCode\QrCode(
+                                        data:
+                                            $qrCode
+                                                ->shortUrl
+                                                ->short_url,
 
-                            $mobileResult = $mobileWriter->write(
-                                $mobilePreviewQr
-                            );
+                                        encoding:
+                                            new \Endroid\QrCode\Encoding\Encoding(
+                                                'UTF-8'
+                                            ),
 
-                            $mobileQrImage =
-                                'data:image/png;base64,' .
-                                base64_encode(
-                                    $mobileResult->getString()
-                                );
+                                        errorCorrectionLevel:
+                                            \Endroid\QrCode\ErrorCorrectionLevel::High,
 
-                        @endphp
+                                        size:
+                                            140,
+
+                                        margin:
+                                            8,
+
+                                        roundBlockSizeMode:
+                                            \Endroid\QrCode\RoundBlockSizeMode::Margin,
+
+                                        foregroundColor:
+                                            new \Endroid\QrCode\Color\Color(
+                                                hexdec(
+                                                    substr(
+                                                        ltrim(
+                                                            $qrCode->foreground_color,
+                                                            '#'
+                                                        ),
+                                                        0,
+                                                        2
+                                                    )
+                                                ),
+
+                                                hexdec(
+                                                    substr(
+                                                        ltrim(
+                                                            $qrCode->foreground_color,
+                                                            '#'
+                                                        ),
+                                                        2,
+                                                        2
+                                                    )
+                                                ),
+
+                                                hexdec(
+                                                    substr(
+                                                        ltrim(
+                                                            $qrCode->foreground_color,
+                                                            '#'
+                                                        ),
+                                                        4,
+                                                        2
+                                                    )
+                                                )
+                                            ),
+
+                                        backgroundColor:
+                                            new \Endroid\QrCode\Color\Color(
+                                                hexdec(
+                                                    substr(
+                                                        ltrim(
+                                                            $qrCode->background_color,
+                                                            '#'
+                                                        ),
+                                                        0,
+                                                        2
+                                                    )
+                                                ),
+
+                                                hexdec(
+                                                    substr(
+                                                        ltrim(
+                                                            $qrCode->background_color,
+                                                            '#'
+                                                        ),
+                                                        2,
+                                                        2
+                                                    )
+                                                ),
+
+                                                hexdec(
+                                                    substr(
+                                                        ltrim(
+                                                            $qrCode->background_color,
+                                                            '#'
+                                                        ),
+                                                        4,
+                                                        2
+                                                    )
+                                                )
+                                            )
+                                    );
 
 
-                        <img
-                            src="{{ $mobileQrImage }}"
-                            alt="QR Code"
-                            class="h-full w-full object-contain"
-                        >
+                                $mobileWriter =
+                                    new \Endroid\QrCode\Writer\PngWriter();
+
+
+                                $mobileResult =
+                                    $mobileWriter->write(
+                                        $mobileQr
+                                    );
+
+
+                                $mobileQrImage =
+                                    'data:image/png;base64,' .
+                                    base64_encode(
+                                        $mobileResult->getString()
+                                    );
+
+                            @endphp
+
+
+                            <img
+                                src="{{ $mobileQrImage }}"
+                                alt="QR Code"
+                                class="h-full w-full object-contain"
+                            >
+
+                        @endif
 
                     </div>
 
@@ -680,7 +848,6 @@
     @endif
 
 </div>
-
 
 </div>
 

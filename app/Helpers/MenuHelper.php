@@ -50,11 +50,20 @@ class MenuHelper
                 'path' => '/analytics',
             ],
 
-            [
-                'icon' => 'qr-code',
-                'name' => 'QR Codes',
-                'path' => '/qr-codes',
-            ],
+           [
+    'icon' => 'qr-code',
+    'name' => 'QR Codes',
+    'subItems' => [
+        [
+            'name' => 'Create QR',
+            'path' => '/qr-codes/create',
+        ],
+        [
+            'name' => 'All QR Codes',
+            'path' => '/qr-codes',
+        ],
+    ],
+],
 
             [
                 'icon' => 'reports',
