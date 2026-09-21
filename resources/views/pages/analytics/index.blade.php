@@ -387,9 +387,9 @@
 
 
     <!-- Countries -->
-    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <!-- <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"> -->
 
-        <div class="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
+        <!-- <div class="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
 
             <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">
                 Countries
@@ -402,9 +402,9 @@
         </div>
 
 
-        <div class="p-6">
+        <div class="p-6"> -->
 
-            <div class="flex h-48 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
+            <!-- <div class="flex h-48 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
 
                 <div class="text-center">
 
@@ -428,9 +428,9 @@
                             stroke-width="1.8"
                         />
 
-                    </svg>
+                    </svg> -->
 
-                    <p class="mt-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <!-- <p class="mt-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                         Country analytics coming soon
                     </p>
 
@@ -440,11 +440,11 @@
 
                 </div>
 
-            </div>
+            </div> -->
 
-        </div>
+        <!-- </div> -->
 
-    </div>
+    <!-- </div> -->
 
 </div>
 
