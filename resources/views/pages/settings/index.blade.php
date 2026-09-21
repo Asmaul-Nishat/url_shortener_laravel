@@ -145,7 +145,7 @@
             <div class="divide-y divide-gray-200 dark:divide-gray-800">
 
                 {{-- Language --}}
-                <div class="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+                <!-- <div class="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-800 dark:text-white">
@@ -155,9 +155,9 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {{ __('messages.language_description') }}
                         </p>
-                    </div>
+                    </div> -->
 
-
+<!-- 
                     <select
                         name="language"
                         class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 outline-none focus:border-gray-500 sm:w-48 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
@@ -179,7 +179,7 @@
 
                     </select>
 
-                </div>
+                </div> -->
 
 
                 {{-- Timezone --}}
