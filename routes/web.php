@@ -230,6 +230,99 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         /*
         |--------------------------------------------------------------------------
+        | Admin QR Codes
+        |--------------------------------------------------------------------------
+        |
+        | Admin can:
+        | - View all QR codes
+        | - Create a QR code
+        | - Generate a QR code
+        | - Download PNG
+        | - Download SVG
+        | - Delete QR codes
+        |
+        */
+
+        /*
+        | All QR Codes
+        |
+        | URL:
+        | /admin/qr-codes
+        */
+
+        Route::get('/qr-codes', [
+            QrCodeController::class,
+            'adminIndex',
+        ])->name('qr-codes.index');
+
+
+        /*
+        | Create QR
+        |
+        | URL:
+        | /admin/qr-codes/create
+        */
+
+        Route::get('/qr-codes/create', [
+            QrCodeController::class,
+            'adminCreate',
+        ])->name('qr-codes.create');
+
+
+        /*
+        | Generate QR
+        |
+        | URL:
+        | /admin/qr-codes/generate
+        */
+
+        Route::post('/qr-codes/generate', [
+            QrCodeController::class,
+            'adminGenerate',
+        ])->name('qr-codes.generate');
+
+
+        /*
+        | Download PNG
+        |
+        | URL:
+        | /admin/qr-codes/{qrCode}/download/png
+        */
+
+        Route::get('/qr-codes/{qrCode}/download/png', [
+            QrCodeController::class,
+            'adminDownloadPng',
+        ])->name('qr-codes.download.png');
+
+
+        /*
+        | Download SVG
+        |
+        | URL:
+        | /admin/qr-codes/{qrCode}/download/svg
+        */
+
+        Route::get('/qr-codes/{qrCode}/download/svg', [
+            QrCodeController::class,
+            'adminDownloadSvg',
+        ])->name('qr-codes.download.svg');
+
+
+        /*
+        | Delete QR Code
+        |
+        | URL:
+        | /admin/qr-codes/{qrCode}
+        */
+
+        Route::delete('/qr-codes/{qrCode}', [
+            QrCodeController::class,
+            'adminDestroy',
+        ])->name('qr-codes.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Admin Reports
         |--------------------------------------------------------------------------
         */
@@ -333,14 +426,6 @@ Route::middleware(['auth', 'verified', 'admin'])
         |--------------------------------------------------------------------------
         | Admin Settings
         |--------------------------------------------------------------------------
-        |
-        | URL:
-        | /admin/settings
-        |
-        | Route names:
-        | admin.settings
-        | admin.settings.update
-        |
         */
 
         Route::get('/settings', [
@@ -515,10 +600,6 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     |--------------------------------------------------------------------------
     | User Settings
     |--------------------------------------------------------------------------
-    |
-    | URL:
-    | /settings
-    |
     */
 
     Route::get('/settings', [
