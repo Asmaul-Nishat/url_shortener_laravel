@@ -407,6 +407,73 @@
         }
 
         /* =========================================================
+           PASSWORD INPUT + EYE TOGGLE
+           ========================================================= */
+
+        .password-input-wrapper {
+            position: relative;
+        }
+
+        .password-input-wrapper .form-input {
+            padding-right: 48px;
+        }
+
+        .password-toggle {
+            position: absolute;
+
+            top: 50%;
+            right: 13px;
+
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transform: translateY(-50%);
+
+            border: none;
+
+            padding: 0;
+
+            background: transparent;
+
+            color: #6b7280;
+
+            cursor: pointer;
+
+            border-radius: 7px;
+
+            transition:
+                color 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: #4f46e5;
+
+            background: #f3f4f6;
+        }
+
+        .password-toggle:focus {
+            outline: none;
+
+            color: #4f46e5;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(79, 70, 229, 0.10);
+        }
+
+        .password-toggle svg {
+            width: 18px;
+            height: 18px;
+
+            pointer-events: none;
+        }
+
+        /* =========================================================
            REGISTER BUTTON
            ========================================================= */
 
@@ -805,6 +872,7 @@
                 method="POST"
                 action="{{ route('register') }}"
                 class="register-form"
+                autocomplete="on"
             >
 
                 @csrf
@@ -864,6 +932,7 @@
                         placeholder="Enter your email"
                         required
                         autocomplete="username"
+                        inputmode="email"
                     >
 
                     @if ($errors->get('email'))
@@ -888,15 +957,63 @@
                         Password
                     </label>
 
-                    <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        class="form-input"
-                        placeholder="Create a password"
-                        required
-                        autocomplete="new-password"
-                    >
+                    <div class="password-input-wrapper">
+
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            class="form-input"
+                            placeholder="Create a password"
+                            required
+                            autocomplete="new-password"
+                        >
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-password-toggle="password"
+                            aria-label="Show password"
+                            title="Show password"
+                        >
+                            <!-- Eye icon -->
+
+                            <svg
+                                class="eye-open"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"></path>
+                                <circle cx="12" cy="12" r="2.5"></circle>
+                            </svg>
+
+                            <!-- Eye-off icon -->
+
+                            <svg
+                                class="eye-closed"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                                style="display: none;"
+                            >
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path>
+                                <path d="M9.9 4.2A10.7 10.7 0 0 1 12 4c6 0 9.5 8 9.5 8a16.8 16.8 0 0 1-3.1 4.1"></path>
+                                <path d="M6.6 6.6C3.7 8.5 2.5 12 2.5 12s3.5 6 9.5 6c1.4 0 2.7-.3 3.8-.8"></path>
+                            </svg>
+
+                        </button>
+
+                    </div>
 
                     @if ($errors->get('password'))
 
@@ -920,15 +1037,63 @@
                         Confirm password
                     </label>
 
-                    <input
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        class="form-input"
-                        placeholder="Confirm your password"
-                        required
-                        autocomplete="new-password"
-                    >
+                    <div class="password-input-wrapper">
+
+                        <input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            class="form-input"
+                            placeholder="Confirm your password"
+                            required
+                            autocomplete="new-password"
+                        >
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-password-toggle="password_confirmation"
+                            aria-label="Show password"
+                            title="Show password"
+                        >
+                            <!-- Eye icon -->
+
+                            <svg
+                                class="eye-open"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"></path>
+                                <circle cx="12" cy="12" r="2.5"></circle>
+                            </svg>
+
+                            <!-- Eye-off icon -->
+
+                            <svg
+                                class="eye-closed"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                                style="display: none;"
+                            >
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path>
+                                <path d="M9.9 4.2A10.7 10.7 0 0 1 12 4c6 0 9.5 8 9.5 8a16.8 16.8 0 0 1-3.1 4.1"></path>
+                                <path d="M6.6 6.6C3.7 8.5 2.5 12 2.5 12s3.5 6 9.5 6c1.4 0 2.7-.3 3.8-.8"></path>
+                            </svg>
+
+                        </button>
+
+                    </div>
 
                     @if ($errors->get('password_confirmation'))
 
@@ -992,6 +1157,81 @@
     </section>
 
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const toggleButtons = document.querySelectorAll(
+            '[data-password-toggle]'
+        );
+
+        toggleButtons.forEach(function (button) {
+
+            button.addEventListener('click', function () {
+
+                const inputId = button.getAttribute(
+                    'data-password-toggle'
+                );
+
+                const input = document.getElementById(inputId);
+
+                const eyeOpen = button.querySelector(
+                    '.eye-open'
+                );
+
+                const eyeClosed = button.querySelector(
+                    '.eye-closed'
+                );
+
+                if (!input) {
+                    return;
+                }
+
+                if (input.type === 'password') {
+
+                    input.type = 'text';
+
+                    eyeOpen.style.display = 'none';
+
+                    eyeClosed.style.display = 'block';
+
+                    button.setAttribute(
+                        'aria-label',
+                        'Hide password'
+                    );
+
+                    button.setAttribute(
+                        'title',
+                        'Hide password'
+                    );
+
+                } else {
+
+                    input.type = 'password';
+
+                    eyeOpen.style.display = 'block';
+
+                    eyeClosed.style.display = 'none';
+
+                    button.setAttribute(
+                        'aria-label',
+                        'Show password'
+                    );
+
+                    button.setAttribute(
+                        'title',
+                        'Show password'
+                    );
+
+                }
+
+            });
+
+        });
+
+    });
+</script>
 
 </body>
 
