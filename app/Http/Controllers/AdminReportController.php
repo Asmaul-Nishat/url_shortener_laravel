@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\ShortUrl;
+use App\Models\SystemSetting;
 use App\Models\UrlClick;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -39,7 +40,6 @@ class AdminReportController extends Controller
         | Date Range
         |--------------------------------------------------------------------------
         */
-
         [$startDate, $endDate] = $this->getDateRange(
             $dateRange
         );
@@ -49,7 +49,6 @@ class AdminReportController extends Controller
         | Users
         |--------------------------------------------------------------------------
         */
-
         $users = User::orderBy('name')->get();
 
         /*
@@ -57,16 +56,15 @@ class AdminReportController extends Controller
         | Short URLs
         |--------------------------------------------------------------------------
         */
-
         if ($userId) {
-
             $shortUrls = ShortUrl::with('user')
-                ->where('user_id', $userId)
+                ->where(
+                    'user_id',
+                    $userId
+                )
                 ->orderByDesc('id')
                 ->get();
-
         } else {
-
             $shortUrls = ShortUrl::with('user')
                 ->orderByDesc('id')
                 ->get();
@@ -77,9 +75,7 @@ class AdminReportController extends Controller
         | Validate Selected Short URL
         |--------------------------------------------------------------------------
         */
-
         if ($userId && $shortUrlId) {
-
             $shortUrlBelongsToUser = ShortUrl::where(
                 'id',
                 $shortUrlId
@@ -100,7 +96,6 @@ class AdminReportController extends Controller
         | Click Query
         |--------------------------------------------------------------------------
         */
-
         $clickQuery = UrlClick::with(
             'shortUrl.user'
         )->whereBetween(
@@ -116,9 +111,7 @@ class AdminReportController extends Controller
         | User Filter
         |--------------------------------------------------------------------------
         */
-
         if ($userId) {
-
             $clickQuery->whereHas(
                 'shortUrl',
                 function ($query) use ($userId) {
@@ -135,9 +128,7 @@ class AdminReportController extends Controller
         | Short URL Filter
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrlId) {
-
             $clickQuery->where(
                 'short_url_id',
                 $shortUrlId
@@ -149,7 +140,6 @@ class AdminReportController extends Controller
         | Total Clicks
         |--------------------------------------------------------------------------
         */
-
         $totalClicks = (clone $clickQuery)->count();
 
         /*
@@ -157,19 +147,15 @@ class AdminReportController extends Controller
         | Clicks
         |--------------------------------------------------------------------------
         */
-
         $showAll = $request->boolean(
             'show_all'
         );
 
         if ($showAll) {
-
             $clicks = $clickQuery
                 ->latest('clicked_at')
                 ->get();
-
         } else {
-
             $clicks = $clickQuery
                 ->latest('clicked_at')
                 ->limit(10)
@@ -181,7 +167,6 @@ class AdminReportController extends Controller
         | Generated Reports
         |--------------------------------------------------------------------------
         */
-
         $reports = Report::with([
             'user',
             'shortUrl',
@@ -195,7 +180,6 @@ class AdminReportController extends Controller
         | Statistics
         |--------------------------------------------------------------------------
         */
-
         $totalReports = Report::count();
 
         $totalGeneratedClicks = Report::sum(
@@ -217,17 +201,22 @@ class AdminReportController extends Controller
         | Generated Report ID
         |--------------------------------------------------------------------------
         */
-
         $generatedReportId = session(
             'generated_report_id'
         );
 
         /*
         |--------------------------------------------------------------------------
+        | Current Settings
+        |--------------------------------------------------------------------------
+        */
+        $settings = SystemSetting::current();
+
+        /*
+        |--------------------------------------------------------------------------
         | Return View
         |--------------------------------------------------------------------------
         */
-
         return view(
             'pages.admin.reports.index',
             compact(
@@ -247,11 +236,11 @@ class AdminReportController extends Controller
                 'totalGeneratedClicks',
                 'pdfReports',
                 'csvReports',
-                'generatedReportId'
+                'generatedReportId',
+                'settings'
             )
         );
     }
-
 
     /**
      * Generate and save a report.
@@ -259,36 +248,44 @@ class AdminReportController extends Controller
     public function generate(
         Request $request
     ): RedirectResponse {
+        /*
+        |--------------------------------------------------------------------------
+        | Check Reports Setting
+        |--------------------------------------------------------------------------
+        */
+        if (!SystemSetting::current()->enable_reports) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Report generation is currently disabled by the administrator.'
+                );
+        }
 
         /*
         |--------------------------------------------------------------------------
         | Validation
         |--------------------------------------------------------------------------
         */
-
         $validated = $request->validate([
             'report_type' => [
                 'required',
                 'string',
                 'in:click_analytics',
             ],
-
             'date_range' => [
                 'required',
                 'string',
                 'in:Today,Yesterday,Last 7 Days,Last 30 Days,Last 90 Days,This Month,Last Month,This Year',
             ],
-
             'user_id' => [
                 'nullable',
                 'exists:users,id',
             ],
-
             'short_url_id' => [
                 'nullable',
                 'exists:short_urls,id',
             ],
-
             'format' => [
                 'required',
                 'string',
@@ -301,12 +298,10 @@ class AdminReportController extends Controller
         | Validate User / Short URL Relationship
         |--------------------------------------------------------------------------
         */
-
         if (
             !empty($validated['user_id']) &&
             !empty($validated['short_url_id'])
         ) {
-
             $shortUrlBelongsToUser = ShortUrl::where(
                 'id',
                 $validated['short_url_id']
@@ -318,7 +313,6 @@ class AdminReportController extends Controller
                 ->exists();
 
             if (!$shortUrlBelongsToUser) {
-
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -333,7 +327,6 @@ class AdminReportController extends Controller
         | Date Range
         |--------------------------------------------------------------------------
         */
-
         [$startDate, $endDate] = $this->getDateRange(
             $validated['date_range']
         );
@@ -343,7 +336,6 @@ class AdminReportController extends Controller
         | Click Query
         |--------------------------------------------------------------------------
         */
-
         $clickQuery = UrlClick::with(
             'shortUrl.user'
         )->whereBetween(
@@ -359,9 +351,7 @@ class AdminReportController extends Controller
         | User Filter
         |--------------------------------------------------------------------------
         */
-
         if (!empty($validated['user_id'])) {
-
             $clickQuery->whereHas(
                 'shortUrl',
                 function ($query) use ($validated) {
@@ -378,9 +368,7 @@ class AdminReportController extends Controller
         | Short URL Filter
         |--------------------------------------------------------------------------
         */
-
         if (!empty($validated['short_url_id'])) {
-
             $clickQuery->where(
                 'short_url_id',
                 $validated['short_url_id']
@@ -392,7 +380,6 @@ class AdminReportController extends Controller
         | Get Clicks
         |--------------------------------------------------------------------------
         */
-
         $clicks = $clickQuery
             ->latest('clicked_at')
             ->get();
@@ -402,7 +389,6 @@ class AdminReportController extends Controller
         | Selected User
         |--------------------------------------------------------------------------
         */
-
         $selectedUser = !empty(
             $validated['user_id']
         )
@@ -416,7 +402,6 @@ class AdminReportController extends Controller
         | Selected Short URL
         |--------------------------------------------------------------------------
         */
-
         $selectedShortUrl = !empty(
             $validated['short_url_id']
         )
@@ -431,7 +416,6 @@ class AdminReportController extends Controller
         | Report Name
         |--------------------------------------------------------------------------
         */
-
         $reportName =
             'Click Analytics Report - ' .
             now()->format('Y-m-d H:i:s');
@@ -441,7 +425,6 @@ class AdminReportController extends Controller
         | File Name
         |--------------------------------------------------------------------------
         */
-
         $extension = strtolower(
             $validated['format']
         );
@@ -463,9 +446,7 @@ class AdminReportController extends Controller
         | Generate CSV
         |--------------------------------------------------------------------------
         */
-
         if ($validated['format'] === 'CSV') {
-
             $csvContent = $this->createCsv(
                 $clicks
             );
@@ -474,15 +455,12 @@ class AdminReportController extends Controller
                 $filePath,
                 $csvContent
             );
-
         } else {
-
             /*
             |--------------------------------------------------------------------------
             | Generate PDF
             |--------------------------------------------------------------------------
             */
-
             $pdf = $this->buildPdf(
                 reportName: $reportName,
                 reportType: $validated['report_type'],
@@ -499,7 +477,6 @@ class AdminReportController extends Controller
             | Store PDF
             |--------------------------------------------------------------------------
             */
-
             Storage::disk('local')->put(
                 $filePath,
                 $pdf->output()
@@ -511,36 +488,26 @@ class AdminReportController extends Controller
         | Save Report
         |--------------------------------------------------------------------------
         */
-
         $report = Report::create([
             'user_id' =>
                 $selectedUser?->id
                 ?? Auth::id(),
-
             'short_url_id' =>
                 $selectedShortUrl?->id,
-
             'name' =>
                 $reportName,
-
             'type' =>
                 $validated['report_type'],
-
             'date_range' =>
                 $validated['date_range'],
-
             'start_date' =>
                 $startDate->toDateString(),
-
             'end_date' =>
                 $endDate->toDateString(),
-
             'format' =>
                 $validated['format'],
-
             'file_path' =>
                 $filePath,
-
             'total_clicks' =>
                 $clicks->count(),
         ]);
@@ -550,24 +517,19 @@ class AdminReportController extends Controller
         | Redirect
         |--------------------------------------------------------------------------
         */
-
         return redirect()->route(
             'admin.reports',
             array_filter([
                 'report_type' =>
                     $validated['report_type'],
-
                 'date_range' =>
                     $validated['date_range'],
-
                 'user_id' =>
                     $validated['user_id']
                     ?? null,
-
                 'short_url_id' =>
                     $validated['short_url_id']
                     ?? null,
-
                 'show_all' =>
                     1,
             ])
@@ -583,13 +545,23 @@ class AdminReportController extends Controller
             );
     }
 
-
     /**
      * Download a filtered report directly.
      */
     public function downloadFiltered(
         Request $request
     ) {
+        /*
+        |--------------------------------------------------------------------------
+        | Check Reports Setting
+        |--------------------------------------------------------------------------
+        */
+        if (!SystemSetting::current()->enable_reports) {
+            return back()->with(
+                'error',
+                'Report downloads are currently disabled by the administrator.'
+            );
+        }
 
         $format = strtoupper(
             $request->input(
@@ -616,9 +588,7 @@ class AdminReportController extends Controller
         | Validate User / Short URL Relationship
         |--------------------------------------------------------------------------
         */
-
         if ($userId && $shortUrlId) {
-
             $shortUrlBelongsToUser = ShortUrl::where(
                 'id',
                 $shortUrlId
@@ -639,7 +609,6 @@ class AdminReportController extends Controller
         | Date Range
         |--------------------------------------------------------------------------
         */
-
         [$startDate, $endDate] =
             $this->getDateRange(
                 $dateRange
@@ -650,7 +619,6 @@ class AdminReportController extends Controller
         | Click Query
         |--------------------------------------------------------------------------
         */
-
         $clickQuery = UrlClick::with(
             'shortUrl.user'
         )->whereBetween(
@@ -666,9 +634,7 @@ class AdminReportController extends Controller
         | User Filter
         |--------------------------------------------------------------------------
         */
-
         if ($userId) {
-
             $clickQuery->whereHas(
                 'shortUrl',
                 function ($query) use ($userId) {
@@ -685,9 +651,7 @@ class AdminReportController extends Controller
         | Short URL Filter
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrlId) {
-
             $clickQuery->where(
                 'short_url_id',
                 $shortUrlId
@@ -699,7 +663,6 @@ class AdminReportController extends Controller
         | Get Clicks
         |--------------------------------------------------------------------------
         */
-
         $clicks = $clickQuery
             ->latest('clicked_at')
             ->get();
@@ -709,9 +672,7 @@ class AdminReportController extends Controller
         | CSV
         |--------------------------------------------------------------------------
         */
-
         if ($format === 'CSV') {
-
             $fileName =
                 'click-details-' .
                 now()->format(
@@ -721,7 +682,6 @@ class AdminReportController extends Controller
 
             return response()->streamDownload(
                 function () use ($clicks) {
-
                     echo $this->createCsv(
                         $clicks
                     );
@@ -739,7 +699,6 @@ class AdminReportController extends Controller
         | Selected User
         |--------------------------------------------------------------------------
         */
-
         $selectedUser = $userId
             ? User::find($userId)
             : null;
@@ -749,7 +708,6 @@ class AdminReportController extends Controller
         | Selected Short URL
         |--------------------------------------------------------------------------
         */
-
         $selectedShortUrl = $shortUrlId
             ? ShortUrl::with('user')
                 ->find($shortUrlId)
@@ -760,7 +718,6 @@ class AdminReportController extends Controller
         | Generate PDF
         |--------------------------------------------------------------------------
         */
-
         $pdf = $this->buildPdf(
             reportName: 'Click Analytics Report',
             reportType: 'click_analytics',
@@ -777,7 +734,6 @@ class AdminReportController extends Controller
         | Landscape A4
         |--------------------------------------------------------------------------
         */
-
         $pdf->setPaper(
             'a4',
             'landscape'
@@ -788,7 +744,6 @@ class AdminReportController extends Controller
         | Download
         |--------------------------------------------------------------------------
         */
-
         $fileName =
             'click-details-' .
             now()->format(
@@ -805,27 +760,21 @@ class AdminReportController extends Controller
             [
                 'Content-Type' =>
                     'application/pdf',
-
                 'Content-Disposition' =>
                     'attachment; filename="' .
                     $fileName .
                     '"',
-
                 'Content-Length' =>
                     strlen($pdfContent),
-
                 'Cache-Control' =>
                     'private, no-store, no-cache, must-revalidate',
-
                 'Pragma' =>
                     'no-cache',
-
                 'Expires' =>
                     '0',
             ]
         );
     }
-
 
     /**
      * Display all previously generated reports.
@@ -833,7 +782,6 @@ class AdminReportController extends Controller
     public function all(
         Request $request
     ): View {
-
         $reports = Report::with([
             'user',
             'shortUrl',
@@ -848,42 +796,38 @@ class AdminReportController extends Controller
         );
     }
 
-
     /**
      * Download a previously generated report.
-     *
-     * IMPORTANT:
-     *
-     * PDF reports are regenerated from the CURRENT
-     * pages.admin.reports.pdf Blade file.
-     *
-     * This fixes the problem where old generated PDFs
-     * had an older/messy layout.
      */
     public function download(
         Report $report
     ) {
+        /*
+        |--------------------------------------------------------------------------
+        | Check Reports Setting
+        |--------------------------------------------------------------------------
+        */
+        if (!SystemSetting::current()->enable_reports) {
+            return back()->with(
+                'error',
+                'Report downloads are currently disabled by the administrator.'
+            );
+        }
 
         /*
         |--------------------------------------------------------------------------
         | CSV
         |--------------------------------------------------------------------------
-        |
-        | CSV is downloaded from its existing stored file.
-        |
         */
-
         if (
             strtoupper($report->format) === 'CSV'
         ) {
-
             if (
                 !$report->file_path ||
                 !Storage::disk('local')->exists(
                     $report->file_path
                 )
             ) {
-
                 return back()->with(
                     'error',
                     'The report file could not be found.'
@@ -901,39 +845,27 @@ class AdminReportController extends Controller
                 [
                     'Content-Type' =>
                         'text/csv; charset=UTF-8',
-
                     'Cache-Control' =>
                         'private, no-store, no-cache, must-revalidate',
-
                     'Pragma' =>
                         'no-cache',
                 ]
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | PDF
         |--------------------------------------------------------------------------
-        |
-        | We DO NOT download the old stored PDF.
-        |
-        | We rebuild the PDF from the current database/report
-        | information and the CURRENT pdf.blade.php.
-        |
         */
-
         if (
             strtoupper($report->format) === 'PDF'
         ) {
-
             /*
             |--------------------------------------------------------------------------
             | Report Dates
             |--------------------------------------------------------------------------
             */
-
             $startDate = $report->start_date
                 ? now()->parse(
                     $report->start_date
@@ -946,38 +878,27 @@ class AdminReportController extends Controller
                 )
                 : now()->endOfDay();
 
-
             /*
             |--------------------------------------------------------------------------
             | Selected User
             |--------------------------------------------------------------------------
-            |
-            | IMPORTANT:
-            |
-            | We use the report relationship.
-            |
             */
-
             $selectedUser =
                 $report->user;
-
 
             /*
             |--------------------------------------------------------------------------
             | Selected Short URL
             |--------------------------------------------------------------------------
             */
-
             $selectedShortUrl =
                 $report->shortUrl;
-
 
             /*
             |--------------------------------------------------------------------------
             | Rebuild Click Query
             |--------------------------------------------------------------------------
             */
-
             $clickQuery = UrlClick::with(
                 'shortUrl.user'
             )->whereBetween(
@@ -988,19 +909,15 @@ class AdminReportController extends Controller
                 ]
             );
 
-
             /*
             |--------------------------------------------------------------------------
             | User Filter
             |--------------------------------------------------------------------------
             */
-
             if ($selectedUser) {
-
                 $clickQuery->whereHas(
                     'shortUrl',
                     function ($query) use ($selectedUser) {
-
                         $query->where(
                             'user_id',
                             $selectedUser->id
@@ -1009,49 +926,32 @@ class AdminReportController extends Controller
                 );
             }
 
-
             /*
             |--------------------------------------------------------------------------
             | Short URL Filter
             |--------------------------------------------------------------------------
             */
-
             if ($selectedShortUrl) {
-
                 $clickQuery->where(
                     'short_url_id',
                     $selectedShortUrl->id
                 );
             }
 
-
             /*
             |--------------------------------------------------------------------------
             | Get Current Click Data
             |--------------------------------------------------------------------------
             */
-
             $clicks = $clickQuery
                 ->latest('clicked_at')
                 ->get();
 
-
             /*
             |--------------------------------------------------------------------------
-            | Total Clicks
+            | Build PDF
             |--------------------------------------------------------------------------
             */
-
-            $totalClicks =
-                $clicks->count();
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Build PDF From CURRENT Blade
-            |--------------------------------------------------------------------------
-            */
-
             $pdf = $this->buildPdf(
                 reportName: $report->name,
                 reportType: $report->type,
@@ -1063,35 +963,29 @@ class AdminReportController extends Controller
                 clicks: $clicks
             );
 
-
             /*
             |--------------------------------------------------------------------------
             | Landscape A4
             |--------------------------------------------------------------------------
             */
-
             $pdf->setPaper(
                 'a4',
                 'landscape'
             );
-
 
             /*
             |--------------------------------------------------------------------------
             | Generate Fresh PDF
             |--------------------------------------------------------------------------
             */
-
             $pdfContent =
                 $pdf->output();
-
 
             /*
             |--------------------------------------------------------------------------
             | Download Fresh PDF
             |--------------------------------------------------------------------------
             */
-
             $fileName =
                 pathinfo(
                     $report->file_path
@@ -1100,47 +994,38 @@ class AdminReportController extends Controller
                 ) .
                 '.pdf';
 
-
             return response(
                 $pdfContent,
                 200,
                 [
                     'Content-Type' =>
                         'application/pdf',
-
                     'Content-Disposition' =>
                         'attachment; filename="' .
                         $fileName .
                         '"',
-
                     'Content-Length' =>
                         strlen($pdfContent),
-
                     'Cache-Control' =>
                         'private, no-store, no-cache, must-revalidate',
-
                     'Pragma' =>
                         'no-cache',
-
                     'Expires' =>
                         '0',
                 ]
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Unsupported Format
         |--------------------------------------------------------------------------
         */
-
         return back()->with(
             'error',
             'Unsupported report format.'
         );
     }
-
 
     /**
      * Delete a generated report.
@@ -1148,41 +1033,34 @@ class AdminReportController extends Controller
     public function destroy(
         Report $report
     ): RedirectResponse {
-
         /*
         |--------------------------------------------------------------------------
         | Delete Stored File
         |--------------------------------------------------------------------------
         */
-
         if (
             $report->file_path &&
             Storage::disk('local')->exists(
                 $report->file_path
             )
         ) {
-
             Storage::disk('local')->delete(
                 $report->file_path
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | Delete Database Record
         |--------------------------------------------------------------------------
         */
-
         $report->delete();
-
 
         /*
         |--------------------------------------------------------------------------
         | Redirect
         |--------------------------------------------------------------------------
         */
-
         return redirect()
             ->route(
                 'admin.reports.all'
@@ -1192,7 +1070,6 @@ class AdminReportController extends Controller
                 'Report deleted successfully.'
             );
     }
-
 
     /**
      * Build a PDF using the current PDF Blade template.
@@ -1207,69 +1084,30 @@ class AdminReportController extends Controller
         ?ShortUrl $selectedShortUrl,
         $clicks
     ) {
-
         return Pdf::loadView(
             'pages.admin.reports.pdf',
             [
                 'report_name' =>
                     $reportName,
-
                 'report_type' =>
                     $reportType,
-
                 'date_range' =>
                     $dateRange,
-
                 'start_date' =>
                     $startDate,
-
                 'end_date' =>
                     $endDate,
-
-                /*
-                |--------------------------------------------------------------------------
-                | IMPORTANT
-                |--------------------------------------------------------------------------
-                |
-                | pdf.blade.php expects:
-                |
-                | $selected_user
-                |
-                */
-
                 'selected_user' =>
                     $selectedUser,
-
-                /*
-                |--------------------------------------------------------------------------
-                | Selected Short URL
-                |--------------------------------------------------------------------------
-                */
-
                 'short_url' =>
                     $selectedShortUrl,
-
-                /*
-                |--------------------------------------------------------------------------
-                | Total Clicks
-                |--------------------------------------------------------------------------
-                */
-
                 'total_clicks' =>
                     $clicks->count(),
-
-                /*
-                |--------------------------------------------------------------------------
-                | Click Records
-                |--------------------------------------------------------------------------
-                */
-
                 'clicks' =>
                     $clicks,
             ]
         );
     }
-
 
     /**
      * Get report date range.
@@ -1277,13 +1115,10 @@ class AdminReportController extends Controller
     private function getDateRange(
         string $dateRange
     ): array {
-
         $now = now();
 
         switch ($dateRange) {
-
             case 'Today':
-
                 $startDate =
                     $now->copy()
                         ->startOfDay();
@@ -1293,10 +1128,8 @@ class AdminReportController extends Controller
                         ->endOfDay();
 
                 break;
-
 
             case 'Yesterday':
-
                 $startDate =
                     $now->copy()
                         ->subDay()
@@ -1309,9 +1142,7 @@ class AdminReportController extends Controller
 
                 break;
 
-
             case 'Last 30 Days':
-
                 $startDate =
                     $now->copy()
                         ->subDays(29)
@@ -1323,9 +1154,7 @@ class AdminReportController extends Controller
 
                 break;
 
-
             case 'Last 90 Days':
-
                 $startDate =
                     $now->copy()
                         ->subDays(89)
@@ -1337,9 +1166,7 @@ class AdminReportController extends Controller
 
                 break;
 
-
             case 'This Month':
-
                 $startDate =
                     $now->copy()
                         ->startOfMonth()
@@ -1351,9 +1178,7 @@ class AdminReportController extends Controller
 
                 break;
 
-
             case 'Last Month':
-
                 $startDate =
                     $now->copy()
                         ->subMonth()
@@ -1368,9 +1193,7 @@ class AdminReportController extends Controller
 
                 break;
 
-
             case 'This Year':
-
                 $startDate =
                     $now->copy()
                         ->startOfYear()
@@ -1383,11 +1206,8 @@ class AdminReportController extends Controller
 
                 break;
 
-
             case 'Last 7 Days':
-
             default:
-
                 $startDate =
                     $now->copy()
                         ->subDays(6)
@@ -1406,14 +1226,12 @@ class AdminReportController extends Controller
         ];
     }
 
-
     /**
      * Create CSV content.
      */
     private function createCsv(
         $clicks
     ): string {
-
         $handle = fopen(
             'php://temp',
             'r+'
@@ -1424,19 +1242,16 @@ class AdminReportController extends Controller
         | UTF-8 BOM
         |--------------------------------------------------------------------------
         */
-
         fwrite(
             $handle,
             "\xEF\xBB\xBF"
         );
-
 
         /*
         |--------------------------------------------------------------------------
         | Header
         |--------------------------------------------------------------------------
         */
-
         fputcsv(
             $handle,
             [
@@ -1449,22 +1264,18 @@ class AdminReportController extends Controller
             ]
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Rows
         |--------------------------------------------------------------------------
         */
-
         foreach ($clicks as $click) {
-
             $shortUrl =
                 $click->shortUrl;
 
             $shortUrlValue = '';
 
             if ($shortUrl) {
-
                 $shortUrlValue =
                     $shortUrl->short_url;
             }
@@ -1472,7 +1283,6 @@ class AdminReportController extends Controller
             $originalUrl = '';
 
             if ($shortUrl) {
-
                 $originalUrl =
                     $shortUrl->original_url;
             }
@@ -1481,18 +1291,13 @@ class AdminReportController extends Controller
                 $handle,
                 [
                     $shortUrlValue,
-
                     $originalUrl,
-
                     $click->ip_address
                         ?? '',
-
                     $click->user_agent
                         ?? '',
-
                     $click->referer
                         ?? '',
-
                     $click->clicked_at
                         ? $click->clicked_at
                             ->format(
@@ -1503,13 +1308,11 @@ class AdminReportController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Return CSV
         |--------------------------------------------------------------------------
         */
-
         rewind($handle);
 
         $content =

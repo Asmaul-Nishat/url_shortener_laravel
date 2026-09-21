@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ShortUrl;
+use App\Models\SystemSetting;
 use App\Models\UrlClick;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -26,13 +27,11 @@ class RedirectController extends Controller
         Request $request,
         string $shortCode
     ): View|RedirectResponse|Response {
-
         /*
         |--------------------------------------------------------------------------
         | First: Find Database Short URL
         |--------------------------------------------------------------------------
         */
-
         $shortUrl = ShortUrl::where(
             'short_code',
             $shortCode
@@ -48,9 +47,7 @@ class RedirectController extends Controller
         | Database URL Found
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl) {
-
             return $this->handleDatabaseShortUrl(
                 $request,
                 $shortUrl
@@ -61,11 +58,9 @@ class RedirectController extends Controller
         |--------------------------------------------------------------------------
         | Database URL Not Found
         |--------------------------------------------------------------------------
-        |
         | Check temporary guest URL in Cache.
-        |
+        |--------------------------------------------------------------------------
         */
-
         $guestUrl = Cache::get(
             'guest_short_url:' . $shortCode
         );
@@ -75,7 +70,6 @@ class RedirectController extends Controller
         | Guest URL Not Found
         |--------------------------------------------------------------------------
         */
-
         if (!$guestUrl) {
             abort(404);
         }
@@ -85,13 +79,11 @@ class RedirectController extends Controller
         | Handle Guest URL
         |--------------------------------------------------------------------------
         */
-
         return $this->handleGuestShortUrl(
             $request,
             $guestUrl
         );
     }
-
 
     /**
      * Handle a database short URL.
@@ -100,15 +92,12 @@ class RedirectController extends Controller
         Request $request,
         ShortUrl $shortUrl
     ): View|RedirectResponse|Response {
-
         /*
         |--------------------------------------------------------------------------
         | Check Scheduled Activation
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl->isScheduled()) {
-
             return response()->view(
                 'pages.links.scheduled',
                 compact('shortUrl'),
@@ -116,15 +105,12 @@ class RedirectController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Check Expiration
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl->isExpired()) {
-
             $shortUrl->update([
                 'status' => 'expired',
             ]);
@@ -136,45 +122,37 @@ class RedirectController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Check Link Status
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl->status !== 'active') {
             abort(404);
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | Check Password Protection
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl->isPasswordProtected()) {
-
             return view(
                 'pages.links.password',
                 compact('shortUrl')
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Complete Database Redirect
         |--------------------------------------------------------------------------
         */
-
         return $this->completeDatabaseRedirect(
             $request,
             $shortUrl
         );
     }
-
 
     /**
      * Handle a temporary guest short URL.
@@ -183,21 +161,17 @@ class RedirectController extends Controller
         Request $request,
         array $guestUrl
     ): View|RedirectResponse|Response {
-
         /*
         |--------------------------------------------------------------------------
         | Scheduled Activation
         |--------------------------------------------------------------------------
         */
-
         if (!empty($guestUrl['scheduled_at'])) {
-
             $scheduledAt = Carbon::parse(
                 $guestUrl['scheduled_at']
             );
 
             if (now()->lt($scheduledAt)) {
-
                 return response()->view(
                     'pages.links.guest-scheduled',
                     [
@@ -208,21 +182,17 @@ class RedirectController extends Controller
             }
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Expiration
         |--------------------------------------------------------------------------
         */
-
         if (!empty($guestUrl['expires_at'])) {
-
             $expiresAt = Carbon::parse(
                 $guestUrl['expires_at']
             );
 
             if (now()->gte($expiresAt)) {
-
                 return response()->view(
                     'pages.links.guest-expired',
                     [
@@ -233,15 +203,25 @@ class RedirectController extends Controller
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Check Link Status
+        |--------------------------------------------------------------------------
+        */
+        if (
+            isset($guestUrl['status'])
+            &&
+            $guestUrl['status'] !== 'active'
+        ) {
+            abort(404);
+        }
 
         /*
         |--------------------------------------------------------------------------
         | Password Protection
         |--------------------------------------------------------------------------
         */
-
         if (!empty($guestUrl['password'])) {
-
             return view(
                 'pages.links.guest-password',
                 [
@@ -250,18 +230,15 @@ class RedirectController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Complete Guest Redirect
         |--------------------------------------------------------------------------
         */
-
         return redirect()->away(
             $guestUrl['original_url']
         );
     }
-
 
     /**
      * Verify password for a password-protected database URL.
@@ -270,13 +247,11 @@ class RedirectController extends Controller
         Request $request,
         string $shortCode
     ): View|RedirectResponse|Response {
-
         /*
         |--------------------------------------------------------------------------
         | Find Database URL
         |--------------------------------------------------------------------------
         */
-
         $shortUrl = ShortUrl::where(
             'short_code',
             $shortCode
@@ -291,13 +266,10 @@ class RedirectController extends Controller
         |--------------------------------------------------------------------------
         | Database URL Not Found
         |--------------------------------------------------------------------------
-        |
         | Check guest cache.
-        |
+        |--------------------------------------------------------------------------
         */
-
         if (!$shortUrl) {
-
             $guestUrl = Cache::get(
                 'guest_short_url:' . $shortCode
             );
@@ -312,15 +284,12 @@ class RedirectController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Database URL
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl->isScheduled()) {
-
             return response()->view(
                 'pages.links.scheduled',
                 compact('shortUrl'),
@@ -328,15 +297,12 @@ class RedirectController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Check Expiration
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl->isExpired()) {
-
             $shortUrl->update([
                 'status' => 'expired',
             ]);
@@ -348,39 +314,32 @@ class RedirectController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Check Status
         |--------------------------------------------------------------------------
         */
-
         if ($shortUrl->status !== 'active') {
             abort(404);
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | No Password
         |--------------------------------------------------------------------------
         */
-
         if (!$shortUrl->isPasswordProtected()) {
-
             return $this->completeDatabaseRedirect(
                 $request,
                 $shortUrl
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Validate Password
         |--------------------------------------------------------------------------
         */
-
         $validated = $request->validate([
             'password' => [
                 'required',
@@ -391,18 +350,15 @@ class RedirectController extends Controller
                 'Please enter the password.',
         ]);
 
-
         /*
         |--------------------------------------------------------------------------
         | Check Password
         |--------------------------------------------------------------------------
         */
-
         if (!Hash::check(
             $validated['password'],
             $shortUrl->password
         )) {
-
             return back()
                 ->withErrors([
                     'password' =>
@@ -411,19 +367,16 @@ class RedirectController extends Controller
                 ->withInput();
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Password Correct
         |--------------------------------------------------------------------------
         */
-
         return $this->completeDatabaseRedirect(
             $request,
             $shortUrl
         );
     }
-
 
     /**
      * Verify password for a guest URL.
@@ -432,21 +385,17 @@ class RedirectController extends Controller
         Request $request,
         array $guestUrl
     ): RedirectResponse|View|Response {
-
         /*
         |--------------------------------------------------------------------------
         | Scheduled Activation
         |--------------------------------------------------------------------------
         */
-
         if (!empty($guestUrl['scheduled_at'])) {
-
             $scheduledAt = Carbon::parse(
                 $guestUrl['scheduled_at']
             );
 
             if (now()->lt($scheduledAt)) {
-
                 return response()->view(
                     'pages.links.guest-scheduled',
                     [
@@ -457,21 +406,17 @@ class RedirectController extends Controller
             }
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Expiration
         |--------------------------------------------------------------------------
         */
-
         if (!empty($guestUrl['expires_at'])) {
-
             $expiresAt = Carbon::parse(
                 $guestUrl['expires_at']
             );
 
             if (now()->gte($expiresAt)) {
-
                 return response()->view(
                     'pages.links.guest-expired',
                     [
@@ -482,27 +427,35 @@ class RedirectController extends Controller
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Status
+        |--------------------------------------------------------------------------
+        */
+        if (
+            isset($guestUrl['status'])
+            &&
+            $guestUrl['status'] !== 'active'
+        ) {
+            abort(404);
+        }
 
         /*
         |--------------------------------------------------------------------------
         | Check Password
         |--------------------------------------------------------------------------
         */
-
         if (empty($guestUrl['password'])) {
-
             return redirect()->away(
                 $guestUrl['original_url']
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | Validate Password
         |--------------------------------------------------------------------------
         */
-
         $validated = $request->validate([
             'password' => [
                 'required',
@@ -513,18 +466,15 @@ class RedirectController extends Controller
                 'Please enter the password.',
         ]);
 
-
         /*
         |--------------------------------------------------------------------------
         | Verify Password
         |--------------------------------------------------------------------------
         */
-
         if (!Hash::check(
             $validated['password'],
             $guestUrl['password']
         )) {
-
             return back()
                 ->withErrors([
                     'password' =>
@@ -533,68 +483,77 @@ class RedirectController extends Controller
                 ->withInput();
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Successful Guest Redirect
         |--------------------------------------------------------------------------
         */
-
         return redirect()->away(
             $guestUrl['original_url']
         );
     }
 
-
     /**
-     * Complete a database redirect and record analytics.
+     * Complete a database redirect and optionally record analytics.
      */
     private function completeDatabaseRedirect(
         Request $request,
         ShortUrl $shortUrl
     ): RedirectResponse {
+        $settings = SystemSetting::current();
 
         /*
         |--------------------------------------------------------------------------
-        | Increase Click Count
+        | Analytics Setting
         |--------------------------------------------------------------------------
+        |
+        | When analytics is enabled:
+        |
+        | - Increase click_count
+        | - Create UrlClick record
+        |
+        | When disabled:
+        |
+        | - Do not increase click_count
+        | - Do not create UrlClick record
+        |
+        | Existing analytics data remains untouched.
+        |
         */
+        if ($settings->enable_analytics) {
+            /*
+            |--------------------------------------------------------------------------
+            | Increase Click Count
+            |--------------------------------------------------------------------------
+            */
+            $shortUrl->increment(
+                'click_count'
+            );
 
-        $shortUrl->increment(
-            'click_count'
-        );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Store Click Analytics
-        |--------------------------------------------------------------------------
-        */
-
-        UrlClick::create([
-            'short_url_id' =>
-                $shortUrl->id,
-
-            'ip_address' =>
-                $request->ip(),
-
-            'user_agent' =>
-                $request->userAgent(),
-
-            'referer' =>
-                $request->header('referer'),
-
-            'clicked_at' =>
-                now(),
-        ]);
-
+            /*
+            |--------------------------------------------------------------------------
+            | Store Click Analytics
+            |--------------------------------------------------------------------------
+            */
+            UrlClick::create([
+                'short_url_id' =>
+                    $shortUrl->id,
+                'ip_address' =>
+                    $request->ip(),
+                'user_agent' =>
+                    $request->userAgent(),
+                'referer' =>
+                    $request->header('referer'),
+                'clicked_at' =>
+                    now(),
+            ]);
+        }
 
         /*
         |--------------------------------------------------------------------------
         | Redirect
         |--------------------------------------------------------------------------
         */
-
         return redirect()->away(
             $shortUrl->original_url
         );
